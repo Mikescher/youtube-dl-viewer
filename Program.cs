@@ -24,9 +24,15 @@ namespace youtube_dl_viewer
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+        private static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls("http://localhost:5000/");
+                });
+        }
 
         private static void InitData()
         {

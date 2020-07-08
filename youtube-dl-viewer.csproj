@@ -10,15 +10,7 @@
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
-      <Content Update="wwwroot\script.js">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-      <Content Update="wwwroot\style.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-      <Content Update="wwwroot\thumb_empty.svg">
+      <Content Update="Pages\Test.cshtml">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
@@ -26,6 +18,16 @@
 
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="staticfiles\script.js" />
+        <EmbeddedResource Include="staticfiles\style.css" />
+        <EmbeddedResource Include="staticfiles\style_compact.css" />
+        <EmbeddedResource Include="staticfiles\style_detailed.css" />
+        <EmbeddedResource Include="staticfiles\style_grid.css" />
+        <EmbeddedResource Include="staticfiles\style_tabular.css" />
+        <EmbeddedResource Include="staticfiles\thumb_empty.svg" />
     </ItemGroup>
 
 </Project>

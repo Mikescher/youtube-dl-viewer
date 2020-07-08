@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
+using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer
 {
@@ -17,7 +22,7 @@ namespace youtube_dl_viewer
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            //if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -29,6 +34,8 @@ namespace youtube_dl_viewer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/data", getData);
+
+                endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
                 
                 endpoints.MapRazorPages();
             });
