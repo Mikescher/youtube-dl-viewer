@@ -5,4 +5,11 @@
         <RootNamespace>youtube_dl_viewer</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Content Update="Pages\Index2.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
