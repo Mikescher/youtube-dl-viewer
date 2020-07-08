@@ -3,15 +3,47 @@
 @model IndexModel
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
     <title>youtube-dl Viewer @Model.BaseDir</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <script src="/script.js"></script>
 </head>
 <body>
-<main>
-    <div id="json_data" class="hidden" data-json="@Model.RawData"></div>
-    Hello 2
+
+<!-- -------------------------------------------------------------------------- -->
+
+<div id="json_data" class="hidden" data-json="@Model.RawData"></div>
+
+<!-- -------------------------------------------------------------------------- -->
+
+<header>
+    <div class="logo">
+        <div class="apptitle">youtube-dl Viewer <span class="version">@Model.Version</span></div>
+        <div class="apppath">@Model.BaseDir</div>
+    </div>
+
+    <div class="buttons">
+        <div class="btn btn-display"></div>
+        <div class="btn btn-order"></div>
+    </div>
+
+</header>
+
+<!-- -------------------------------------------------------------------------- -->
+
+<main class="lstyle_detailed">
+    <!-- js -->
 </main>
+
+<!--- -------------------------------------------------------------------------- -->
+
+<footer>
+    <hr/>
+    youtube-dl Viewer (c) <a href="https://www.mikescher.com">mikescher.com</a> 2020
+</footer>
+
+<!-- -------------------------------------------------------------------------- -->
+
 </body>
 </html>

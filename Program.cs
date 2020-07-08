@@ -30,13 +30,16 @@ namespace youtube_dl_viewer
 
         private static void InitData()
         {
-            var datafiles = Directory.EnumerateFiles(DataDir).ToList();
+            var datafiles = Directory.EnumerateFiles(DataDir).OrderBy(p => p.ToLower()).ToList();
             var processedFiles = new List<string>();
 
             var filesSubs = datafiles.Where(p => p.EndsWith(".vtt")).ToList();
             var filesInfo = datafiles.Where(p => p.EndsWith(".info.json")).ToList();
 
             var resultVideos = new JArray();
+
+            var idsAreUnique = true;
+            var idlist = new HashSet<string>();
             
             foreach (var pathJson in filesInfo)
             {
@@ -49,6 +52,10 @@ namespace youtube_dl_viewer
                 {
                     throw new Exception($"Could not parse file: '{pathJson}'", e);
                 }
+
+                var id = jinfo.Value<string>("id");
+                if (id == null || idlist.Contains(id)) idsAreUnique = false;
+                idlist.Add(id);
                 
                 var dir = Path.GetDirectoryName(pathJson);
                 if (dir == null) continue;
@@ -81,6 +88,8 @@ namespace youtube_dl_viewer
                 (
                     new JProperty("meta", new JObject
                     (
+                        new JProperty("uid", id),
+                        
                         new JProperty("directory", dir),
                         
                         new JProperty("filename_base", filenameBase),
@@ -97,6 +106,16 @@ namespace youtube_dl_viewer
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
                     ))
                 ));
+            }
+
+            if (!idsAreUnique)
+            {
+                var uid = 10000;
+                foreach (var rv in resultVideos)
+                {
+                    rv["meta"]?["uid"]?.Replace(new JProperty("uid", uid.ToString()));
+                    uid++;
+                }
             }
             
             var result = new JObject

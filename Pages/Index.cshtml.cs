@@ -7,6 +7,7 @@ namespace youtube_dl_viewer.Pages
     {
         public string BaseDir => Program.DataDir;
         public string RawData => Program.data_json;
+        public string Version => "0.1";
         
         public void OnGet()
         {

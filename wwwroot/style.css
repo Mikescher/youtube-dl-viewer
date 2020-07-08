@@ -1,3 +1,51 @@
+
+
+html,body {
+    margin:0;
+    padding:0;
+    height:100%
+}
+
+body{ 
+    background-color:#eee;
+    color:#333;
+    font-family:"Helvetica","Arial",sans-serif
+}
+
+header {
+    font-family:"Roboto","Courier",sans-serif
+}
+
 .hidden {
     display: none !important;
 }
+
+/* **************************** DETAILED **************************** */
+
+main.lstyle_detailed {
+
+
+}
+
+/* **************************** GRID **************************** */
+
+main.lstyle_grid {
+
+
+}
+
+/* **************************** COMPACT **************************** */
+
+main.lstyle_compact {
+
+
+}
+
+/* **************************** TABULAR **************************** */
+
+main.lstyle_tabular {
+
+
+}
+
+/* ***************************************************************** */
