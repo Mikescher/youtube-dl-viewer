@@ -1,5 +1,103 @@
 
 #content.lstyle_grid {
-
-
+  display: flex;
+  flex-wrap: wrap;
+  
+  justify-content: space-between;
 }
+
+#content.lstyle_grid .video_entry {
+  margin: 0.33rem;
+  padding: 2px;
+  
+  display: grid;
+  grid-template-rows:    auto 1fr;
+  grid-template-columns: auto;
+  
+  background: #FFF;
+  border: 1px solid #BBB;
+}
+
+#content.lstyle_grid .video_entry > * {
+  display: none;
+}
+
+#content.lstyle_grid .video_entry .thumbnail {
+  grid-column: 1;
+  grid-row:    1;
+  
+  width:  12rem;
+  
+  display: flex;
+  flex-direction: column;
+  
+  align-items: start;
+}
+
+#content.lstyle_grid .video_entry .thumbnail .thumbnail_img {
+  width:  12rem;
+  height: 6.75rem;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  background: #000;
+}
+
+#content.lstyle_grid .video_entry .thumbnail .thumbnail_img img {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+#content.lstyle_grid .video_entry .likedislikebar {
+  display: flex;
+  
+  border-top: 1px solid transparent;
+  min-height: 4px;
+  width: 100%;
+}
+
+#content.lstyle_grid .video_entry .likedislikebar .like_bar    { background: #0A0; display: flex; justify-content: center; align-items: center; }
+#content.lstyle_grid .video_entry .likedislikebar .dislike_bar { background: #D00; display: flex; justify-content: center; align-items: center; }
+
+#content.lstyle_grid .video_entry .likedislikebar .like_bar_count    { display: none; }
+#content.lstyle_grid .video_entry .likedislikebar .dislike_bar_count { display: none; }
+
+#content.lstyle_grid .video_entry .title {
+  grid-column: 1;
+  grid-row:    2;
+  
+  display: inherit;
+  
+  max-width: 12rem;
+  
+  margin: 0.5rem 0.1rem 0.1rem 0.1rem;
+  
+  font-family:"Roboto","Courier",sans-serif;
+  font-weight: bold;
+  
+  justify-content: start;
+  align-items: start;
+}
+
+#content.lstyle_grid .video_entry .duration {
+  grid-column: 1;
+  grid-row: 1;
+
+  justify-self: right;
+  align-self: end;
+
+  background-color: rgba(255, 255, 255, 0.75);
+  padding: 0 4px;
+  margin: 0 2px calc(0.65rem + 2px) 0;
+
+  font-size: 0.8rem;
+  font-family: "Courier New",monospace;
+}
+
+
+
+
+
+
