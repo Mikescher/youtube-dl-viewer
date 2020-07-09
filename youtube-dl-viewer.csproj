@@ -25,10 +25,36 @@
         <EmbeddedResource Include="staticfiles\style.css" />
         <EmbeddedResource Include="staticfiles\style_compact.css" />
         <EmbeddedResource Include="staticfiles\style_detailed.css" />
+        <EmbeddedResource Include="staticfiles\style_detailed_expanded.css" />
         <EmbeddedResource Include="staticfiles\style_grid.css" />
         <EmbeddedResource Include="staticfiles\style_tabular.css" />
         <EmbeddedResource Include="staticfiles\style_width.css" />
         <EmbeddedResource Include="staticfiles\thumb_empty.svg" />
+
+        <EmbeddedResource Include="staticfiles\fontawesome.css" />
+        <EmbeddedResource Include="staticfiles\fontawesome.min.css" />
+        <EmbeddedResource Include="staticfiles\solid.css" />
+        <EmbeddedResource Include="staticfiles\solid.min.css" />
+        <EmbeddedResource Include="staticfiles\regular.css" />
+        <EmbeddedResource Include="staticfiles\regular.min.css" />
+        
+        <EmbeddedResource Include="staticfiles\fa-brands-400.eot" />
+        <EmbeddedResource Include="staticfiles\fa-brands-400.svg" />
+        <EmbeddedResource Include="staticfiles\fa-brands-400.ttf" />
+        <EmbeddedResource Include="staticfiles\fa-brands-400.woff" />
+        <EmbeddedResource Include="staticfiles\fa-brands-400.woff2" />
+
+        <EmbeddedResource Include="staticfiles\fa-regular-400.eot" />
+        <EmbeddedResource Include="staticfiles\fa-regular-400.svg" />
+        <EmbeddedResource Include="staticfiles\fa-regular-400.ttf" />
+        <EmbeddedResource Include="staticfiles\fa-regular-400.woff" />
+        <EmbeddedResource Include="staticfiles\fa-regular-400.woff2" />
+
+        <EmbeddedResource Include="staticfiles\fa-solid-900.eot" />
+        <EmbeddedResource Include="staticfiles\fa-solid-900.svg" />
+        <EmbeddedResource Include="staticfiles\fa-solid-900.ttf" />
+        <EmbeddedResource Include="staticfiles\fa-solid-900.woff" />
+        <EmbeddedResource Include="staticfiles\fa-solid-900.woff2" />
     </ItemGroup>
 
 </Project>

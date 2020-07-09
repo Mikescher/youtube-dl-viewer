@@ -49,14 +49,43 @@ function initData()
 
         html += '<div class="video_entry" data-id="'+escapeHtml(meta['uid'])+'">';
 
-        if (info.hasNonNull('thumbnail')) html += '<div class="thumbnail"><img src="/thumb_empty.svg"  alt="thumbnail" data-realurl="/thumb/'+escapeHtml(meta['uid'])+'." /></div>';
-        else html += '<hasNoNull class="thumbnail"><img src="/thumb_empty.svg" alt="thumbnail" /></hasNoNull>';
+        if (info.hasNonNull('thumbnail')) 
+        {
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img src="/thumb_empty.svg"  alt="thumbnail" data-realurl="/thumb/' + escapeHtml(meta['uid']) + '." /></div>';
+
+            if (info.hasNonNull('like_count') && info.has('dislike_count'))
+            {
+                html += '<div class="likedislikebar">';
+                html += '  <div class="like_bar" style="width: ' + (100 * info["like_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="like_bar_count">' + escapeHtml(info["like_count"]) + '</div></div>';
+                html += '  <div class="dislike_bar" style="width: ' + (100 * info["dislike_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="dislike_bar_count">' + escapeHtml(info["dislike_count"]) + '</div></div>';
+                html += '</div>';
+            }
+
+            html += '</div>';
+        }
+        else 
+        {
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img src="/thumb_empty.svg" alt="thumbnail" /></div> ';
+
+            if (info.hasNonNull('like_count') && info.has('dislike_count'))
+            {
+                html += '<div class="likedislikebar">';
+                html += '  <div class="like_bar" style="width: ' + (100 * info["like_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="like_bar_count">' + escapeHtml(info["like_count"]) + '</div></div>';
+                html += '  <div class="dislike_bar" style="width: ' + (100 * info["dislike_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="dislike_bar_count">' + escapeHtml(info["dislike_count"]) + '</div></div>';
+                html += '</div>';
+            }
+
+            html += '</div>';
+        }
         
         if (info.hasNonNull('fulltitle')) html += '<div class="title">' + escapeHtml(info['fulltitle']) + '</div>';
         else if (info.hasNonNull('title')) html += '<div class="title">' + escapeHtml(info['title']) + '</div>';
 
+
         if (info.hasArrayWithValues('categories')) 
         {
+            html += '<div class="info info-catlist"><i class="fas fa-tag"></i></div>';
+            
             html += '<div class="catlist">';
             for (const c of info['categories']) html += '<div class="category">' + escapeHtml(c) + '</div>';
             html += '</div>';
@@ -71,43 +100,67 @@ function initData()
 
         if (info.hasNonNull('webpage_url')) html += '<a href="' + escapeHtml(info['webpage_url']) + '" class="url">' + escapeHtml(info['webpage_url']) + '</a>';
 
-        if (info.hasNonNull('duration')) html += '<div class="duration">' + escapeHtml(formatSeconds(info["duration"])) + '</div>';
+        if (info.hasNonNull('duration')) 
+        {
+            html += '<div class="info info-duration"><i class="fas fa-clock"></i></div>';
+            html += '<div class="duration">' + escapeHtml(formatSeconds(info["duration"])) + '</div>';
+        }
 
-        if (info.hasNonNull('extractor')) html += '<div class="extractor">' + escapeHtml(info["extractor"]) + '</div>';
+        if (info.hasNonNull('extractor')) 
+        {
+            html += '<div class="info info-extractor"><i class="fas fa-laptop-code"></i></div>';
+            html += '<div class="extractor">' + escapeHtml(info["extractor"]) + '</div>';
+        }
 
         if (info.hasNonNull('uploader')) 
         {
+            html += '<div class="info info-extractor"><i class="fas fas-user"></i></div>';
+            
             if (info.hasNonNull('channel_url')) html += '<a href="' + escapeHtml(info["channel_url"]) + '" class="uploader">' + escapeHtml(info["uploader"]) + '</a>';
             else if (info.hasNonNull('uploader_url')) html += '<a href="' + escapeHtml(info["uploader_url"]) + '" class="uploader">' + escapeHtml(info["uploader"]) + '</a>';
             else html += '<div class="uploader">' + escapeHtml(info["uploader"]) + '</div>';
                 
         }
 
-        if (info.hasNonNull('like_count') && info.has('dislike_count')) 
+        if (info.hasNonNull('like_count'))
         {
-            html += '<div class="like_count">' + escapeHtml(info["like_count"]) + '</div>';
-            html += '<div class="dislike_count">' + escapeHtml(info["dislike_count"]) + '</div>';
-
-            html += '<div class="likedislikebar">';
-            html += '  <div class="like_bar" style="width: ' + (100 * info["like_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="like_bar_count">' + escapeHtml(info["like_count"]) + '</div></div>';
-            html += '  <div class="dislike_bar" style="width: ' + (100 * info["dislike_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="dislike_bar_count">' + escapeHtml(info["dislike_count"]) + '</div></div>';
-            html += '</div>';
+            html += '<div class="info info-like_count"><i class="fas fa-thumbs-up"></i></div>';
+            html += '<div class="like_count">' + escapeHtml(formatNumber(info["like_count"])) + '</div>';
+        }
+        if (info.has('dislike_count'))
+        {
+            html += '<div class="info info-dislike_count"><i class="fas fa-thumbs-down"></i></div>';
+            html += '<div class="dislike_count">' + escapeHtml(formatNumber(info["dislike_count"])) + '</div>';
         }
 
-        if (info.hasNonNull('view_count')) html += '<div class="view_count">' + escapeHtml(formatNumber(info["view_count"])) + '</div>';
+        if (info.hasNonNull('view_count')) 
+        {
+            html += '<div class="info info-view_count"><i class="fas fa-eye"></i></div>';
+            html += '<div class="view_count">' + escapeHtml(formatNumber(info["view_count"])) + '</div>';
+        }
 
-        if (info.hasNonNull('width') && info.has('height')) html += '<div class="size">' + escapeHtml(info["width"]) + 'x' + escapeHtml(info["height"]) + '</div>';
+        if (info.hasNonNull('width') && info.has('height')) 
+        {
+            html += '<div class="info info-size"><i class="fas fa-th-large"></i></div>';
+            html += '<div class="size">' + escapeHtml(info["width"]) + 'x' + escapeHtml(info["height"]) + '</div>';
+        }
 
         if (info.hasNonNull('upload_date')) html += '<div class="upload_date">' + escapeHtml(formatDate(info["upload_date"])) + '</div>';
 
         if (vid['data']['description'] !== null) html += '<div class="description">' + escapeHtml(vid['data']['description']) + '</div>';
         else if (info.hasNonNull('description')) html += '<div class="description">' + escapeHtml(info['description']) + '</div>';
 
+        html += '<div class="btn-expand"><i class="fas fa-angle-down"></i></div>';
+        html += '<div class="btn-collapse"><i class="fas fa-angle-up"></i></div>';
+        
         html += '</div>';
         html += "\n\n";
     }
 
     document.querySelector('#content').innerHTML = html;
+
+    for (const btn of document.querySelectorAll('.btn-expand'))   btn.addEventListener('click', () => { btn.parentNode.classList.add('expanded') });
+    for (const btn of document.querySelectorAll('.btn-collapse')) btn.addEventListener('click', () => { btn.parentNode.classList.remove('expanded') });
 }
 
 function initButtons()
