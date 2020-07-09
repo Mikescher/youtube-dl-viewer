@@ -27,6 +27,7 @@
         <EmbeddedResource Include="staticfiles\style_detailed.css" />
         <EmbeddedResource Include="staticfiles\style_grid.css" />
         <EmbeddedResource Include="staticfiles\style_tabular.css" />
+        <EmbeddedResource Include="staticfiles\style_width.css" />
         <EmbeddedResource Include="staticfiles\thumb_empty.svg" />
     </ItemGroup>
 

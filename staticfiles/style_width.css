@@ -1,0 +1,22 @@
+
+#content.lstyle_width_small {
+  width: 800px;
+  max-width: 100%;
+}
+
+
+#content.lstyle_width_medium {
+  width: 1200px;
+  max-width: 100%;
+}
+
+
+#content.lstyle_width_wide {
+  width: 1800px;
+  max-width: 100%;
+}
+
+
+#content.lstyle_width_full {
+  width: 100%;
+}
