@@ -51,7 +51,7 @@ function initData()
 
         if (info.hasNonNull('thumbnail')) 
         {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img src="/thumb_empty.svg"  alt="thumbnail" data-realurl="/thumb/' + escapeHtml(meta['uid']) + '." /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-realurl="/thumb/' + escapeHtml(meta['uid']) + ' " /></div>';
 
             if (info.hasNonNull('like_count') && info.has('dislike_count'))
             {
@@ -161,6 +161,44 @@ function initData()
 
     for (const btn of document.querySelectorAll('.btn-expand'))   btn.addEventListener('click', () => { btn.parentNode.classList.add('expanded') });
     for (const btn of document.querySelectorAll('.btn-collapse')) btn.addEventListener('click', () => { btn.parentNode.classList.remove('expanded') });
+    
+    // noinspection JSIgnoredPromiseFromCall
+    loadThumbnails();
+}
+
+async function loadThumbnails()
+{
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    {
+        const src = thumb.getAttribute('data-realurl');
+        await setImageSource(thumb, src);
+        await sleepAsync(50);
+    }
+}
+function sleepAsync(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function setImageSource(image, src) {
+    return new Promise(resolve => 
+    {
+        let resolved = false;
+        image.onload = function () {
+            if (resolved) return;
+            resolved = true;
+            image.onload = null;
+            image.onerror = null;
+            resolve(true);
+        }
+        image.onerror = function () {
+            if (resolved) return;
+            resolved = true;
+            image.onload = null;
+            image.onerror = null;
+            resolve(false);
+        }
+        image.src = src;
+    });
 }
 
 function initButtons()

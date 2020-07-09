@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer
 {
@@ -15,7 +16,8 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string data_json = "";
+        public static string DataJSON = "";
+        public static Dictionary<string, JObject> Data = null;
         
         public static void Main(string[] args)
         {
@@ -114,6 +116,62 @@ namespace youtube_dl_viewer
                 ));
             }
 
+            foreach (var pathVideo in datafiles.Except(processedFiles).Where(p => ExtVideo.Any(q => string.Equals("." + q, Path.GetExtension(p), StringComparison.CurrentCultureIgnoreCase))))
+            {
+                var id = pathVideo.Sha256();
+                if (id == null || idlist.Contains(id)) idsAreUnique = false;
+                idlist.Add(id);
+                
+                var dir = Path.GetDirectoryName(pathVideo);
+                if (dir == null) continue;
+
+                var filenameVideo = Path.GetFileName(pathVideo);
+
+                var filenameBase = Path.GetFileNameWithoutExtension(filenameVideo);
+
+                var pathDesc = Path.Combine(dir, filenameBase + ".description");
+                if (!datafiles.Contains(pathDesc)) pathDesc = null;
+
+                var pathThumb = ExtThumbnail.Select(ext => Path.Combine(dir, filenameBase + "." + ext)).FirstOrDefault(p => datafiles.Contains(p));
+
+                var pathSubs = filesSubs
+                    .Where(p => dir == Path.GetDirectoryName(p))
+                    .Where(p => Path.GetFileName(p).EndsWith(".vtt"))
+                    .Where(p => Path.GetFileName(p).StartsWith(filenameBase + "."))
+                    .ToList();
+                
+                if (pathDesc != null) processedFiles.Add(pathDesc);
+                if (pathThumb != null) processedFiles.Add(pathThumb);
+                processedFiles.Add(pathVideo);
+                processedFiles.AddRange(pathSubs);
+                
+                resultVideos.Add(new JObject
+                (
+                    new JProperty("meta", new JObject
+                    (
+                        new JProperty("uid", id),
+                        
+                        new JProperty("directory", dir),
+                        
+                        new JProperty("filename_base", filenameBase),
+                        
+                        new JProperty("path_json", (object)null),
+                        new JProperty("path_description", pathDesc),
+                        new JProperty("path_video", pathVideo),
+                        new JProperty("path_thumbnail", pathThumb),
+                        new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p))))
+                    )),
+                    new JProperty("data", new JObject
+                    (
+                        new JProperty("info", new JObject
+                        (
+                            new JProperty("title", Path.GetFileNameWithoutExtension(pathVideo))
+                        )),
+                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
+                    ))
+                ));
+            }
+
             if (!idsAreUnique)
             {
                 var uid = 10000;
@@ -123,6 +181,8 @@ namespace youtube_dl_viewer
                     uid++;
                 }
             }
+
+            Data = resultVideos.ToDictionary(rv => rv["meta"]?.Value<string>("uid"), rv => (JObject)rv);
             
             var result = new JObject
             (
@@ -130,7 +190,7 @@ namespace youtube_dl_viewer
                 new JProperty("missing", new JArray(datafiles.Except(processedFiles).ToArray<object>()))
             );
 
-            data_json = result.ToString(Formatting.Indented);
+            DataJSON = result.ToString(Formatting.Indented);
         }
     }
 }

@@ -56,6 +56,7 @@
   display: flex;
   
   min-height: 0.65rem;
+  width: 100%;
 }
 
 #content.lstyle_detailed .video_entry .likedislikebar .like_bar    { background: #0A0; display: flex; justify-content: center; align-items: center; }
