@@ -19,12 +19,15 @@
     <ItemGroup>
         <EmbeddedResource Include="staticfiles\script.js" />
         <EmbeddedResource Include="staticfiles\style.css" />
+        <EmbeddedResource Include="staticfiles\style_width.css" />
+        <EmbeddedResource Include="staticfiles\style_video.css" />
+        
         <EmbeddedResource Include="staticfiles\style_compact.css" />
         <EmbeddedResource Include="staticfiles\style_detailed.css" />
         <EmbeddedResource Include="staticfiles\style_detailed_expanded.css" />
         <EmbeddedResource Include="staticfiles\style_grid.css" />
         <EmbeddedResource Include="staticfiles\style_tabular.css" />
-        <EmbeddedResource Include="staticfiles\style_width.css" />
+        
         <EmbeddedResource Include="staticfiles\thumb_empty.svg" />
 
         <EmbeddedResource Include="staticfiles\fontawesome.css" />

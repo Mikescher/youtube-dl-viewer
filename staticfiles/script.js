@@ -23,12 +23,31 @@ function formatNumber(num) {
     return num;
 }
 
-window.onload = function() { 
-    initData();
-    initButtons();
+window.onload = function() 
+{
+    const request = new XMLHttpRequest();
+    request.open('GET', '/data', true);
+
+    request.onload = function() {
+        if (this.status >= 200 && this.status < 400) 
+        {
+            // Success!
+            initData(JSON.parse(this.response));
+            initButtons();
+        } else 
+        {
+            // TODO
+        }
+    };
+
+    request.onerror = function() {
+        // TODO
+    };
+
+    request.send();
 };
 
-function initData()
+function initData(data)
 {
     const json_proto = 
     {
@@ -37,8 +56,6 @@ function initData()
         hasArrayWithValues: function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; },
     }
         
-    const data = JSON.parse(document.querySelector('#json_data').getAttribute('data-json'));
-
     let html = '';
     for (const vid of data['videos'])
     {
@@ -51,7 +68,7 @@ function initData()
 
         if (info.hasNonNull('thumbnail')) 
         {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-realurl="/thumb/' + escapeHtml(meta['uid']) + ' " /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/thumb/' + escapeHtml(meta['uid']) + ' " /></div>';
 
             if (info.hasNonNull('like_count') && info.has('dislike_count'))
             {
@@ -159,8 +176,10 @@ function initData()
 
     document.querySelector('#content').innerHTML = html;
 
-    for (const btn of document.querySelectorAll('.btn-expand'))   btn.addEventListener('click', () => { btn.parentNode.classList.add('expanded') });
-    for (const btn of document.querySelectorAll('.btn-collapse')) btn.addEventListener('click', () => { btn.parentNode.classList.remove('expanded') });
+    for (const btn of document.querySelectorAll('.btn-expand'))   btn.addEventListener('click', () => { btn.parentNode.classList.add('expanded'); });
+    for (const btn of document.querySelectorAll('.btn-collapse')) btn.addEventListener('click', () => { btn.parentNode.classList.remove('expanded'); });
+
+    for (const btn of document.querySelectorAll('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id')) });
     
     // noinspection JSIgnoredPromiseFromCall
     loadThumbnails();
@@ -170,8 +189,15 @@ async function loadThumbnails()
 {
     for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
     {
+        if (document.querySelector('.btn-loadthumbnails').getAttribute('data-active') !== '1') return;
+        
+        if (thumb.getAttribute('data-loaded') === '1') continue;
+        
         const src = thumb.getAttribute('data-realurl');
+        
         await setImageSource(thumb, src);
+        thumb.setAttribute('data-loaded', '1');
+        
         await sleepAsync(50);
     }
 }
@@ -227,4 +253,57 @@ function initButtons()
     {
         //TODO
     });
+
+    document.querySelector('.btn-loadthumbnails').addEventListener('click', () =>
+    {
+        const active = document.querySelector('.btn-loadthumbnails').getAttribute('data-active') === '1';
+        document.querySelector('.btn-loadthumbnails').setAttribute('data-active', active ? '0' : '1');
+        // noinspection JSIgnoredPromiseFromCall
+        loadThumbnails();
+    });
+
+    document.querySelector('.btn-videomode').addEventListener('click', () =>
+    {
+        let mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
+        mode = (mode + 1) % 3;
+        document.querySelector('.btn-videomode').setAttribute('data-mode', mode.toString());
+        const curr = document.querySelector('#fullsizevideo');
+        if (curr !== null)
+        {
+            showVideo(curr.getAttribute("data-id"));
+        }
+    });
+}
+
+function htmlToElement(html) {
+    const template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
+}
+
+function showVideo(id)
+{
+    const old = document.querySelector('#fullsizevideo');
+    if (old !== null) old.parentNode.removeChild(old);
+    
+    const mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
+    
+    let html = '';
+
+    html += '<div id="fullsizevideo" data-id="'+escapeHtml(id)+'">';
+    html += '  <div class="vidcontainer">';
+    html += '    <video width="320" height="240" controls autoplay>';
+    if (mode === 0) html += '<source src="/video/'+escapeHtml(id)+'/seek">';
+    if (mode === 1) html += '<source src="/video/'+escapeHtml(id)+'/file">';
+    if (mode === 2) html += '<source src="/video/'+escapeHtml(id)+'/stream" type="video/webm">';
+    html += '    </video>';
+    html += '  </div>';
+    html += '</div>';
+    
+    const main = document.querySelector('#root');
+    main.insertBefore(htmlToElement(html), main.firstChild);
+
+    const fsv = document.querySelector('#fullsizevideo');
+    fsv.addEventListener('click', function () { main.removeChild(fsv); })
 }

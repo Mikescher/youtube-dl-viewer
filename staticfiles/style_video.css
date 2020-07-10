@@ -1,0 +1,32 @@
+
+#fullsizevideo {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.85);
+  width: 100%;
+  height: calc(100% - 64px);
+  top: 64px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#fullsizevideo .vidcontainer {
+  width:  calc(100% - 16px);
+  height: calc(100% - 16px);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#fullsizevideo video {
+  display: block;
+  
+  width: auto;
+  height: 100%;
+  
+  max-width: 100%;
+  
+  object-fit: contain;
+}

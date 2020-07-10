@@ -13,6 +13,8 @@
     
     <link rel="stylesheet" type="text/css" href="/style.css">
     <link rel="stylesheet" type="text/css" href="/style_width.css">
+    <link rel="stylesheet" type="text/css" href="/style_video.css">
+    
     <link rel="stylesheet" type="text/css" href="/style_compact.css">
     <link rel="stylesheet" type="text/css" href="/style_detailed.css">
     <link rel="stylesheet" type="text/css" href="/style_detailed_expanded.css">
@@ -24,43 +26,43 @@
 </head>
 <body>
 
-<!-- -------------------------------------------------------------------------- -->
+<div id="root">
 
-<div id="json_data" class="hidden" data-json="@Model.RawData"></div>
+    <header>
+        <div class="logo">
+            <div class="apptitle">youtube-dl Viewer <span class="version">@Model.Version</span></div>
+            <div class="apppath">@Model.BaseDir</div>
+        </div>
 
-<!-- -------------------------------------------------------------------------- -->
+        <div class="buttons">
+            <div class="btn btn-display"><i class="far fa-eye"></i></div>
+            <div class="btn btn-order"><i class="fas fa-sort"></i></div>
+            <div class="btn btn-width"><i class="fas fa-text-width"></i></div>
+            <div class="btn btn-refresh"><i class="fas fa-sync-alt"></i></div>
+            <div class="btn btn-loadthumbnails" data-active="1"><i class="fas fa-photo-video"></i></div>
+            <div class="btn btn-videomode" data-mode="0"><i class="fas fa-broadcast-tower"></i></div>
+        </div>
 
-<header>
-    <div class="logo">
-        <div class="apptitle">youtube-dl Viewer <span class="version">@Model.Version</span></div>
-        <div class="apppath">@Model.BaseDir</div>
-    </div>
+    </header>
 
-    <div class="buttons">
-        <div class="btn btn-display"><i class="far fa-eye"></i></div>
-        <div class="btn btn-order"><i class="fas fa-sort"></i></div>
-        <div class="btn btn-width"><i class="fas fa-text-width"></i></div>
-        <div class="btn btn-refresh"><i class="fas fa-sync-alt"></i></div>
-    </div>
+    <!-- -------------------------------------------------------------------------- -->
 
-</header>
+    <main>
+        <div class="lstyle_detailed lstyle_width_medium" id="content">
+            <!-- js -->
+        </div>
+    </main>
 
-<!-- -------------------------------------------------------------------------- -->
+    <!--- -------------------------------------------------------------------------- -->
 
-<main>
-    <div class="lstyle_detailed lstyle_width_medium" id="content">
-    <!-- js -->
-    </div>
-</main>
+    <footer>
+        <hr/>
+        youtube-dl Viewer (c) <a href="https://www.mikescher.com">mikescher.com</a> 2020
+    </footer>
 
-<!--- -------------------------------------------------------------------------- -->
+    <!-- -------------------------------------------------------------------------- -->
 
-<footer>
-    <hr/>
-    youtube-dl Viewer (c) <a href="https://www.mikescher.com">mikescher.com</a> 2020
-</footer>
-
-<!-- -------------------------------------------------------------------------- -->
+</div>
 
 </body>
 </html>

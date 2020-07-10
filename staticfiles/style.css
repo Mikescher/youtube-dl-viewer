@@ -12,6 +12,14 @@ body{
     font-family:"Helvetica","Arial",sans-serif;
 }
 
+#root {
+    min-height: 100%;
+    height: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
 header {
     font-family:"Roboto","Courier",sans-serif;
 }
@@ -47,7 +55,11 @@ footer a {
 }
 
 
-header {
+header {    
+    z-index: 999;
+    position: fixed;
+    width: calc(100% - 1rem);
+    
     display: grid;
     grid-template-columns: auto 1fr auto;
     
@@ -100,6 +112,9 @@ header .btn:hover {
 main {
     display: flex;
     justify-content: center;
+    
+    padding-top:     80px; /* space for header */
+    padding-bottom: 100px; /* space for footer */
 }
 
 
