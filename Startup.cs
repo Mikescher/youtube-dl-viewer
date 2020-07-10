@@ -99,23 +99,14 @@ namespace youtube_dl_viewer
                 context.Response.Headers.Add(HeaderNames.ContentDisposition, "attachment;filename=" + Path.GetFileName(pathVideo));
                 
                 var buffer = new byte[4096];
-                while (dataToRead > 0) 
+                for(;;) 
                 {
-                    if (!context.RequestAborted.IsCancellationRequested) 
-                    {
-                        await iStream.ReadAsync(buffer, 0, buffer.Length);
+                    var read = await iStream.ReadAsync(buffer, 0, buffer.Length);
+                    await context.Response.BodyWriter.WriteAsync(buffer.AsMemory(0, read));
+                    await context.Response.BodyWriter.FlushAsync();
 
-                        await context.Response.BodyWriter.WriteAsync(buffer);
-
-                        await context.Response.BodyWriter.FlushAsync();
-
-                        buffer = new byte[buffer.Length];
-                        
-                        dataToRead = dataToRead - buffer.Length;
-                    } else {
-                        //prevent infinite loop if user disconnects
-                        dataToRead = -1;
-                    }
+                    if (read == 0) return;
+                    if (context.RequestAborted.IsCancellationRequested) return;
                 }
             }
             catch (Exception ex) 
@@ -174,14 +165,14 @@ namespace youtube_dl_viewer
                 {
                     if (!context.RequestAborted.IsCancellationRequested) 
                     {
-                        await iStream.ReadAsync(buffer, 0, buffer.Length);
+                        var len = await iStream.ReadAsync(buffer, 0, (int)Math.Min(dataToRead, buffer.Length));
 
-                        await context.Response.BodyWriter.WriteAsync(buffer);
+                        await context.Response.BodyWriter.WriteAsync(buffer.AsMemory(0, len));
                         await context.Response.BodyWriter.FlushAsync();
 
-                        buffer = new byte[buffer.Length];
+                        if (len == 0) return;
                         
-                        dataToRead = dataToRead - buffer.Length;
+                        dataToRead -= len;
                     } else {
                         //prevent infinite loop if user disconnects
                         dataToRead = -1;

@@ -24,6 +24,7 @@
     <script src="/script.js"></script>
     
 </head>
+
 <body>
 
 <div id="root">
@@ -39,13 +40,11 @@
             <div class="btn btn-order"><i class="fas fa-sort"></i></div>
             <div class="btn btn-width"><i class="fas fa-text-width"></i></div>
             <div class="btn btn-refresh"><i class="fas fa-sync-alt"></i></div>
-            <div class="btn btn-loadthumbnails" data-active="1"><i class="fas fa-photo-video"></i></div>
+            <div class="btn btn-loadthumbnails" data-mode="1"><i class="fas fa-photo-video"></i></div>
             <div class="btn btn-videomode" data-mode="0"><i class="fas fa-broadcast-tower"></i></div>
         </div>
 
     </header>
-
-    <!-- -------------------------------------------------------------------------- -->
 
     <main>
         <div class="lstyle_detailed lstyle_width_medium" id="content">
@@ -53,16 +52,15 @@
         </div>
     </main>
 
-    <!--- -------------------------------------------------------------------------- -->
-
     <footer>
         <hr/>
         youtube-dl Viewer (c) <a href="https://www.mikescher.com">mikescher.com</a> 2020
     </footer>
 
-    <!-- -------------------------------------------------------------------------- -->
 
 </div>
+
+<div id="toast"></div>
 
 </body>
 </html>

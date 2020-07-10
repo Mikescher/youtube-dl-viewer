@@ -2,6 +2,7 @@ const DATA =
 {
     isLoadingThumbnails: false,
     loadMoreThumbnails: false,
+    toastTimeoutID: -1,
 }
 
 function escapeHtml(text) {
@@ -219,19 +220,30 @@ async function loadThumbnailsAsync()
         
         for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
         {
-            if (document.querySelector('.btn-loadthumbnails').getAttribute('data-active') !== '1') return;
+            let mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
+            if (mode === 0) return;
 
             if (thumb.getAttribute('data-loaded') === '1') continue;
 
             if (!isElementInViewport(thumb)) continue; // not visible
 
             const src = thumb.getAttribute('data-realurl');
-
-            const ok = await setImageSource(thumb, src);
-            if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-            thumb.setAttribute('data-loaded', '1');
-
-            //await sleepAsync(50);
+            
+            if (mode === 1) // sequential
+            {
+                const ok = await setImageSource(thumb, src);
+                if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+                thumb.setAttribute('data-loaded', '1');
+                await sleepAsync(1);
+            }
+            else if (mode === 2) // parallel
+            {
+                setImageSource(thumb, src).then(ok => 
+                {
+                    if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+                    thumb.setAttribute('data-loaded', '1');
+                })
+            }
         }
     }
 }
@@ -280,20 +292,20 @@ function initButtons()
     {
         const main = document.querySelector('#content');
         
-             if (main.classList.contains('lstyle_detailed')) { main.classList.remove('lstyle_detailed'); main.classList.add('lstyle_grid');     }
-        else if (main.classList.contains('lstyle_grid'))     { main.classList.remove('lstyle_grid');     main.classList.add('lstyle_compact');  }
-        else if (main.classList.contains('lstyle_compact'))  { main.classList.remove('lstyle_compact');  main.classList.add('lstyle_tabular');  }
-        else if (main.classList.contains('lstyle_tabular'))  { main.classList.remove('lstyle_tabular');  main.classList.add('lstyle_detailed'); }
+             if (main.classList.contains('lstyle_detailed')) { main.classList.remove('lstyle_detailed'); main.classList.add('lstyle_grid');     showToast('ListStyle: Grid');     }
+        else if (main.classList.contains('lstyle_grid'))     { main.classList.remove('lstyle_grid');     main.classList.add('lstyle_compact');  showToast('ListStyle: Compact');  }
+        else if (main.classList.contains('lstyle_compact'))  { main.classList.remove('lstyle_compact');  main.classList.add('lstyle_tabular');  showToast('ListStyle: Tabular');  }
+        else if (main.classList.contains('lstyle_tabular'))  { main.classList.remove('lstyle_tabular');  main.classList.add('lstyle_detailed'); showToast('ListStyle: Detailed'); }
     });
 
     document.querySelector('.btn-width').addEventListener('click', () =>
     {
         const main = document.querySelector('#content');
 
-             if (main.classList.contains('lstyle_width_medium')) { main.classList.remove('lstyle_width_medium'); main.classList.add('lstyle_width_wide');   }
-        else if (main.classList.contains('lstyle_width_wide'))   { main.classList.remove('lstyle_width_wide');   main.classList.add('lstyle_width_full');   }
-        else if (main.classList.contains('lstyle_width_full'))   { main.classList.remove('lstyle_width_full');   main.classList.add('lstyle_width_small');  }
-        else if (main.classList.contains('lstyle_width_small'))  { main.classList.remove('lstyle_width_small');  main.classList.add('lstyle_width_medium'); }
+             if (main.classList.contains('lstyle_width_medium')) { main.classList.remove('lstyle_width_medium'); main.classList.add('lstyle_width_wide');   showToast('Width: Wide');   }
+        else if (main.classList.contains('lstyle_width_wide'))   { main.classList.remove('lstyle_width_wide');   main.classList.add('lstyle_width_full');   showToast('Width: Full');   }
+        else if (main.classList.contains('lstyle_width_full'))   { main.classList.remove('lstyle_width_full');   main.classList.add('lstyle_width_small');  showToast('Width: Small');  }
+        else if (main.classList.contains('lstyle_width_small'))  { main.classList.remove('lstyle_width_small');  main.classList.add('lstyle_width_medium'); showToast('Width: Medium'); }
     });
 
     document.querySelector('.btn-order').addEventListener('click', () =>
@@ -303,23 +315,35 @@ function initButtons()
 
     document.querySelector('.btn-loadthumbnails').addEventListener('click', () =>
     {
-        let active = document.querySelector('.btn-loadthumbnails').getAttribute('data-active') === '1';
-        active = !active;
-        document.querySelector('.btn-loadthumbnails').setAttribute('data-active', active ? '1' : '0');
+        let mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
+        mode = (mode + 1) % 3;
+        document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', mode.toString());
         // noinspection JSIgnoredPromiseFromCall
-        if (active) loadThumbnails(); else unloadThumbnails();
+        if (mode === 0) {
+            showToast('Thumbnails: Off');
+            unloadThumbnails();
+        } else if (mode === 1) {
+            showToast('Thumbnails: On (sequential)');
+            loadThumbnails();
+        } else if (mode === 2) {
+            showToast('Thumbnails: On (parallel)');
+            loadThumbnails();
+        }
     });
 
     document.querySelector('.btn-videomode').addEventListener('click', () =>
     {
         let mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
-        mode = (mode + 1) % 3;
+        mode = (mode + 1) % 4;
         document.querySelector('.btn-videomode').setAttribute('data-mode', mode.toString());
         const curr = document.querySelector('#fullsizevideo');
-        if (curr !== null)
-        {
-            showVideo(curr.getAttribute("data-id"));
-        }
+
+        if (mode === 0) showToast("Playback: Seekable raw file");
+        if (mode === 1) showToast("Playback: Raw file");
+        if (mode === 2) showToast("Playback: Transcoded Webm stream");
+        if (mode === 3) showToast("Playback: Download file");
+        
+        if (curr !== null) showVideo(curr.getAttribute("data-id"));
     });
 }
 
@@ -343,7 +367,13 @@ function showVideo(id)
     if (old !== null) old.parentNode.removeChild(old);
     
     const mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
-    
+
+    if (mode === 3)
+    {
+        window.open('/video/'+escapeHtml(id)+'/file', '_blank').focus();
+        return;
+    }
+
     let html = '';
 
     html += '<div id="fullsizevideo" data-id="'+escapeHtml(id)+'">';
@@ -362,3 +392,22 @@ function showVideo(id)
     const fsv = document.querySelector('#fullsizevideo');
     fsv.addEventListener('click', function () { main.removeChild(fsv); })
 }
+
+function clearToast()
+{
+    document.querySelector('#toast').classList.add('vanished');
+}
+
+function showToast(txt)
+{
+    clearTimeout(DATA.toastTimeoutID);
+    const toaster = document.querySelector('#toast');
+    toaster.innerText = txt;
+
+    toaster.classList.add('vanished');
+    toaster.classList.remove('active');
+    DATA.toastTimeoutID = setTimeout(clearToast, 2000);
+    setTimeout(() => { toaster.classList.remove('vanished'); toaster.classList.add('active'); }, 10)
+}
+
+

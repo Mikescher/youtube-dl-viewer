@@ -118,4 +118,53 @@ main {
 }
 
 
+#toast {
+    position: fixed;
+    
+    right: 0px;
+    
+    width: 100%;
+    max-width: 300px;
+    margin: 0 16px;
+    
+    background-color: #666;
+    border: 1px solid #222;
+    border-radius: 2px;
+    box-shadow: 0 0 12px -4px #000;
+    
+    color: #fff;
+    font-size: 16px;
+    
+    padding: 6px;
+    user-select: none;
+    
+    transition: top 350ms, opacity 350ms;
+    
+    text-align: center;
+}
+
+#toast:not(.active):not(.vanished) {
+    top: -10px;
+    opacity: 1.0;
+}
+
+#toast.active {
+    top: 84px;
+    opacity: 1.0;
+}
+
+#toast.active.vanished {
+    top: 84px;
+    opacity: 0.0;
+    transition: top none, opacity 350ms;
+}
+
+#toast.vanished:not(.active) {
+    top: -10px;
+    opacity: 0.0;
+    transition: none;
+}
+
+
+
 

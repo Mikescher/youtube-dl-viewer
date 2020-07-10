@@ -21,7 +21,9 @@ namespace youtube_dl_viewer
         
         public static void Main(string[] args)
         {
+            Console.Out.WriteLine("> Start enumerating video data");
             InitData();
+            Console.Out.WriteLine($"> Video data enumerated: {Data.Count} entries found");
             
             CreateHostBuilder(args).Build().Run();
         }
