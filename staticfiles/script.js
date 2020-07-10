@@ -122,6 +122,22 @@ function initData(data)
         if (info.hasNonNull('fulltitle')) html += '<div class="title">' + escapeHtml(info['fulltitle']) + '</div>';
         else if (info.hasNonNull('title')) html += '<div class="title">' + escapeHtml(info['title']) + '</div>';
 
+        if (info.hasNonNull('uploader'))
+        {
+            html += '<div class="info info-extractor"><i class="fas fas-user"></i></div>';
+
+            if (info.hasNonNull('channel_url')) html += '<a href="' + escapeHtml(info["channel_url"]) + '" class="uploader">' + escapeHtml(info["uploader"]) + '</a>';
+            else if (info.hasNonNull('uploader_url')) html += '<a href="' + escapeHtml(info["uploader_url"]) + '" class="uploader">' + escapeHtml(info["uploader"]) + '</a>';
+            else html += '<div class="uploader">' + escapeHtml(info["uploader"]) + '</div>';
+
+        }
+
+        if (info.hasNonNull('duration'))
+        {
+            html += '<div class="info info-duration"><i class="fas fa-clock"></i></div>';
+            html += '<div class="duration">' + escapeHtml(formatSeconds(info["duration"])) + '</div>';
+        }
+
 
         if (info.hasArrayWithValues('categories')) 
         {
@@ -141,26 +157,16 @@ function initData(data)
 
         if (info.hasNonNull('webpage_url')) html += '<a href="' + escapeHtml(info['webpage_url']) + '" class="url">' + escapeHtml(info['webpage_url']) + '</a>';
 
-        if (info.hasNonNull('duration')) 
+        if (info.hasNonNull('view_count'))
         {
-            html += '<div class="info info-duration"><i class="fas fa-clock"></i></div>';
-            html += '<div class="duration">' + escapeHtml(formatSeconds(info["duration"])) + '</div>';
+            html += '<div class="info info-view_count"><i class="fas fa-eye"></i></div>';
+            html += '<div class="view_count">' + escapeHtml(formatNumber(info["view_count"])) + '</div>';
         }
-
+        
         if (info.hasNonNull('extractor')) 
         {
             html += '<div class="info info-extractor"><i class="fas fa-laptop-code"></i></div>';
             html += '<div class="extractor">' + escapeHtml(info["extractor"]) + '</div>';
-        }
-
-        if (info.hasNonNull('uploader')) 
-        {
-            html += '<div class="info info-extractor"><i class="fas fas-user"></i></div>';
-            
-            if (info.hasNonNull('channel_url')) html += '<a href="' + escapeHtml(info["channel_url"]) + '" class="uploader">' + escapeHtml(info["uploader"]) + '</a>';
-            else if (info.hasNonNull('uploader_url')) html += '<a href="' + escapeHtml(info["uploader_url"]) + '" class="uploader">' + escapeHtml(info["uploader"]) + '</a>';
-            else html += '<div class="uploader">' + escapeHtml(info["uploader"]) + '</div>';
-                
         }
 
         if (info.hasNonNull('like_count'))
@@ -172,12 +178,6 @@ function initData(data)
         {
             html += '<div class="info info-dislike_count"><i class="fas fa-thumbs-down"></i></div>';
             html += '<div class="dislike_count">' + escapeHtml(formatNumber(info["dislike_count"])) + '</div>';
-        }
-
-        if (info.hasNonNull('view_count')) 
-        {
-            html += '<div class="info info-view_count"><i class="fas fa-eye"></i></div>';
-            html += '<div class="view_count">' + escapeHtml(formatNumber(info["view_count"])) + '</div>';
         }
 
         if (info.hasNonNull('width') && info.has('height')) 
