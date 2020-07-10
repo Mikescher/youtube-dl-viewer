@@ -1,3 +1,9 @@
+const DATA = 
+{
+    isLoadingThumbnails: false,
+    loadMoreThumbnails: false,
+}
+
 function escapeHtml(text) {
     if (typeof text !== "string") text = (""+text).toString();
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
@@ -34,6 +40,7 @@ window.onload = function()
             // Success!
             initData(JSON.parse(this.response));
             initButtons();
+            initEvents();
         } else 
         {
             // TODO
@@ -185,22 +192,62 @@ function initData(data)
     loadThumbnails();
 }
 
-async function loadThumbnails()
+function loadThumbnails() 
+{
+    if (DATA.isLoadingThumbnails) { DATA.loadMoreThumbnails = true; return; }
+
+    DATA.isLoadingThumbnails = true;
+    loadThumbnailsAsync().finally(() => DATA.isLoadingThumbnails = false);
+}
+
+function unloadThumbnails()
 {
     for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
     {
-        if (document.querySelector('.btn-loadthumbnails').getAttribute('data-active') !== '1') return;
-        
-        if (thumb.getAttribute('data-loaded') === '1') continue;
-        
-        const src = thumb.getAttribute('data-realurl');
-        
-        await setImageSource(thumb, src);
-        thumb.setAttribute('data-loaded', '1');
-        
-        await sleepAsync(50);
+        thumb.setAttribute('data-loaded', '0');
+        thumb.setAttribute('src', '/thumb_empty.svg');
     }
 }
+    
+async function loadThumbnailsAsync()
+{
+    let first = true;
+    while (first || DATA.loadMoreThumbnails)
+    {
+        first = false;
+        DATA.loadMoreThumbnails = false;
+        
+        for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+        {
+            if (document.querySelector('.btn-loadthumbnails').getAttribute('data-active') !== '1') return;
+
+            if (thumb.getAttribute('data-loaded') === '1') continue;
+
+            if (!isElementInViewport(thumb)) continue; // not visible
+
+            const src = thumb.getAttribute('data-realurl');
+
+            const ok = await setImageSource(thumb, src);
+            if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+            thumb.setAttribute('data-loaded', '1');
+
+            //await sleepAsync(50);
+        }
+    }
+}
+
+function isElementInViewport(el) {
+
+    const rect = el.getBoundingClientRect();
+
+    return (
+        rect.bottom > 0 &&
+        rect.right > 0 &&
+        rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
+        rect.top < (window.innerHeight || document.documentElement.clientHeight)
+    );
+}
+
 function sleepAsync(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -256,10 +303,11 @@ function initButtons()
 
     document.querySelector('.btn-loadthumbnails').addEventListener('click', () =>
     {
-        const active = document.querySelector('.btn-loadthumbnails').getAttribute('data-active') === '1';
-        document.querySelector('.btn-loadthumbnails').setAttribute('data-active', active ? '0' : '1');
+        let active = document.querySelector('.btn-loadthumbnails').getAttribute('data-active') === '1';
+        active = !active;
+        document.querySelector('.btn-loadthumbnails').setAttribute('data-active', active ? '1' : '0');
         // noinspection JSIgnoredPromiseFromCall
-        loadThumbnails();
+        if (active) loadThumbnails(); else unloadThumbnails();
     });
 
     document.querySelector('.btn-videomode').addEventListener('click', () =>
@@ -272,6 +320,13 @@ function initButtons()
         {
             showVideo(curr.getAttribute("data-id"));
         }
+    });
+}
+
+function initEvents() {
+    window.addEventListener('scroll', function(e)
+    {
+        loadThumbnails();
     });
 }
 
