@@ -130,10 +130,14 @@
   grid-column: 4;
   grid-row: 2;
   
-  margin: 0 1rem;
+  margin: 0 0.75rem;
   
   display: flex;
   align-items: center;
+}
+
+#content.lstyle_detailed .video_entry .catlist .category {
+  margin: 0 0.25rem;
 }
 
 #content.lstyle_detailed .video_entry .btn-expand,

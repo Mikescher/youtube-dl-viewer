@@ -16,6 +16,13 @@
   
   background: #FFF;
   border: 1px solid #BBB;
+  
+  cursor: pointer;
+}
+
+#content.lstyle_grid .video_entry:hover {
+  border: 1px solid #88F;
+  box-shadow: 0 0 12px -2px #44F;
 }
 
 #content.lstyle_grid .video_entry > * {

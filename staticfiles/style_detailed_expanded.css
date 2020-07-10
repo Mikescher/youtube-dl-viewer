@@ -137,6 +137,7 @@
 }
 #content.lstyle_detailed .video_entry.expanded .catlist {
   display: flex;
+  flex-direction: column;
   grid-column: 2;
   grid-row: 8;
   margin: 0;
@@ -144,7 +145,12 @@
   white-space: nowrap;
   
   margin-left: 0.2rem;
-  align-items: center;
+  align-items: start;
+  justify-content: center;
+}
+
+#content.lstyle_detailed .video_entry.expanded .catlist .category {
+    margin: 0;
 }
 
 #content.lstyle_detailed .video_entry.expanded .info-extractor {

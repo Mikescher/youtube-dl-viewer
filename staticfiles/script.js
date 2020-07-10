@@ -3,6 +3,7 @@ const DATA =
     isLoadingThumbnails: false,
     loadMoreThumbnails: false,
     toastTimeoutID: -1,
+    data: null,
 }
 
 function escapeHtml(text) {
@@ -38,8 +39,8 @@ window.onload = function()
     request.onload = function() {
         if (this.status >= 200 && this.status < 400) 
         {
-            // Success!
-            initData(JSON.parse(this.response));
+            DATA.data = this.response;
+            initData(JSON.parse(DATA.data));
             initButtons();
             initEvents();
         } else 
@@ -63,9 +64,24 @@ function initData(data)
         hasNonNull: function(key) { return this.has(key) && this[key] != null; },
         hasArrayWithValues: function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; },
     }
-        
+
+    document.querySelector('#content').innerHTML = '';
+    
+    let videos = data['videos'];
+    
+    const sortmode = parseInt(document.querySelector('.btn-order').getAttribute('data-mode'));
+
+    if (sortmode === 0) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * -1);
+    if (sortmode === 1) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * +1);
+    if (sortmode === 2) videos = videos.sort((a,b) => sortcompare(a,b,'title'));
+    if (sortmode === 3) videos = videos.sort((a,b) => sortcompare(a,b,'categories'));
+    if (sortmode === 4) videos = videos.sort((a,b) => sortcompare(a,b,'views'));
+    if (sortmode === 5) videos = videos.sort((a,b) => sortcompareDiv(a,b,'like_count','dislike_count') * -1);
+    if (sortmode === 6) videos = videos.sort((a,b) => sortcompare(a,b,'uploader'));
+
+
     let html = '';
-    for (const vid of data['videos'])
+    for (const vid of videos)
     {
         const meta = vid['meta'];
         const info = vid['data']['info'];
@@ -184,13 +200,77 @@ function initData(data)
 
     document.querySelector('#content').innerHTML = html;
 
-    for (const btn of document.querySelectorAll('.btn-expand'))   btn.addEventListener('click', () => { btn.parentNode.classList.add('expanded'); });
-    for (const btn of document.querySelectorAll('.btn-collapse')) btn.addEventListener('click', () => { btn.parentNode.classList.remove('expanded'); });
+    for (const btn of document.querySelectorAll('.btn-expand'))   btn.addEventListener('click', e => { btn.parentNode.classList.add('expanded'); e.stopPropagation(); });
+    for (const btn of document.querySelectorAll('.btn-collapse')) btn.addEventListener('click', e => { btn.parentNode.classList.remove('expanded'); e.stopPropagation(); });
 
     for (const btn of document.querySelectorAll('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id')) });
     
     // noinspection JSIgnoredPromiseFromCall
     loadThumbnails();
+}
+
+function sortcompare(a, b, key)
+{
+    const va = a.data.info[key];
+    const vb = b.data.info[key];
+
+    return sortcompareValues(va, vb);
+}
+
+function sortcompareValues(va, vb)
+{
+    if (va === undefined && vb === undefined) return 0;
+    if (va === undefined) return +1;
+    if (vb === undefined) return -1;
+
+    if (va === null && vb === null) return 0;
+    if (va === null) return +1;
+    if (vb === null) return -1;
+
+    if (typeof va !== typeof vb) throw new Error('sortcompare type confusion (1)');
+
+    if (typeof va === "number") return va - vb;
+    if (typeof va === "string") return va.toLowerCase().localeCompare(vb.toLowerCase());
+    if (Array.isArray(va) && Array.isArray(vb))
+    {
+        if (va.length > 0 && vb.length > 0) return sortcompareValues(va[0], vb[0]);
+        if (va.length > 0) return -1;
+        if (vb.length > 0) return +1;
+    }
+
+    throw new Error('sortcompare type confusion (2)');
+}
+
+function sortcompareDiv(a, b, key1, key2)
+{
+    const va1 = a.data.info[key1];
+    const vb1 = b.data.info[key1];
+
+    if (va1 === undefined && vb1 === undefined) return 0;
+    if (va1 === undefined) return +1;
+    if (vb1 === undefined) return -1;
+
+    if (va1 === null && vb1 === null) return 0;
+    if (va1 === null) return +1;
+    if (vb1 === null) return -1;
+    
+    const va2 = a.data.info[key2];
+    const vb2 = b.data.info[key2];
+
+    if (va2 === undefined && vb2 === undefined) return 0;
+    if (va2 === undefined) return +1;
+    if (vb2 === undefined) return -1;
+
+    if (va2 === null && vb2 === null) return 0;
+    if (va2 === null) return +1;
+    if (vb2 === null) return -1;
+
+    if (typeof va1 !== "number") throw new Error('sortcompareDiv type confusion (a1)');
+    if (typeof vb1 !== "number") throw new Error('sortcompareDiv type confusion (b1)');
+    if (typeof va2 !== "number") throw new Error('sortcompareDiv type confusion (a2)');
+    if (typeof vb2 !== "number") throw new Error('sortcompareDiv type confusion (b2)');
+    
+    return sortcompareValues(va1 / va2, vb1 / vb2);
 }
 
 function loadThumbnails() 
@@ -310,7 +390,19 @@ function initButtons()
 
     document.querySelector('.btn-order').addEventListener('click', () =>
     {
-        //TODO
+        let mode = parseInt(document.querySelector('.btn-order').getAttribute('data-mode'));
+        mode = (mode + 1) % 7;
+        document.querySelector('.btn-order').setAttribute('data-mode', mode.toString());
+
+        if (mode === 0) showToast('Sorting: Date [descending]');
+        if (mode === 1) showToast('Sorting: Date [ascending]');
+        if (mode === 2) showToast('Sorting: Title');
+        if (mode === 3) showToast('Sorting: Category');
+        if (mode === 4) showToast('Sorting: Views');
+        if (mode === 5) showToast('Sorting: Rating');
+        if (mode === 6) showToast('Sorting: Uploader');
+
+        initData(JSON.parse(DATA.data));
     });
 
     document.querySelector('.btn-loadthumbnails').addEventListener('click', () =>
@@ -348,10 +440,7 @@ function initButtons()
 }
 
 function initEvents() {
-    window.addEventListener('scroll', function(e)
-    {
-        loadThumbnails();
-    });
+    window.addEventListener('scroll', () => { loadThumbnails(); });
 }
 
 function htmlToElement(html) {
