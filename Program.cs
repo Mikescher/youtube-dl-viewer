@@ -12,7 +12,7 @@ namespace youtube_dl_viewer
 {
     public class Program
     {
-        public static readonly string   DataDir      = @"/home/mike/ytdl_copy/";
+        public static readonly string   DataDir      = @"F:\Home\Cloud\Videos\Youtube_mkv\Favorites";
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
@@ -22,7 +22,7 @@ namespace youtube_dl_viewer
         public static void Main(string[] args)
         {
             Console.Out.WriteLine("> Start enumerating video data");
-            InitData();
+            RefreshData();
             Console.Out.WriteLine($"> Video data enumerated: {Data.Count} entries found");
             
             CreateHostBuilder(args).Build().Run();
@@ -38,7 +38,7 @@ namespace youtube_dl_viewer
                 });
         }
 
-        private static void InitData()
+        public static void RefreshData()
         {
             var datafiles = Directory.EnumerateFiles(DataDir).OrderBy(p => p.ToLower()).ToList();
             var processedFiles = new List<string>();

@@ -1,8 +1,10 @@
 const DATA = 
 {
     isLoadingThumbnails: false,
-    loadMoreThumbnails: false,
+    thumbnailInvocationCounter: 0,
+    
     toastTimeoutID: -1,
+    
     data: null,
 }
 
@@ -33,24 +35,30 @@ function formatNumber(num) {
 
 window.onload = function() 
 {
+    updateDisplaymodeClass(false);
+    updateDisplaywidthClass(false);
+    
     const request = new XMLHttpRequest();
     request.open('GET', '/data', true);
 
-    request.onload = function() {
+    request.onload = function()
+    {
         if (this.status >= 200 && this.status < 400) 
         {
             DATA.data = this.response;
             initData(JSON.parse(DATA.data));
             initButtons();
             initEvents();
-        } else 
+        } 
+        else 
         {
-            // TODO
+            showToast('Could not load data');
         }
     };
 
-    request.onerror = function() {
-        // TODO
+    request.onerror = function()
+    {
+        showToast('Could not load data');
     };
 
     request.send();
@@ -92,7 +100,7 @@ function initData(data)
 
         if (info.hasNonNull('thumbnail')) 
         {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/thumb/' + escapeHtml(meta['uid']) + ' " /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-cached="0" data-realurl="/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
 
             if (info.hasNonNull('like_count') && info.has('dislike_count'))
             {
@@ -275,60 +283,146 @@ function sortcompareDiv(a, b, key1, key2)
 
 function loadThumbnails() 
 {
-    if (DATA.isLoadingThumbnails) { DATA.loadMoreThumbnails = true; return; }
+    DATA.thumbnailInvocationCounter++;
 
-    DATA.isLoadingThumbnails = true;
-    loadThumbnailsAsync().finally(() => DATA.isLoadingThumbnails = false);
+    const mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
+    if (mode === 0) 
+    {
+        unloadThumbnails(); 
+    }
+    else if (mode === 1)
+    {
+        DATA.isLoadingThumbnails = true;
+        loadThumbnailsIntelligentAsync().finally(() => DATA.isLoadingThumbnails = false);
+    }
+    else if (mode === 2)
+    {
+        DATA.isLoadingThumbnails = true;
+        loadThumbnailsSequentialAsync().finally(() => DATA.isLoadingThumbnails = false);
+    }
+    else if (mode === 3)
+    {
+        DATA.isLoadingThumbnails = true;
+        loadThumbnailsParallelAsync().finally(() => DATA.isLoadingThumbnails = false);
+    }
 }
 
 function unloadThumbnails()
 {
     for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
     {
+        if (thumb.getAttribute('data-loaded') === '0') continue;
+        
         thumb.setAttribute('data-loaded', '0');
         thumb.setAttribute('src', '/thumb_empty.svg');
     }
 }
-    
-async function loadThumbnailsAsync()
+
+async function loadThumbnailsIntelligentAsync()
 {
-    let first = true;
-    while (first || DATA.loadMoreThumbnails)
+    const ctr = DATA.thumbnailInvocationCounter;
+
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable[data-loaded="0"][data-cached="1"]'))
     {
-        first = false;
-        DATA.loadMoreThumbnails = false;
-        
-        for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
-        {
-            let mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
-            if (mode === 0) return;
+        thumb.setAttribute('data-loaded', '1');
+        thumb.src = thumb.getAttribute('data-realurl');
+    }
 
-            if (thumb.getAttribute('data-loaded') === '1') continue;
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    {
+        if (DATA.thumbnailInvocationCounter !== ctr) return;
 
-            if (!isElementInViewport(thumb)) continue; // not visible
+        if (thumb.getAttribute('data-loaded') === '1') continue;
 
-            const src = thumb.getAttribute('data-realurl');
-            
-            if (mode === 1) // sequential
-            {
-                const ok = await setImageSource(thumb, src);
-                if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-                thumb.setAttribute('data-loaded', '1');
-                await sleepAsync(1);
-            }
-            else if (mode === 2) // parallel
-            {
-                setImageSource(thumb, src).then(ok => 
-                {
-                    if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-                    thumb.setAttribute('data-loaded', '1');
-                })
-            }
-        }
+        if (!isElementInViewport(thumb)) continue; // not visible
+
+        const src = thumb.getAttribute('data-realurl');
+
+        const ok = await setImageSource(thumb, src);
+        if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+        thumb.setAttribute('data-loaded', '1');
+        thumb.setAttribute('data-cached', '1');
+        await sleepAsync(1);
     }
 }
 
-function isElementInViewport(el) {
+async function loadThumbnailsSequentialAsync()
+{
+    const ctr = DATA.thumbnailInvocationCounter;
+
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable[data-loaded="0"][data-cached="1"]'))
+    {
+        thumb.setAttribute('data-loaded', '1');
+        thumb.src = thumb.getAttribute('data-realurl');
+    }
+
+    // in-viewport => parallel
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    {
+        if (DATA.thumbnailInvocationCounter !== ctr) return;
+
+        if (thumb.getAttribute('data-loaded') === '1') continue;
+
+        if (!isElementInViewport(thumb)) continue; // not visible
+
+        const src = thumb.getAttribute('data-realurl');
+
+        setImageSource(thumb, src).then(ok =>
+        {
+            if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+            thumb.setAttribute('data-loaded', '1');
+            thumb.setAttribute('data-cached', '1');
+        })
+    }
+
+    // in-viewport => sequential
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    {
+        if (DATA.thumbnailInvocationCounter !== ctr) return;
+
+        if (thumb.getAttribute('data-loaded') === '1') continue;
+
+        const src = thumb.getAttribute('data-realurl');
+
+        const ok = await setImageSource(thumb, src);
+        if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+        thumb.setAttribute('data-loaded', '1');
+        thumb.setAttribute('data-cached', '1');
+        await sleepAsync(1);
+    }
+}
+
+async function loadThumbnailsParallelAsync()
+{
+    const ctr = DATA.thumbnailInvocationCounter;
+
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable[data-loaded="0"][data-cached="1"]'))
+    {
+        thumb.setAttribute('data-loaded', '1');
+        thumb.src = thumb.getAttribute('data-realurl');
+    }
+    
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    {
+        if (DATA.thumbnailInvocationCounter !== ctr) return;
+
+        if (thumb.getAttribute('data-loaded') === '1') continue;
+
+        if (!isElementInViewport(thumb)) continue; // not visible
+
+        const src = thumb.getAttribute('data-realurl');
+
+        setImageSource(thumb, src).then(ok =>
+        {
+            if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+            thumb.setAttribute('data-loaded', '1');
+            thumb.setAttribute('data-cached', '1');
+        })
+    }
+}
+
+function isElementInViewport(el) 
+{
 
     const rect = el.getBoundingClientRect();
 
@@ -340,11 +434,13 @@ function isElementInViewport(el) {
     );
 }
 
-function sleepAsync(ms) {
+function sleepAsync(ms) 
+{
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function setImageSource(image, src) {
+async function setImageSource(image, src) 
+{
     return new Promise(resolve => 
     {
         let resolved = false;
@@ -370,22 +466,24 @@ function initButtons()
 {
     document.querySelector('.btn-display').addEventListener('click', () => 
     {
-        const main = document.querySelector('#content');
+        let mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+        mode = (mode + 1) % 4;
+        document.querySelector('.btn-display').setAttribute('data-mode', mode.toString());
         
-             if (main.classList.contains('lstyle_detailed')) { main.classList.remove('lstyle_detailed'); main.classList.add('lstyle_grid');     showToast('ListStyle: Grid');     }
-        else if (main.classList.contains('lstyle_grid'))     { main.classList.remove('lstyle_grid');     main.classList.add('lstyle_compact');  showToast('ListStyle: Compact');  }
-        else if (main.classList.contains('lstyle_compact'))  { main.classList.remove('lstyle_compact');  main.classList.add('lstyle_tabular');  showToast('ListStyle: Tabular');  }
-        else if (main.classList.contains('lstyle_tabular'))  { main.classList.remove('lstyle_tabular');  main.classList.add('lstyle_detailed'); showToast('ListStyle: Detailed'); }
+        updateDisplaymodeClass(true);
+        
+        loadThumbnails();
     });
 
     document.querySelector('.btn-width').addEventListener('click', () =>
     {
-        const main = document.querySelector('#content');
+        let mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+        mode = (mode + 1) % 4;
+        document.querySelector('.btn-display').setAttribute('data-mode', mode.toString());
 
-             if (main.classList.contains('lstyle_width_medium')) { main.classList.remove('lstyle_width_medium'); main.classList.add('lstyle_width_wide');   showToast('Width: Wide');   }
-        else if (main.classList.contains('lstyle_width_wide'))   { main.classList.remove('lstyle_width_wide');   main.classList.add('lstyle_width_full');   showToast('Width: Full');   }
-        else if (main.classList.contains('lstyle_width_full'))   { main.classList.remove('lstyle_width_full');   main.classList.add('lstyle_width_small');  showToast('Width: Small');  }
-        else if (main.classList.contains('lstyle_width_small'))  { main.classList.remove('lstyle_width_small');  main.classList.add('lstyle_width_medium'); showToast('Width: Medium'); }
+        updateDisplaywidthClass(true);
+
+        loadThumbnails();
     });
 
     document.querySelector('.btn-order').addEventListener('click', () =>
@@ -405,22 +503,46 @@ function initButtons()
         initData(JSON.parse(DATA.data));
     });
 
+    document.querySelector('.btn-refresh').addEventListener('click', () => 
+    {
+        document.querySelector('#content').innerHTML = '';
+        
+        const request = new XMLHttpRequest();
+        request.open('GET', '/refresh', true);
+
+        request.onload = function()
+        {
+            if (this.status >= 200 && this.status < 400)
+            {
+                DATA.data = this.response;
+                initData(JSON.parse(DATA.data));
+            }
+            else
+            {
+                showToast('Could not refresh data');
+            }
+        };
+
+        request.onerror = function()
+        {
+            showToast('Could not refresh data');
+        };
+
+        request.send();
+    });
+    
     document.querySelector('.btn-loadthumbnails').addEventListener('click', () =>
     {
         let mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
-        mode = (mode + 1) % 3;
+        mode = (mode + 1) % 4;
         document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', mode.toString());
-        // noinspection JSIgnoredPromiseFromCall
-        if (mode === 0) {
-            showToast('Thumbnails: Off');
-            unloadThumbnails();
-        } else if (mode === 1) {
-            showToast('Thumbnails: On (sequential)');
-            loadThumbnails();
-        } else if (mode === 2) {
-            showToast('Thumbnails: On (parallel)');
-            loadThumbnails();
-        }
+        
+        if (mode === 0) showToast('Thumbnails: Off');
+        if (mode === 1) showToast('Thumbnails: On (intelligent)');
+        if (mode === 2) showToast('Thumbnails: On (sequential)');
+        if (mode === 3) showToast('Thumbnails: On (parallel)');
+        
+        loadThumbnails();
     });
 
     document.querySelector('.btn-videomode').addEventListener('click', () =>
@@ -430,34 +552,86 @@ function initButtons()
         document.querySelector('.btn-videomode').setAttribute('data-mode', mode.toString());
         const curr = document.querySelector('#fullsizevideo');
 
-        if (mode === 0) showToast("Playback: Seekable raw file");
-        if (mode === 1) showToast("Playback: Raw file");
-        if (mode === 2) showToast("Playback: Transcoded Webm stream");
-        if (mode === 3) showToast("Playback: Download file");
+        if (mode === 0) showToast("Playback: Disabled");
+        if (mode === 1) showToast("Playback: Seekable raw file");
+        if (mode === 2) showToast("Playback: Raw file");
+        if (mode === 3) showToast("Playback: Transcoded Webm stream");
+        if (mode === 4) showToast("Playback: Download file");
         
         if (curr !== null) showVideo(curr.getAttribute("data-id"));
     });
 }
 
-function initEvents() {
+function updateDisplaymodeClass(toast)
+{
+    const main = document.querySelector('#content');
+
+    const mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+
+    main.classList.remove('lstyle_detailed');
+    main.classList.remove('lstyle_grid');
+    main.classList.remove('lstyle_compact');
+    main.classList.remove('lstyle_tabular');
+
+    if (mode === 0) { main.classList.add('lstyle_grid');     if (toast) showToast('ListStyle: Grid');     }
+    if (mode === 1) { main.classList.add('lstyle_compact');  if (toast) showToast('ListStyle: Compact');  }
+    if (mode === 2) { main.classList.add('lstyle_tabular');  if (toast) showToast('ListStyle: Tabular');  }
+    if (mode === 3) { main.classList.add('lstyle_detailed'); if (toast) showToast('ListStyle: Detailed'); }
+}
+
+function updateDisplaywidthClass(toast)
+{
+    const content = document.querySelector('#content');
+
+    const mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+
+    content.classList.remove('lstyle_width_small');
+    content.classList.remove('lstyle_width_medium');
+    content.classList.remove('lstyle_width_wide');
+    content.classList.remove('lstyle_width_full');
+
+    if (mode === 0) { content.classList.add('lstyle_width_small');  if (toast) showToast('Width: Small');   }
+    if (mode === 1) { content.classList.add('lstyle_width_medium'); if (toast) showToast('Width: Medium');   }
+    if (mode === 2) { content.classList.add('lstyle_width_wide');   if (toast) showToast('Width: Wide');  }
+    if (mode === 3) { content.classList.add('lstyle_width_full');   if (toast) showToast('Width: Full'); }
+}
+
+function initEvents() 
+{
     window.addEventListener('scroll', () => { loadThumbnails(); });
 }
 
-function htmlToElement(html) {
+function htmlToElement(html) 
+{
     const template = document.createElement('template');
     html = html.trim(); // Never return a text node of whitespace as the result
     template.innerHTML = html;
     return template.content.firstChild;
 }
 
+function removeVideo()
+{
+    const vid = document.querySelector('#fullsizevideo');
+    if (vid === null) return;
+
+    const videlem = vid.querySelector('video');
+    videlem.pause();
+    videlem.removeAttribute('src');
+    videlem.load();
+
+    vid.parentNode.removeChild(vid);
+}
+
 function showVideo(id)
 {
     const old = document.querySelector('#fullsizevideo');
-    if (old !== null) old.parentNode.removeChild(old);
+    if (old !== null) removeVideo();
     
     const mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
 
-    if (mode === 3)
+    if (mode === 0) return;
+    
+    if (mode === 4)
     {
         window.open('/video/'+escapeHtml(id)+'/file', '_blank').focus();
         return;
@@ -468,9 +642,9 @@ function showVideo(id)
     html += '<div id="fullsizevideo" data-id="'+escapeHtml(id)+'">';
     html += '  <div class="vidcontainer">';
     html += '    <video width="320" height="240" controls autoplay>';
-    if (mode === 0) html += '<source src="/video/'+escapeHtml(id)+'/seek">';
-    if (mode === 1) html += '<source src="/video/'+escapeHtml(id)+'/file">';
-    if (mode === 2) html += '<source src="/video/'+escapeHtml(id)+'/stream" type="video/webm">';
+    if (mode === 1) html += '<source src="/video/'+escapeHtml(id)+'/seek">';
+    if (mode === 2) html += '<source src="/video/'+escapeHtml(id)+'/file">';
+    if (mode === 3) html += '<source src="/video/'+escapeHtml(id)+'/stream" type="video/webm">';
     html += '    </video>';
     html += '  </div>';
     html += '</div>';
@@ -479,7 +653,7 @@ function showVideo(id)
     main.insertBefore(htmlToElement(html), main.firstChild);
 
     const fsv = document.querySelector('#fullsizevideo');
-    fsv.addEventListener('click', function () { main.removeChild(fsv); })
+    fsv.addEventListener('click', function () { removeVideo(); })
 }
 
 function clearToast()

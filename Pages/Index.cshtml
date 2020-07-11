@@ -36,12 +36,12 @@
         </div>
 
         <div class="buttons">
-            <div class="btn btn-display"><i class="far fa-eye"></i></div>
-            <div class="btn btn-order" data-mode="0"><i class="fas fa-sort"></i></div>
-            <div class="btn btn-width"><i class="fas fa-text-width"></i></div>
-            <div class="btn btn-refresh"><i class="fas fa-sync-alt"></i></div>
-            <div class="btn btn-loadthumbnails" data-mode="1"><i class="fas fa-photo-video"></i></div>
-            <div class="btn btn-videomode" data-mode="0"><i class="fas fa-broadcast-tower"></i></div>
+            <div class="btn btn-display"        data-mode="@Model.OptDisplayMode"  ><i class="far fa-eye"            ></i></div>
+            <div class="btn btn-order"          data-mode="@Model.OptOrderMode"    ><i class="fas fa-sort"           ></i></div>
+            <div class="btn btn-width"          data-mode="@Model.OptWidthMode"    ><i class="fas fa-text-width"     ></i></div>
+            <div class="btn btn-refresh"                                           ><i class="fas fa-sync-alt"       ></i></div>
+            <div class="btn btn-loadthumbnails" data-mode="@Model.OptThumbnailMode"><i class="fas fa-photo-video"    ></i></div>
+            <div class="btn btn-videomode"      data-mode="@Model.OptVideoMode"    ><i class="fas fa-broadcast-tower"></i></div>
         </div>
 
     </header>

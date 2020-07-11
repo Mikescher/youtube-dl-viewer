@@ -13,6 +13,13 @@
   padding: 0.2rem;
   background: #FFF;
   border: 1px solid #BBB;
+  
+  cursor: pointer;
+}
+
+#content.lstyle_detailed .video_entry:hover {
+  border: 1px solid #66F;
+  background: #EEF;
 }
 
 #content.lstyle_detailed .video_entry .like_count    { display: none; }
