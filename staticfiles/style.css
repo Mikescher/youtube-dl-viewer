@@ -115,6 +115,9 @@ main {
     
     padding-top:     80px; /* space for header */
     padding-bottom: 100px; /* space for footer */
+    
+    margin-left: 1rem;
+    margin-right: 1rem;
 }
 
 

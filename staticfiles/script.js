@@ -8,13 +8,15 @@ const DATA =
     data: null,
 }
 
-function escapeHtml(text) {
+function escapeHtml(text) 
+{
     if (typeof text !== "string") text = (""+text).toString();
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
-function formatSeconds(sec) {
+function formatSeconds(sec) 
+{
     if (sec <= 60) return sec + 's';
 
     const omin = Math.floor(sec/60);
@@ -22,11 +24,13 @@ function formatSeconds(sec) {
     return omin + 'min ' + osec + 's';
 }
 
-function formatDate(date) {
+function formatDate(date) 
+{
     return date.substr(0, 4) + '-' + date.substr(4, 2) + '-' + date.substr(6, 2);
 }
 
-function formatNumber(num) {
+function formatNumber(num) 
+{
     num += '';
     let rex = /(\d+)(\d{3})/;
     while (rex.test(num)) num = num.replace(rex, '$1' + '.' + '$2');
@@ -35,6 +39,17 @@ function formatNumber(num) {
 
 window.onload = function() 
 {
+    for (const e of location.hash.replace('#','').split('&'))
+    {
+        [key, val] = e.split('=');
+
+        if (key === 'display')   document.querySelector('.btn-display').setAttribute('data-mode', val);
+        if (key === 'order')     document.querySelector('.btn-order').setAttribute('data-mode', val);
+        if (key === 'width')     document.querySelector('.btn-width').setAttribute('data-mode', val);
+        if (key === 'thumb')     document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', val);
+        if (key === 'videomode') document.querySelector('.btn-videomode').setAttribute('data-mode', val);
+    }
+    
     updateDisplaymodeClass(false);
     updateDisplaywidthClass(false);
     
@@ -89,6 +104,17 @@ function initData(data)
 
 
     let html = '';
+
+    html += '<div class="table_header">';
+    html += '    <div class="title">Titel</div>';
+    html += '    <div class="uploader">Uploader</div>';
+    html += '    <div class="catlist">Category</div>';
+    html += '    <div class="view_count">Views</div>';
+    html += '    <div class="like_count">Likes</div>';
+    html += '    <div class="dislike_count">Dislikes</div>';
+    html += '    <div class="upload_date">Upload date</div>';
+    html += '</div>';
+    
     for (const vid of videos)
     {
         const meta = vid['meta'];
@@ -100,9 +126,9 @@ function initData(data)
 
         if (info.hasNonNull('thumbnail')) 
         {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-cached="0" data-realurl="/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
 
-            if (info.hasNonNull('like_count') && info.has('dislike_count'))
+            if (info.hasNonNull('like_count') && info.hasNonNull('dislike_count'))
             {
                 html += '<div class="likedislikebar">';
                 html += '  <div class="like_bar" style="width: ' + (100 * info["like_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="like_bar_count">' + escapeHtml(info["like_count"]) + '</div></div>';
@@ -182,7 +208,7 @@ function initData(data)
             html += '<div class="info info-like_count"><i class="fas fa-thumbs-up"></i></div>';
             html += '<div class="like_count">' + escapeHtml(formatNumber(info["like_count"])) + '</div>';
         }
-        if (info.has('dislike_count'))
+        if (info.hasNonNull('dislike_count'))
         {
             html += '<div class="info info-dislike_count"><i class="fas fa-thumbs-down"></i></div>';
             html += '<div class="dislike_count">' + escapeHtml(formatNumber(info["dislike_count"])) + '</div>';
@@ -322,40 +348,6 @@ async function loadThumbnailsIntelligentAsync()
 {
     const ctr = DATA.thumbnailInvocationCounter;
 
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable[data-loaded="0"][data-cached="1"]'))
-    {
-        thumb.setAttribute('data-loaded', '1');
-        thumb.src = thumb.getAttribute('data-realurl');
-    }
-
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
-    {
-        if (DATA.thumbnailInvocationCounter !== ctr) return;
-
-        if (thumb.getAttribute('data-loaded') === '1') continue;
-
-        if (!isElementInViewport(thumb)) continue; // not visible
-
-        const src = thumb.getAttribute('data-realurl');
-
-        const ok = await setImageSource(thumb, src);
-        if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-        thumb.setAttribute('data-loaded', '1');
-        thumb.setAttribute('data-cached', '1');
-        await sleepAsync(1);
-    }
-}
-
-async function loadThumbnailsSequentialAsync()
-{
-    const ctr = DATA.thumbnailInvocationCounter;
-
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable[data-loaded="0"][data-cached="1"]'))
-    {
-        thumb.setAttribute('data-loaded', '1');
-        thumb.src = thumb.getAttribute('data-realurl');
-    }
-
     // in-viewport => parallel
     for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
     {
@@ -371,7 +363,6 @@ async function loadThumbnailsSequentialAsync()
         {
             if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
             thumb.setAttribute('data-loaded', '1');
-            thumb.setAttribute('data-cached', '1');
         })
     }
 
@@ -387,7 +378,27 @@ async function loadThumbnailsSequentialAsync()
         const ok = await setImageSource(thumb, src);
         if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
         thumb.setAttribute('data-loaded', '1');
-        thumb.setAttribute('data-cached', '1');
+        await sleepAsync(1);
+    }
+}
+
+async function loadThumbnailsSequentialAsync()
+{
+    const ctr = DATA.thumbnailInvocationCounter;
+
+    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    {
+        if (DATA.thumbnailInvocationCounter !== ctr) return;
+
+        if (thumb.getAttribute('data-loaded') === '1') continue;
+
+        if (!isElementInViewport(thumb)) continue; // not visible
+
+        const src = thumb.getAttribute('data-realurl');
+
+        const ok = await setImageSource(thumb, src);
+        if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
+        thumb.setAttribute('data-loaded', '1');
         await sleepAsync(1);
     }
 }
@@ -396,12 +407,6 @@ async function loadThumbnailsParallelAsync()
 {
     const ctr = DATA.thumbnailInvocationCounter;
 
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable[data-loaded="0"][data-cached="1"]'))
-    {
-        thumb.setAttribute('data-loaded', '1');
-        thumb.src = thumb.getAttribute('data-realurl');
-    }
-    
     for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
     {
         if (DATA.thumbnailInvocationCounter !== ctr) return;
@@ -416,7 +421,6 @@ async function loadThumbnailsParallelAsync()
         {
             if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
             thumb.setAttribute('data-loaded', '1');
-            thumb.setAttribute('data-cached', '1');
         })
     }
 }
@@ -469,6 +473,7 @@ function initButtons()
         let mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
         mode = (mode + 1) % 4;
         document.querySelector('.btn-display').setAttribute('data-mode', mode.toString());
+        updateLocationHash();
         
         updateDisplaymodeClass(true);
         
@@ -477,9 +482,10 @@ function initButtons()
 
     document.querySelector('.btn-width').addEventListener('click', () =>
     {
-        let mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+        let mode = parseInt(document.querySelector('.btn-width').getAttribute('data-mode'));
         mode = (mode + 1) % 4;
-        document.querySelector('.btn-display').setAttribute('data-mode', mode.toString());
+        document.querySelector('.btn-width').setAttribute('data-mode', mode.toString());
+        updateLocationHash();
 
         updateDisplaywidthClass(true);
 
@@ -491,6 +497,7 @@ function initButtons()
         let mode = parseInt(document.querySelector('.btn-order').getAttribute('data-mode'));
         mode = (mode + 1) % 7;
         document.querySelector('.btn-order').setAttribute('data-mode', mode.toString());
+        updateLocationHash();
 
         if (mode === 0) showToast('Sorting: Date [descending]');
         if (mode === 1) showToast('Sorting: Date [ascending]');
@@ -536,6 +543,7 @@ function initButtons()
         let mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
         mode = (mode + 1) % 4;
         document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', mode.toString());
+        updateLocationHash();
         
         if (mode === 0) showToast('Thumbnails: Off');
         if (mode === 1) showToast('Thumbnails: On (intelligent)');
@@ -550,16 +558,26 @@ function initButtons()
         let mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
         mode = (mode + 1) % 4;
         document.querySelector('.btn-videomode').setAttribute('data-mode', mode.toString());
-        const curr = document.querySelector('#fullsizevideo');
+        updateLocationHash();
 
         if (mode === 0) showToast("Playback: Disabled");
         if (mode === 1) showToast("Playback: Seekable raw file");
         if (mode === 2) showToast("Playback: Raw file");
         if (mode === 3) showToast("Playback: Transcoded Webm stream");
         if (mode === 4) showToast("Playback: Download file");
-        
+
+        const curr = document.querySelector('#fullsizevideo');
         if (curr !== null) showVideo(curr.getAttribute("data-id"));
     });
+}
+
+function updateLocationHash()
+{
+    location.hash = 'display='   + document.querySelector('.btn-display').getAttribute('data-mode')        + '&' +
+                    'order='     + document.querySelector('.btn-order').getAttribute('data-mode')          + '&' +
+                    'width='     + document.querySelector('.btn-width').getAttribute('data-mode')          + '&' +
+                    'thumb='     + document.querySelector('.btn-loadthumbnails').getAttribute('data-mode') + '&' +
+                    'videomode=' + document.querySelector('.btn-videomode').getAttribute('data-mode');
 }
 
 function updateDisplaymodeClass(toast)
@@ -583,7 +601,7 @@ function updateDisplaywidthClass(toast)
 {
     const content = document.querySelector('#content');
 
-    const mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+    const mode = parseInt(document.querySelector('.btn-width').getAttribute('data-mode'));
 
     content.classList.remove('lstyle_width_small');
     content.classList.remove('lstyle_width_medium');

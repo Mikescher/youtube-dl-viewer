@@ -3,18 +3,24 @@
   display: grid;
   grid-template-columns: 1fr auto auto auto auto auto auto;
   
-  cursor: pointer;
-  
   border: 1px solid #888;
+  
+  background: #CCC;
 }
 
 #content.lstyle_tabular .video_entry {
+  cursor: pointer;
+}
+
+#content.lstyle_tabular .video_entry,
+#content.lstyle_tabular .table_header {
   display: grid;
   grid-column: 1/-1;
   grid-template-columns: subgrid;
 }
 
-#content.lstyle_tabular .video_entry > * {
+#content.lstyle_tabular .video_entry  > *,
+#content.lstyle_tabular .table_header > * {
   display: none;
   
   border-bottom: 1px solid #888;
@@ -28,7 +34,15 @@
   background-color: #CCF;
 }
 
-#content.lstyle_tabular .video_entry .title {
+#content.lstyle_tabular .table_header > * {
+  font-weight: bold;
+  
+  padding-left:  0.25rem;
+  padding-right: 0.25rem;
+}
+
+#content.lstyle_tabular .video_entry  .title,
+#content.lstyle_tabular .table_header .title {
   display: flex;
   grid-column: 1;
   
@@ -41,15 +55,19 @@
   border-right: 1px solid #888;
 }
 
-#content.lstyle_tabular .video_entry .uploader {
+#content.lstyle_tabular .video_entry  .uploader,
+#content.lstyle_tabular .table_header .uploader {
   display: flex;
   grid-column: 2;
   
   padding-left: 0.25rem;
   border-right: 1px solid #888;
+  
+  text-decoration: none;
 }
 
-#content.lstyle_tabular .video_entry .catlist {
+#content.lstyle_tabular .video_entry  .catlist,
+#content.lstyle_tabular .table_header .catlist {
   display: flex;
   grid-column: 3;
   
@@ -57,7 +75,10 @@
   border-right: 1px solid #888;
 }
 
-#content.lstyle_tabular .video_entry .view_count {
+#content.lstyle_tabular .video_entry .catlist .category:not(:first-child) { display: none; }
+
+#content.lstyle_tabular .video_entry  .view_count,
+#content.lstyle_tabular .table_header .view_count {
   display: flex;
   grid-column: 4;
   
@@ -65,7 +86,8 @@
   border-right: 1px solid #888;
 }
 
-#content.lstyle_tabular .video_entry .like_count {
+#content.lstyle_tabular .video_entry  .like_count,
+#content.lstyle_tabular .table_header .like_count {
   display: flex;
   grid-column: 5;
   
@@ -73,7 +95,8 @@
   border-right: 1px solid #888;
 }
 
-#content.lstyle_tabular .video_entry .dislike_count {
+#content.lstyle_tabular .video_entry  .dislike_count,
+#content.lstyle_tabular .table_header .dislike_count {
   display: flex;
   grid-column: 6;
   
@@ -81,7 +104,8 @@
   border-right: 1px solid #888;
 }
 
-#content.lstyle_tabular .video_entry .upload_date {
+#content.lstyle_tabular .video_entry  .upload_date,
+#content.lstyle_tabular .table_header .upload_date {
   display: flex;
   grid-column: 7;
   

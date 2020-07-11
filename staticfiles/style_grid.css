@@ -25,6 +25,8 @@
   box-shadow: 0 0 12px -2px #44F;
 }
 
+#content.lstyle_grid .table_header { display: none; }
+
 #content.lstyle_grid .video_entry > * {
   display: none;
 }

@@ -37,6 +37,7 @@ namespace youtube_dl_viewer
                 endpoints.MapGet("/refresh", RefreshData);
 
                 endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
+                endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
                 
                 endpoints.MapGet("/video/{id}/thumb",  VideoController.GetThumbnail);
                 endpoints.MapGet("/video/{id}/seek",   VideoController.GetVideoSeek);

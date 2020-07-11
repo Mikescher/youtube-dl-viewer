@@ -22,6 +22,8 @@
   background: #EEF;
 }
 
+#content.lstyle_detailed .table_header { display: none; }
+
 #content.lstyle_detailed .video_entry .like_count    { display: none; }
 #content.lstyle_detailed .video_entry .dislike_count { display: none; }
 #content.lstyle_detailed .video_entry .taglist       { display: none; }

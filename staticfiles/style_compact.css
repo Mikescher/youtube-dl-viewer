@@ -24,6 +24,8 @@
   color: #00F;
 }
 
+#content.lstyle_compact .table_header { display: none; }
+
 #content.lstyle_compact .video_entry > * {
   display: none;
 }
