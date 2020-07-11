@@ -1,11 +1,12 @@
 @page
+@using Newtonsoft.Json
 @using youtube_dl_viewer.Pages
 @model IndexModel
 <!DOCTYPE html>
 
 <html lang="en">
 <head>
-    <title>youtube-dl Viewer @Model.BaseDir</title>
+    <title>youtube-dl Viewer v@Model.Version</title>
     
     <link rel="stylesheet" type="text/css" href="/fontawesome.css">
     <link rel="stylesheet" type="text/css" href="/solid.css">
@@ -32,7 +33,7 @@
     <header>
         <div class="logo">
             <div class="apptitle">youtube-dl Viewer <span class="version">@Model.Version</span></div>
-            <div class="apppath">@Model.BaseDir</div>
+            <div class="apppath @Html.Raw((Model.BaseDirs.Count>1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Model.BaseDirs))">@Model.BaseDirs.First()</div>
         </div>
 
         <div class="buttons">

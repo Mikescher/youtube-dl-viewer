@@ -5,6 +5,8 @@ const DATA =
     
     toastTimeoutID: -1,
     
+    dataidx: 0,
+    
     data: null,
 }
 
@@ -41,7 +43,7 @@ window.onload = function()
 {
     for (const e of location.hash.replace('#','').split('&'))
     {
-        [key, val] = e.split('=');
+        const [key, val] = e.split('=');
 
         if (key === 'display')   document.querySelector('.btn-display').setAttribute('data-mode', val);
         if (key === 'order')     document.querySelector('.btn-order').setAttribute('data-mode', val);
@@ -54,7 +56,7 @@ window.onload = function()
     updateDisplaywidthClass(false);
     
     const request = new XMLHttpRequest();
-    request.open('GET', '/data', true);
+    request.open('GET', '/data/'+DATA.dataidx+'/json', true);
 
     request.onload = function()
     {
@@ -126,7 +128,7 @@ function initData(data)
 
         if (info.hasNonNull('thumbnail')) 
         {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/data/' + DATA.dataidx + '/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
 
             if (info.hasNonNull('like_count') && info.hasNonNull('dislike_count'))
             {
@@ -499,6 +501,8 @@ function initButtons()
         document.querySelector('.btn-order').setAttribute('data-mode', mode.toString());
         updateLocationHash();
 
+        initData(JSON.parse(DATA.data));
+
         if (mode === 0) showToast('Sorting: Date [descending]');
         if (mode === 1) showToast('Sorting: Date [ascending]');
         if (mode === 2) showToast('Sorting: Title');
@@ -506,16 +510,16 @@ function initButtons()
         if (mode === 4) showToast('Sorting: Views');
         if (mode === 5) showToast('Sorting: Rating');
         if (mode === 6) showToast('Sorting: Uploader');
-
-        initData(JSON.parse(DATA.data));
     });
 
     document.querySelector('.btn-refresh').addEventListener('click', () => 
     {
+        showToast('Refreshing data');
+        
         document.querySelector('#content').innerHTML = '';
         
         const request = new XMLHttpRequest();
-        request.open('GET', '/refresh', true);
+        request.open('GET', '/data/'+DATA.dataidx+'/refresh', true);
 
         request.onload = function()
         {
@@ -523,6 +527,8 @@ function initButtons()
             {
                 DATA.data = this.response;
                 initData(JSON.parse(DATA.data));
+
+                showToast('Data refreshed');
             }
             else
             {
@@ -651,7 +657,7 @@ function showVideo(id)
     
     if (mode === 4)
     {
-        window.open('/video/'+escapeHtml(id)+'/file', '_blank').focus();
+        window.open('/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/file', '_blank').focus();
         return;
     }
 
@@ -660,9 +666,9 @@ function showVideo(id)
     html += '<div id="fullsizevideo" data-id="'+escapeHtml(id)+'">';
     html += '  <div class="vidcontainer">';
     html += '    <video width="320" height="240" controls autoplay>';
-    if (mode === 1) html += '<source src="/video/'+escapeHtml(id)+'/seek">';
-    if (mode === 2) html += '<source src="/video/'+escapeHtml(id)+'/file">';
-    if (mode === 3) html += '<source src="/video/'+escapeHtml(id)+'/stream" type="video/webm">';
+    if (mode === 1) html += '<source src="/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/seek">';
+    if (mode === 2) html += '<source src="/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/file">';
+    if (mode === 3) html += '<source src="/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/stream" type="video/webm">';
     html += '    </video>';
     html += '  </div>';
     html += '</div>';

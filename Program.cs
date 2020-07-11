@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -12,13 +14,11 @@ namespace youtube_dl_viewer
 {
     public class Program
     {
-        public static readonly string   DataDir      = @"F:\Home\Cloud\Videos\Youtube_mkv\Favorites";
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string DataJSON = "";
-        public static Dictionary<string, JObject> Data = null;
-        
+        public static List<string> DataDirs = new List<string>();
+        public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
         public static string Version => "0.1";
 
@@ -36,7 +36,7 @@ namespace youtube_dl_viewer
          * [2] Width: Wide
          * [3] Width: Full
          */
-        public static int OptWidthMode = 2;
+        public static int OptWidthMode = 1;
 
         /*
          * [0] Sorting: Date [descending]
@@ -65,14 +65,132 @@ namespace youtube_dl_viewer
          * [4] Playback: Download file
          */
         public static int OptVideoMode = 4;
-        
+
+        public static bool OptHelp = false;
+
+        public static bool OptVersion = false;
+
+        public static int Port = -1;
+
         public static void Main(string[] args)
         {
-            Console.Out.WriteLine("> Start enumerating video data");
-            RefreshData();
-            Console.Out.WriteLine($"> Video data enumerated: {Data.Count} entries found");
+            ParseArgs(args);
+
+            if (!DataDirs.Any()) DataDirs = new List<string>{ Environment.CurrentDirectory };
+
+            if (Port == -1) Port = FindFreePort();
+
+            if (OptHelp)
+            {
+                Console.Out.WriteLine($"youtube-dl-viewer v{Version}");
+                Console.Out.WriteLine();
+                Console.Out.WriteLine("Usage:");
+                Console.Out.WriteLine("  youtube-dl-viewer");
+                Console.Out.WriteLine("  youtube-dl-viewer -h | --help");
+                Console.Out.WriteLine("  youtube-dl-viewer --version");
+                Console.Out.WriteLine();
+                Console.Out.WriteLine("Options:");
+                Console.Out.WriteLine("  -h --help                Show this screen.");
+                Console.Out.WriteLine("  --version                Show version.");
+                Console.Out.WriteLine("  --port=<value>           The server port");
+                Console.Out.WriteLine("  --path=<value>           Path to the video data");
+                Console.Out.WriteLine("                             # (default = current_dir)");
+                Console.Out.WriteLine("                             # can be specified multiple times");
+                Console.Out.WriteLine("                             #");
+                Console.Out.WriteLine("  --display=<value>        The display mode");
+                Console.Out.WriteLine("                             # [0] Disabled");
+                Console.Out.WriteLine("                             # [1] Seekable raw file");
+                Console.Out.WriteLine("                             # [2] Raw file");
+                Console.Out.WriteLine("                             # [3] Transcoded Webm stream");
+                Console.Out.WriteLine("                             # [4] Download file");
+                Console.Out.WriteLine("                             #");
+                Console.Out.WriteLine("  --order=<value>          The display order");
+                Console.Out.WriteLine("                             # [0] Date [descending]");
+                Console.Out.WriteLine("                             # [1] Date [ascending]");
+                Console.Out.WriteLine("                             # [2] Title");
+                Console.Out.WriteLine("                             # [3] Category");
+                Console.Out.WriteLine("                             # [4] Views");
+                Console.Out.WriteLine("                             # [5] Rating");
+                Console.Out.WriteLine("                             # [6] Uploader");
+                Console.Out.WriteLine("                             #");
+                Console.Out.WriteLine("  --width=<value>          The display list width");
+                Console.Out.WriteLine("                             # [0] Small");
+                Console.Out.WriteLine("                             # [1] Medium");
+                Console.Out.WriteLine("                             # [2] Wide");
+                Console.Out.WriteLine("                             # [3] Full");
+                Console.Out.WriteLine("                             #");
+                Console.Out.WriteLine("  --thumbnailmode=<value>  The thumbnail loading mode");
+                Console.Out.WriteLine("                             # [0] Off");
+                Console.Out.WriteLine("                             # [1] On (intelligent)");
+                Console.Out.WriteLine("                             # [2] On (sequential)");
+                Console.Out.WriteLine("                             # [3] On (parallel)");
+                Console.Out.WriteLine("                             #");
+                Console.Out.WriteLine("  --videomode=<value>      The video playback mode");
+                Console.Out.WriteLine("                             # [0] Disabled");
+                Console.Out.WriteLine("                             # [1] Seekable raw file");
+                Console.Out.WriteLine("                             # [2] Raw file");
+                Console.Out.WriteLine("                             # [3] Transcoded Webm stream");
+                Console.Out.WriteLine("                             # [4] Download file");
+                Console.Out.WriteLine("                             #");
+                Console.Out.WriteLine();
+                return;
+            }
+
+            if (OptVersion)
+            {
+                Console.Out.WriteLine(Version);
+                return;
+            }
+
+            for (var i = 0; i < DataDirs.Count; i++)
+            {
+                Console.Out.WriteLine($"> Start enumerating video data [{i}]: {DataDirs[i]}");
+                RefreshData(i);
+                Console.Out.WriteLine($"> Video data enumerated: {Data[i].obj.Count} entries found");
+            }
+            
+            
+            Console.Out.WriteLine();
+            Console.Out.WriteLine($"[#] Starting webserver on http://localhost:{Port}/");
+            Console.Out.WriteLine();
+            
             
             CreateHostBuilder(args).Build().Run();
+        }
+
+        private static void ParseArgs(IEnumerable<string> args)
+        {
+            foreach (var arg in args)
+            {
+                if (arg.ToLower() == "--help" || arg.ToLower() == "-h")
+                {
+                    OptHelp = true;
+                    continue;
+                }
+                
+                if (arg.ToLower() == "--version")
+                {
+                    OptVersion = true;
+                    continue;
+                }
+                
+                if (!arg.StartsWith("--")) continue;
+                
+                var idx = arg.IndexOf("=", StringComparison.Ordinal);
+
+                var key   = arg.Substring(2, idx - 2).ToLower();
+                var value = arg.Substring(idx + 1);
+
+                if (value.StartsWith("\"") && value.EndsWith("\"")) value = value.Substring(1, value.Length - 2);
+
+                if (key == "display")       OptDisplayMode   = int.Parse(value);
+                if (key == "order")         OptOrderMode     = int.Parse(value);
+                if (key == "width")         OptWidthMode     = int.Parse(value);
+                if (key == "thumbnailmode") OptThumbnailMode = int.Parse(value);
+                if (key == "videomode")     OptVideoMode     = int.Parse(value);
+                if (key == "path")          DataDirs.Add(value);
+                if (key == "port")          Port             = int.Parse(value);
+            }
         }
 
         private static IHostBuilder CreateHostBuilder(string[] args)
@@ -81,13 +199,31 @@ namespace youtube_dl_viewer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("http://localhost:5000/");
+                    webBuilder.UseUrls($"http://localhost:{Port}/");
                 });
         }
 
-        public static void RefreshData()
+        private static int FindFreePort()
         {
-            var datafiles = Directory.EnumerateFiles(DataDir).OrderBy(p => p.ToLower()).ToList();
+            int port;
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            try
+            {
+                var localEp = new IPEndPoint(IPAddress.Any, 0);
+                socket.Bind(localEp);
+                localEp = (IPEndPoint)socket.LocalEndPoint;
+                port = localEp.Port;
+            }
+            finally
+            {
+                socket.Close();
+            }
+            return port;
+        }
+
+        public static string RefreshData(int index)
+        {
+            var datafiles = Directory.EnumerateFiles(DataDirs[index]).OrderBy(p => p.ToLower()).ToList();
             var processedFiles = new List<string>();
 
             var filesSubs = datafiles.Where(p => p.EndsWith(".vtt")).ToList();
@@ -231,15 +367,18 @@ namespace youtube_dl_viewer
                 }
             }
 
-            Data = resultVideos.ToDictionary(rv => rv["meta"]?.Value<string>("uid"), rv => (JObject)rv);
-            
             var result = new JObject
             (
                 new JProperty("videos", resultVideos),
                 new JProperty("missing", new JArray(datafiles.Except(processedFiles).ToArray<object>()))
             );
 
-            DataJSON = result.ToString(Formatting.Indented);
+            var jsonstr = result.ToString(Formatting.Indented);
+            var jsonobj = resultVideos.ToDictionary(rv => rv["meta"]?.Value<string>("uid"), rv => (JObject) rv);
+            
+            Data[index] = (jsonstr, jsonobj);
+
+            return jsonstr;
         }
     }
 }

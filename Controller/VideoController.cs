@@ -11,9 +11,10 @@ namespace youtube_dl_viewer.Controller
     {
         public static async Task GetThumbnail(HttpContext context)
         {
-            var id = (string)context.Request.RouteValues["id"];
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
 
             var pathThumbnail = obj["meta"]?.Value<string>("path_thumbnail");
             if (pathThumbnail == null) { context.Response.StatusCode = 404; return; }
@@ -34,9 +35,10 @@ namespace youtube_dl_viewer.Controller
         
         public static async Task GetVideoFile(HttpContext context)
         {
-            var id = (string)context.Request.RouteValues["id"];
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             if (pathVideo == null) { context.Response.StatusCode = 404; return; }
@@ -76,9 +78,10 @@ namespace youtube_dl_viewer.Controller
         
         public static async Task GetVideoSeek(HttpContext context)
         {
-            var id = (string)context.Request.RouteValues["id"];
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             if (pathVideo == null) { context.Response.StatusCode = 404; return; }
@@ -146,9 +149,10 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task GetVideoStream(HttpContext context)
         {
-            var id = (string)context.Request.RouteValues["id"];
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             if (pathVideo == null) { context.Response.StatusCode = 404; return; }

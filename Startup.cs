@@ -1,12 +1,8 @@
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using youtube_dl_viewer.Controller;
 using youtube_dl_viewer.Util;
@@ -32,35 +28,38 @@ namespace youtube_dl_viewer
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/data", GetData);
-                
-                endpoints.MapGet("/refresh", RefreshData);
+                endpoints.MapGet("/data/{idx:int}/json", GetData);
+
+                endpoints.MapGet("/data/{idx:int}/refresh", RefreshData);
 
                 endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
                 endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
-                
-                endpoints.MapGet("/video/{id}/thumb",  VideoController.GetThumbnail);
-                endpoints.MapGet("/video/{id}/seek",   VideoController.GetVideoSeek);
-                endpoints.MapGet("/video/{id}/file",   VideoController.GetVideoFile);
-                endpoints.MapGet("/video/{id}/stream", VideoController.GetVideoStream);
-                
+
+                endpoints.MapGet("/data/{idx:int}/video/{id}/thumb",  VideoController.GetThumbnail);
+                endpoints.MapGet("/data/{idx:int}/video/{id}/seek",   VideoController.GetVideoSeek);
+                endpoints.MapGet("/data/{idx:int}/video/{id}/file",   VideoController.GetVideoFile);
+                endpoints.MapGet("/data/{idx:int}/video/{id}/stream", VideoController.GetVideoStream);
+
                 endpoints.MapRazorPages();
             });
         }
 
         private static async Task GetData(HttpContext context)
         {
-            context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             
-            await context.Response.WriteAsync(Program.DataJSON);
+            context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
+            await context.Response.WriteAsync(Program.Data[idx].json);
         }
 
         private static async Task RefreshData(HttpContext context)
         {
-            Program.RefreshData();
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            
+            var json = Program.RefreshData(idx);
             
             context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
-            await context.Response.WriteAsync(Program.DataJSON);
+            await context.Response.WriteAsync(json);
         }
     }
 }
