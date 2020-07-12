@@ -6,7 +6,7 @@
 
 <html lang="en">
 <head>
-    <title>youtube-dl Viewer v@Model.Version</title>
+    <title>youtube-dl Viewer v@(Model.Version)</title>
     
     <link rel="stylesheet" type="text/css" href="/fontawesome.css">
     <link rel="stylesheet" type="text/css" href="/solid.css">
@@ -33,7 +33,16 @@
     <header>
         <div class="logo">
             <div class="apptitle">youtube-dl Viewer <span class="version">@Model.Version</span></div>
-            <div class="apppath @Html.Raw((Model.BaseDirs.Count>1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Model.BaseDirs))">@Model.BaseDirs.First()</div>
+            <div class="apppath @Html.Raw((Model.BaseDirs.Count > 1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Model.BaseDirs))">
+                <span>@Model.BaseDirs.First()</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="apppath_dropdown hidden">
+                @for (var i = 0; i < Model.BaseDirs.Count; i++)
+                {
+                    <div class="row" data-path="@Model.BaseDirs[i]" data-idx="@i">@Model.BaseDirs[i]</div>
+                }
+            </div>
         </div>
 
         <div class="buttons">

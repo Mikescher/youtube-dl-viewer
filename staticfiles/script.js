@@ -54,20 +54,27 @@ window.onload = function()
     
     updateDisplaymodeClass(false);
     updateDisplaywidthClass(false);
+
+    loadDataFromServer(true);
+};
+
+function loadDataFromServer(initial)
+{
+    document.querySelector('#content').innerHTML = '';
     
     const request = new XMLHttpRequest();
     request.open('GET', '/data/'+DATA.dataidx+'/json', true);
 
     request.onload = function()
     {
-        if (this.status >= 200 && this.status < 400) 
+        if (this.status >= 200 && this.status < 400)
         {
             DATA.data = this.response;
             initData(JSON.parse(DATA.data));
-            initButtons();
-            initEvents();
-        } 
-        else 
+            if (initial) initButtons();
+            if (initial) initEvents();
+        }
+        else
         {
             showToast('Could not load data');
         }
@@ -79,7 +86,7 @@ window.onload = function()
     };
 
     request.send();
-};
+}
 
 function initData(data)
 {
@@ -575,6 +582,31 @@ function initButtons()
         const curr = document.querySelector('#fullsizevideo');
         if (curr !== null) showVideo(curr.getAttribute("data-id"));
     });
+
+    const apm = document.querySelector('.apppath.multiple');
+    if (apm !== null) 
+    {
+        apm.addEventListener('click', () => 
+        { 
+            if (document.querySelector('.apppath_dropdown.hidden') !== null) 
+                showDropDown();
+            else 
+                hideDropDown();
+        });
+        for (const row of document.querySelectorAll('.apppath_dropdown .row'))
+        {
+            row.addEventListener('click', () => 
+            {
+                hideDropDown();
+                if (DATA.dataidx !== parseInt(row.getAttribute('data-idx')))
+                {
+                    document.querySelector('.apppath span').innerHTML = escapeHtml(row.getAttribute('data-path'));
+                    DATA.dataidx = parseInt(row.getAttribute('data-idx'));
+                    loadDataFromServer(false);
+                }
+            });
+        }
+    }
 }
 
 function updateLocationHash()
@@ -697,4 +729,24 @@ function showToast(txt)
     setTimeout(() => { toaster.classList.remove('vanished'); toaster.classList.add('active'); }, 10)
 }
 
+function hideDropDown()
+{
+    const img = document.querySelector('.apppath i');
 
+    img.classList.remove('fa-chevron-down');
+    img.classList.add('fa-chevron-up');
+
+    const dropdown = document.querySelector('.apppath_dropdown');
+    dropdown.classList.add('hidden');
+}
+
+function showDropDown()
+{
+    const img = document.querySelector('.apppath i');
+
+    img.classList.remove('fa-chevron-down');
+    img.classList.add('fa-chevron-up');
+
+    const dropdown = document.querySelector('.apppath_dropdown');
+    dropdown.classList.remove('hidden');
+}

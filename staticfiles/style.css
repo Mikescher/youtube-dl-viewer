@@ -83,6 +83,29 @@ header .logo .apppath {
     opacity: 0.5;
 }
 
+header .logo .apppath.single i {
+    display: none;
+}
+
+header .logo .apppath.multiple {
+    border: 1px solid #000;
+    background: #FFF;
+    font-style: normal;
+    margin-top: 4px;
+    padding: 0.1rem 0.25rem;
+    opacity: 1.0;
+    
+    cursor: pointer;
+    
+    display: flex;
+    align-items: center;
+    
+    user-select: none;
+}
+
+header .logo .apppath.multiple i {
+    margin-left: 0.33rem;
+}
 
 header .buttons {
     grid-column: 3;
@@ -168,6 +191,29 @@ main {
     transition: none;
 }
 
+.apppath_dropdown {
+    display: flex;
+    flex-direction: column;
+    background: #FFF;
+    border: 1px solid #000;
+    border-bottom: none;
 
+    margin-top: -1px;
+    
+    position: absolute;
+}
 
+.apppath_dropdown .row {
+    border-bottom: 1px solid #000;
+    
+    padding: 0 0.33rem;
+    
+    cursor: pointer;
+    
+    user-select: none;
+}
+
+.apppath_dropdown .row:hover {
+    background: #CCF;
+}
 
