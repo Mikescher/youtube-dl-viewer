@@ -20,7 +20,7 @@ namespace youtube_dl_viewer
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
-        public static string Version => "0.1";
+        public static string Version => "0.2";
 
         /*
          * [0] ListStyle: Grid
@@ -72,6 +72,8 @@ namespace youtube_dl_viewer
 
         public static int Port = -1;
 
+        public static string CacheDir = null;
+
         public static void Main(string[] args)
         {
             ParseArgs(args);
@@ -93,6 +95,7 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("  -h --help                Show this screen.");
                 Console.Out.WriteLine("  --version                Show version.");
                 Console.Out.WriteLine("  --port=<value>           The server port");
+                Console.Out.WriteLine("  --cache=<value>          Cache directory for transcoded webm files");
                 Console.Out.WriteLine("  --path=<value>           Path to the video data");
                 Console.Out.WriteLine("                             # (default = current_dir)");
                 Console.Out.WriteLine("                             # can be specified multiple times");
@@ -190,6 +193,7 @@ namespace youtube_dl_viewer
                 if (key == "videomode")     OptVideoMode     = int.Parse(value);
                 if (key == "path")          DataDirs.Add(value);
                 if (key == "port")          Port             = int.Parse(value);
+                if (key == "cache")         CacheDir         = value;
             }
         }
 

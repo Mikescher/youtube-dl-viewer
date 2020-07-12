@@ -50,6 +50,10 @@
   background: #000;
 }
 
+#content.lstyle_compact .video_entry .thumbnail .thumbnail_img img {
+  max-height: 100%;
+}
+
 #content.lstyle_compact .video_entry .thumbnail .likedislikebar {
   display: none;
 }

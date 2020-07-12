@@ -7,7 +7,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "commandLineArgs": "--display=0 --order=0 --width=1 --thumbnailmode=1 --videomode=4 --path=\"F:\\Home\\Cloud\\Videos\\Youtube_mkv\\Talks\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube_mkv\\Demos\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube_mkv\\Favorites\" --port=5000"
+      "commandLineArgs": "--display=0 --order=0 --width=1 --thumbnailmode=1 --videomode=4 --cache=\"F:\\Stash\\youtube-dl-viewer-cache\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube\\Talks\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube\\Demos\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube\\Favorites\" --port=5000"
     }
   }
 }

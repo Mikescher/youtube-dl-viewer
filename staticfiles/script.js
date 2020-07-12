@@ -50,6 +50,7 @@ window.onload = function()
         if (key === 'width')     document.querySelector('.btn-width').setAttribute('data-mode', val);
         if (key === 'thumb')     document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', val);
         if (key === 'videomode') document.querySelector('.btn-videomode').setAttribute('data-mode', val);
+        if (key === 'dir')       DATA.dataidx = parseInt(val);
     }
     
     updateDisplaymodeClass(false);
@@ -569,7 +570,7 @@ function initButtons()
     document.querySelector('.btn-videomode').addEventListener('click', () =>
     {
         let mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
-        mode = (mode + 1) % 4;
+        mode = (mode + 1) % 5;
         document.querySelector('.btn-videomode').setAttribute('data-mode', mode.toString());
         updateLocationHash();
 
@@ -602,6 +603,7 @@ function initButtons()
                 {
                     document.querySelector('.apppath span').innerHTML = escapeHtml(row.getAttribute('data-path'));
                     DATA.dataidx = parseInt(row.getAttribute('data-idx'));
+                    updateLocationHash();
                     loadDataFromServer(false);
                 }
             });
@@ -615,7 +617,8 @@ function updateLocationHash()
                     'order='     + document.querySelector('.btn-order').getAttribute('data-mode')          + '&' +
                     'width='     + document.querySelector('.btn-width').getAttribute('data-mode')          + '&' +
                     'thumb='     + document.querySelector('.btn-loadthumbnails').getAttribute('data-mode') + '&' +
-                    'videomode=' + document.querySelector('.btn-videomode').getAttribute('data-mode');
+                    'videomode=' + document.querySelector('.btn-videomode').getAttribute('data-mode')      + '&' +
+                    'dir='       + DATA.dataidx;
 }
 
 function updateDisplaymodeClass(toast)
