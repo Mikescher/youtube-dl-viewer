@@ -20,7 +20,7 @@ namespace youtube_dl_viewer
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
-        public static string Version => "0.3";
+        public static string Version => "0.4";
 
         /*
          * [0] ListStyle: Grid
@@ -132,8 +132,9 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("                             # [0] Disabled");
                 Console.Out.WriteLine("                             # [1] Seekable raw file");
                 Console.Out.WriteLine("                             # [2] Raw file");
-                Console.Out.WriteLine("                             # [3] Transcoded Webm stream");
+                Console.Out.WriteLine("                             # [3] Transcoded webm stream");
                 Console.Out.WriteLine("                             # [4] Download file");
+                Console.Out.WriteLine("                             # [5] VLC Protocol Link"); // https://github.com/stefansundin/vlc-protocol
                 Console.Out.WriteLine("                             #");
                 Console.Out.WriteLine();
                 return;

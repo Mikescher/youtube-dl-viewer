@@ -573,7 +573,7 @@ function initButtons()
     document.querySelector('.btn-videomode').addEventListener('click', () =>
     {
         let mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
-        mode = (mode + 1) % 5;
+        mode = (mode + 1) % 6;
         document.querySelector('.btn-videomode').setAttribute('data-mode', mode.toString());
         updateLocationHash();
 
@@ -582,6 +582,7 @@ function initButtons()
         if (mode === 2) showToast("Playback: Raw file");
         if (mode === 3) showToast("Playback: Transcoded Webm stream");
         if (mode === 4) showToast("Playback: Download file");
+        if (mode === 5) showToast("Playback: VLC Protocol Link"); // https://github.com/stefansundin/vlc-protocol
 
         const curr = document.querySelector('#fullsizevideo');
         if (curr !== null) showVideo(curr.getAttribute("data-id"));
@@ -692,10 +693,16 @@ function showVideo(id)
     const mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
 
     if (mode === 0) return;
-    
+
     if (mode === 4)
     {
         window.open('/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/file', '_blank').focus();
+        return;
+    }
+
+    if (mode === 5)
+    {
+        window.open('vlc://'+window.location.protocol + "//" + window.location.host + '/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/file', '_blank').focus();
         return;
     }
 
