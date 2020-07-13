@@ -162,7 +162,7 @@ namespace youtube_dl_viewer.Controller
                     }
                     else
                     {
-                        if (procFinished)
+                        if (procFinished && proc.ExitCode == 0)
                         {
                             if (pathCache != null)
                             {
@@ -172,6 +172,7 @@ namespace youtube_dl_viewer.Controller
                                     {
                                         try { fs.Close(); } catch (Exception) { /* ignore */ }
                                         File.Move(pathTemp, pathCache);
+                                        if (File.Exists(pathCache) && new FileInfo(pathCache).Length == 0) File.Delete(pathCache);
                                         break;
                                     }
                                     catch (IOException)

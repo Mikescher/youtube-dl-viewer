@@ -132,7 +132,10 @@ function initData(data)
 
         info.__proto__ = json_proto;
 
-        html += '<div class="video_entry" data-id="'+escapeHtml(meta['uid'])+'">';
+        let ve_cls = 'video_entry';
+        if (vid['data']['cached']) ve_cls += ' webm-cached';
+        
+        html += '<div class="' + ve_cls + '" data-id="'+escapeHtml(meta['uid'])+'">';
 
         if (info.hasNonNull('thumbnail')) 
         {

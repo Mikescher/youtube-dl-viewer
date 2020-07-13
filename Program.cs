@@ -20,7 +20,7 @@ namespace youtube_dl_viewer
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
-        public static string Version => "0.2";
+        public static string Version => "0.3";
 
         /*
          * [0] ListStyle: Grid
@@ -300,7 +300,9 @@ namespace youtube_dl_viewer
                     new JProperty("data", new JObject
                     (
                         new JProperty("info", jinfo),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
+                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
+                        new JProperty("cache_file", CacheDir == null ? null : Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")),
+                        new JProperty("cached", CacheDir != null && File.Exists(Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")))
                     ))
                 ));
             }
@@ -356,7 +358,9 @@ namespace youtube_dl_viewer
                         (
                             new JProperty("title", Path.GetFileNameWithoutExtension(pathVideo))
                         )),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
+                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
+                        new JProperty("cache_file", CacheDir == null ? null : Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")),
+                        new JProperty("cached", CacheDir != null && File.Exists(Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")))
                     ))
                 ));
             }
