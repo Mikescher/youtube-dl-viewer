@@ -56,6 +56,8 @@ window.onload = function()
     updateDisplaymodeClass(false);
     updateDisplaywidthClass(false);
 
+    document.querySelector('.apppath span').innerHTML = escapeHtml(JSON.parse(document.querySelector('.apppath').getAttribute('data-dirs'))[DATA.dataidx]);
+
     loadDataFromServer(true);
 };
 
@@ -746,8 +748,8 @@ function hideDropDown()
 {
     const img = document.querySelector('.apppath i');
 
-    img.classList.remove('fa-chevron-down');
-    img.classList.add('fa-chevron-up');
+    img.classList.add('fa-chevron-down');
+    img.classList.remove('fa-chevron-up');
 
     const dropdown = document.querySelector('.apppath_dropdown');
     dropdown.classList.add('hidden');

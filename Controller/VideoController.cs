@@ -101,6 +101,8 @@ namespace youtube_dl_viewer.Controller
             if (pathVideo == null) { context.Response.StatusCode = 404; return; }
 
             var pathCache = (Program.CacheDir == null) ? null : Path.Combine(Program.CacheDir, pathVideo.Sha256() + ".webm");
+            
+            var pathTemp = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B")+".webm");
 
             if (pathCache != null && File.Exists(pathCache))
             {
@@ -108,8 +110,98 @@ namespace youtube_dl_viewer.Controller
                 return;
             }
             
-            var pathTemp = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B")+".webm");
+            if (pathCache != null) 
+                await GetVideoStreamWithCache(context, pathVideo, pathCache, pathTemp);
+            else                     
+                await GetVideoStreamWithoutCache(context, pathVideo, pathTemp);
+        }
 
+        private static async Task GetVideoStreamWithCache(HttpContext context, string pathVideo, string pathCache, string pathTemp)
+        {
+            try
+            {
+                var cmd = $" -i \"{pathVideo}\" -f webm -vcodec libvpx-vp9 -vb 256k -cpu-used -5 -deadline realtime {pathTemp}";
+
+                var proc = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "ffmpeg",
+                        Arguments = cmd,
+                        CreateNoWindow = true,
+                    }
+                };
+
+                context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
+            
+                proc.Start();
+
+                while (!File.Exists(pathTemp))
+                {
+                    if (proc.HasExited && !File.Exists(pathTemp)) return;
+                    await Task.Delay(0);
+                }
+            
+                await using var fs = new FileStream(pathTemp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                var buffer = new byte[4096];
+                for (;;)
+                {
+                    var procFinished = proc.HasExited;
+                
+                    var read = await fs.ReadAsync(buffer);
+
+                    if (read > 0)
+                    {
+                        if (!context.RequestAborted.IsCancellationRequested)
+                        {
+                            await context.Response.BodyWriter.WriteAsync(buffer.AsMemory(0, read));
+                            await context.Response.BodyWriter.FlushAsync();
+                        }
+                    }
+                    else
+                    {
+                        if (procFinished && proc.ExitCode == 0)
+                        {
+                            for (var i = 0; i < 15; i++) // 15 retries
+                            {
+                                try
+                                {
+                                    try { fs.Close(); } catch (Exception) { /* ignore */ }
+                                    File.Move(pathTemp, pathCache);
+                                    if (File.Exists(pathCache) && new FileInfo(pathCache).Length == 0) File.Delete(pathCache);
+                                    break;
+                                }
+                                catch (IOException)
+                                {
+                                    await Task.Delay(2 * 1000);
+                                }
+                            }
+
+                            return;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                for (var i = 0; i < 5; i++) // 5 retries
+                {
+                    try
+                    {
+                        if (File.Exists(pathTemp)) File.Delete(pathTemp);
+                        break;
+                    }
+                    catch (IOException)
+                    {
+                        await Task.Delay(5 * 1000);
+                    }
+                }
+            }
+        }
+
+        private static async Task GetVideoStreamWithoutCache(HttpContext context, string pathVideo, string pathTemp)
+        {
             try
             {
                 var cmd = $" -i \"{pathVideo}\" -f webm -vcodec libvpx-vp9 -vb 256k -cpu-used -5 -deadline realtime {pathTemp}";
@@ -162,29 +254,10 @@ namespace youtube_dl_viewer.Controller
                     }
                     else
                     {
-                        if (procFinished && proc.ExitCode == 0)
-                        {
-                            if (pathCache != null)
-                            {
-                                for (var i = 0; i < 15; i++) // 15 retries
-                                {
-                                    try
-                                    {
-                                        try { fs.Close(); } catch (Exception) { /* ignore */ }
-                                        File.Move(pathTemp, pathCache);
-                                        if (File.Exists(pathCache) && new FileInfo(pathCache).Length == 0) File.Delete(pathCache);
-                                        break;
-                                    }
-                                    catch (IOException)
-                                    {
-                                        await Task.Delay(2 * 1000);
-                                    }
-                                }
-                            }
-
-                            return;
-                        }
+                        if (procFinished && proc.ExitCode == 0) return;
                     }
+
+                    await Task.Delay(100);
                 }
             }
             finally

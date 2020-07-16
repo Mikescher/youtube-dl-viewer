@@ -20,7 +20,7 @@ namespace youtube_dl_viewer
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
-        public static string Version => "0.4";
+        public static string Version => "0.5";
 
         /*
          * [0] ListStyle: Grid
