@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ namespace youtube_dl_viewer.Controller
             if (pathVideo == null) return null;
             if (Program.CacheDir == null) return null;
             
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return Path.Combine(Program.CacheDir, "prev_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".dat");
             else
                 return Path.Combine(Program.CacheDir, "prev_" + pathVideo.Sha256() + ".dat");
@@ -46,7 +47,7 @@ namespace youtube_dl_viewer.Controller
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
-                JobRegistry.GetOrQueuePreviewGenJob(pathVideo, pathCache).Dispose(); // runs as background job
+                JobRegistry.GetOrQueuePreviewGenJob(pathVideo, pathCache, false); // runs as background job
             }
             
             var data = await File.ReadAllBytesAsync(pathThumbnail);

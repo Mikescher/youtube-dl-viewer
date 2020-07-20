@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
@@ -14,7 +15,7 @@ namespace youtube_dl_viewer.Controller
         {
             if (Program.CacheDir == null) return null;
             
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return Path.Combine(Program.CacheDir, "stream_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".webm");
             else
                 return Path.Combine(Program.CacheDir, "stream_" + pathVideo.Sha256() + ".webm");

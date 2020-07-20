@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 
 namespace youtube_dl_viewer.Jobs
@@ -55,10 +56,28 @@ namespace youtube_dl_viewer.Jobs
                         FileName = "ffmpeg",
                         Arguments = cmd,
                         CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                     }
                 };
 
+                var builderOut = new StringBuilder();
+                proc.OutputDataReceived += (sender, args) =>
+                {
+                    if (args.Data == null) return;
+                    if (builderOut.Length == 0) builderOut.Append(args.Data);
+                    else builderOut.Append("\n" + args.Data);
+                };
+                proc.ErrorDataReceived += (sender, args) =>
+                {
+                    if (args.Data == null) return;
+                    if (builderOut.Length == 0) builderOut.Append(args.Data);
+                    else builderOut.Append("\n" + args.Data);
+                };
+
                 proc.Start();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
 
                 while (!File.Exists(Temp))
                 {

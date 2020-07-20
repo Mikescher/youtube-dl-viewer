@@ -52,7 +52,7 @@ namespace youtube_dl_viewer.Jobs
             }
         }
 
-        public static JobProxy<PreviewGenJob> GetOrQueuePreviewGenJob(string src, string dst)
+        public static JobProxy<PreviewGenJob> GetOrQueuePreviewGenJob(string src, string dst, bool attach = true)
         {
             lock (LockPreviewGen)
             {
@@ -61,7 +61,7 @@ namespace youtube_dl_viewer.Jobs
                     if (cjob.Source == src)
                     {
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
-                        return JobProxy<PreviewGenJob>.Create(cjob);
+                        return attach ? JobProxy<PreviewGenJob>.Create(cjob) : null;
                     }
                 }
                 foreach (var cjob in previewGenJobsQueue)
@@ -69,7 +69,7 @@ namespace youtube_dl_viewer.Jobs
                     if (cjob.Source == src)
                     {
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
-                        return JobProxy<PreviewGenJob>.Create(cjob);
+                        return attach ? JobProxy<PreviewGenJob>.Create(cjob) : null;
                     }
                 }
 
@@ -80,13 +80,13 @@ namespace youtube_dl_viewer.Jobs
                     Console.Out.WriteLine($"Start new Job [{job.Name}] (direct)");
                     previewGenJobs.Add(job);
                     job.Start();
-                    return JobProxy<PreviewGenJob>.Create(job);
+                    return attach ? JobProxy<PreviewGenJob>.Create(job) : null;
                 }
                 else
                 {
                     Console.Out.WriteLine($"Enqueue new Job [{job.Name}]");
                     previewGenJobsQueue.Push(job);
-                    return JobProxy<PreviewGenJob>.Create(job);
+                    return attach ? JobProxy<PreviewGenJob>.Create(job) : null;
                 }
             }
         }

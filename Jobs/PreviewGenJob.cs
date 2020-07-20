@@ -53,18 +53,18 @@ namespace youtube_dl_viewer.Jobs
                     }
                 };
 
-                var builderOut = new StringBuilder();
+                var builder1Out = new StringBuilder();
                 proc1.OutputDataReceived += (sender, args) =>
                 {
                     if (args.Data == null) return;
-                    if (builderOut.Length == 0) builderOut.Append(args.Data);
-                    else builderOut.Append("\n" + args.Data);
+                    if (builder1Out.Length == 0) builder1Out.Append(args.Data);
+                    else builder1Out.Append("\n" + args.Data);
                 };
                 proc1.ErrorDataReceived += (sender, args) =>
                 {
                     if (args.Data == null) return;
-                    if (builderOut.Length == 0) builderOut.Append(args.Data);
-                    else builderOut.Append("\n" + args.Data);
+                    if (builder1Out.Length == 0) builder1Out.Append(args.Data);
+                    else builder1Out.Append("\n" + args.Data);
                 };
                 
                 proc1.Start();
@@ -78,7 +78,7 @@ namespace youtube_dl_viewer.Jobs
                     return;
                 }
 
-                var videolen = double.Parse(builderOut.ToString().Trim(), CultureInfo.InvariantCulture);
+                var videolen = double.Parse(builder1Out.ToString().Trim(), CultureInfo.InvariantCulture);
 
                 var framedistance = videolen / 32; // 16 frames by default (and max)
 
@@ -93,10 +93,29 @@ namespace youtube_dl_viewer.Jobs
                         FileName = "ffmpeg",
                         Arguments = $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"",
                         CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                     }
                 };
                 
+
+                var builder2Out = new StringBuilder();
+                proc2.OutputDataReceived += (sender, args) =>
+                {
+                    if (args.Data == null) return;
+                    if (builder2Out.Length == 0) builder2Out.Append(args.Data);
+                    else builder2Out.Append("\n" + args.Data);
+                };
+                proc2.ErrorDataReceived += (sender, args) =>
+                {
+                    if (args.Data == null) return;
+                    if (builder2Out.Length == 0) builder2Out.Append(args.Data);
+                    else builder2Out.Append("\n" + args.Data);
+                };
+                
                 proc2.Start();
+                proc2.BeginOutputReadLine();
+                proc2.BeginErrorReadLine();
                 proc2.WaitForExit();
 
                 if (proc2.ExitCode != 0)
