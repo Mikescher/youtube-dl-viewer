@@ -8,6 +8,8 @@ const DATA =
     dataidx: 0,
     
     data: null,
+    
+    dropDownIDCounter: 10000,
 }
 
 function escapeHtml(text) 
@@ -485,44 +487,51 @@ function initButtons()
 {
     document.querySelector('.btn-display').addEventListener('click', () => 
     {
-        let mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
-        mode = (mode + 1) % 4;
-        document.querySelector('.btn-display').setAttribute('data-mode', mode.toString());
-        updateLocationHash();
-        
-        updateDisplaymodeClass(true);
-        
-        loadThumbnails();
+        const current = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+        const options = JSON.parse(document.querySelector('.btn-display').getAttribute('data-options'));
+
+        showOptionDropDown('display', current, options, v =>
+        {
+            document.querySelector('.btn-display').setAttribute('data-mode', v.toString());
+            showToast(options[v]);
+            updateLocationHash();
+
+            updateDisplaymodeClass(true);
+
+            loadThumbnails();
+        });
     });
 
     document.querySelector('.btn-width').addEventListener('click', () =>
     {
-        let mode = parseInt(document.querySelector('.btn-width').getAttribute('data-mode'));
-        mode = (mode + 1) % 4;
-        document.querySelector('.btn-width').setAttribute('data-mode', mode.toString());
-        updateLocationHash();
+        const current = parseInt(document.querySelector('.btn-width').getAttribute('data-mode'));
+        const options = JSON.parse(document.querySelector('.btn-width').getAttribute('data-options'));
 
-        updateDisplaywidthClass(true);
+        showOptionDropDown('width', current, options, v =>
+        {
+            document.querySelector('.btn-width').setAttribute('data-mode', v.toString());
+            showToast(options[v]);
+            updateLocationHash();
 
-        loadThumbnails();
+            updateDisplaywidthClass(true);
+
+            loadThumbnails();
+        });
     });
 
     document.querySelector('.btn-order').addEventListener('click', () =>
     {
-        let mode = parseInt(document.querySelector('.btn-order').getAttribute('data-mode'));
-        mode = (mode + 1) % 7;
-        document.querySelector('.btn-order').setAttribute('data-mode', mode.toString());
-        updateLocationHash();
-
-        initData(JSON.parse(DATA.data));
-
-        if (mode === 0) showToast('Sorting: Date [descending]');
-        if (mode === 1) showToast('Sorting: Date [ascending]');
-        if (mode === 2) showToast('Sorting: Title');
-        if (mode === 3) showToast('Sorting: Category');
-        if (mode === 4) showToast('Sorting: Views');
-        if (mode === 5) showToast('Sorting: Rating');
-        if (mode === 6) showToast('Sorting: Uploader');
+        const current = parseInt(document.querySelector('.btn-order').getAttribute('data-mode'));
+        const options = JSON.parse(document.querySelector('.btn-order').getAttribute('data-options'));
+        
+        showOptionDropDown('order', current, options, v => 
+        {
+            document.querySelector('.btn-order').setAttribute('data-mode', v.toString());
+            showToast(options[v]);
+            updateLocationHash();
+            
+            initData(JSON.parse(DATA.data));
+        });
     });
 
     document.querySelector('.btn-refresh').addEventListener('click', () => 
@@ -559,35 +568,33 @@ function initButtons()
     
     document.querySelector('.btn-loadthumbnails').addEventListener('click', () =>
     {
-        let mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
-        mode = (mode + 1) % 4;
-        document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', mode.toString());
-        updateLocationHash();
-        
-        if (mode === 0) showToast('Thumbnails: Off');
-        if (mode === 1) showToast('Thumbnails: On (intelligent)');
-        if (mode === 2) showToast('Thumbnails: On (sequential)');
-        if (mode === 3) showToast('Thumbnails: On (parallel)');
-        
-        loadThumbnails();
+        const current = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
+        const options = JSON.parse(document.querySelector('.btn-loadthumbnails').getAttribute('data-options'));
+
+        showOptionDropDown('loadthumbnails', current, options, v =>
+        {
+            document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', v.toString());
+            showToast(options[v]);
+            updateLocationHash();
+
+            loadThumbnails();
+        });
     });
 
     document.querySelector('.btn-videomode').addEventListener('click', () =>
     {
-        let mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
-        mode = (mode + 1) % 6;
-        document.querySelector('.btn-videomode').setAttribute('data-mode', mode.toString());
-        updateLocationHash();
+        const current = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
+        const options = JSON.parse(document.querySelector('.btn-videomode').getAttribute('data-options'));
 
-        if (mode === 0) showToast("Playback: Disabled");
-        if (mode === 1) showToast("Playback: Seekable raw file");
-        if (mode === 2) showToast("Playback: Raw file");
-        if (mode === 3) showToast("Playback: Transcoded Webm stream");
-        if (mode === 4) showToast("Playback: Download file");
-        if (mode === 5) showToast("Playback: VLC Protocol Link"); // https://github.com/stefansundin/vlc-protocol
+        showOptionDropDown('videomode', current, options, v =>
+        {
+            document.querySelector('.btn-videomode').setAttribute('data-mode', v.toString());
+            showToast(options[v]);
+            updateLocationHash();
 
-        const curr = document.querySelector('#fullsizevideo');
-        if (curr !== null) showVideo(curr.getAttribute("data-id"));
+            const curr = document.querySelector('#fullsizevideo');
+            if (curr !== null) showVideo(curr.getAttribute("data-id"));
+        });
     });
 
     const apm = document.querySelector('.apppath.multiple');
@@ -595,12 +602,12 @@ function initButtons()
     {
         apm.addEventListener('click', () => 
         { 
-            if (document.querySelector('.apppath_dropdown.hidden') !== null) 
-                showDropDown();
+            if (document.querySelector('#apppath_dropdown.hidden') !== null) 
+                showPathDropDown();
             else 
-                hideDropDown();
+                hidePathDropDown();
         });
-        for (const row of document.querySelectorAll('.apppath_dropdown .row'))
+        for (const row of document.querySelectorAll('#apppath_dropdown .row'))
         {
             row.addEventListener('click', () => 
             {
@@ -664,6 +671,11 @@ function updateDisplaywidthClass(toast)
 function initEvents() 
 {
     window.addEventListener('scroll', () => { loadThumbnails(); });
+
+    document.querySelector('#dropdown_background').addEventListener('click', () => 
+    {
+        hideAllDropDowns();
+    });
 }
 
 function htmlToElement(html) 
@@ -744,24 +756,78 @@ function showToast(txt)
     setTimeout(() => { toaster.classList.remove('vanished'); toaster.classList.add('active'); }, 10)
 }
 
-function hideDropDown()
+function hideAllDropDowns() 
 {
-    const img = document.querySelector('.apppath i');
+    hidePathDropDown();
+    hideOptionDropDown();
 
-    img.classList.add('fa-chevron-down');
-    img.classList.remove('fa-chevron-up');
-
-    const dropdown = document.querySelector('.apppath_dropdown');
-    dropdown.classList.add('hidden');
+    document.querySelector('#dropdown_background').classList.add('hidden');
 }
 
-function showDropDown()
+function showPathDropDown()
 {
+    hideAllDropDowns();
+    
     const img = document.querySelector('.apppath i');
-
     img.classList.remove('fa-chevron-down');
     img.classList.add('fa-chevron-up');
 
-    const dropdown = document.querySelector('.apppath_dropdown');
-    dropdown.classList.remove('hidden');
+    document.querySelector('#apppath_dropdown').classList.remove('hidden');
+
+    document.querySelector('#dropdown_background').classList.remove('hidden');
+}
+
+function hidePathDropDown()
+{
+    const img = document.querySelector('.apppath i');
+    img.classList.add('fa-chevron-down');
+    img.classList.remove('fa-chevron-up');
+
+    document.querySelector('#apppath_dropdown').classList.add('hidden');
+    
+    document.querySelector('#dropdown_background').classList.add('hidden');
+}
+
+function showOptionDropDown(type, current, options, lambda)
+{
+    const dd = document.querySelector('#option_dropdown');
+    
+    if (dd.getAttribute('data-ddtype') === type) { hideAllDropDowns(); return; }
+    
+    hideAllDropDowns();
+    
+    let ids = [];
+    
+    let html = '';
+    for (let i=0; i < options.length; i++)
+    {
+        const elemid = 'drow_' + (DATA.dropDownIDCounter++);
+        let cls = 'row';
+        if (i === current) cls += ' active';
+        html += '<div id="'+elemid+'" class="'+cls+'" data-value="'+escapeHtml(options[i])+'" data-idx="'+i+'">'+escapeHtml(options[i])+'</div>';
+        ids.push(elemid);
+    }
+    
+    dd.innerHTML = html;
+    dd.classList.remove('hidden');
+
+    dd.setAttribute('data-ddtype', type);
+
+    for (const id of ids)
+    {
+        const elem = document.querySelector('#' + id);
+        elem.addEventListener('click', () => 
+        {
+            hideOptionDropDown();
+            lambda(parseInt(elem.getAttribute('data-idx'))); 
+        });
+    }
+    
+    document.querySelector('#dropdown_background').classList.remove('hidden');
+}
+
+function hideOptionDropDown()
+{
+    document.querySelector('#option_dropdown').classList.add('hidden');
+    document.querySelector('#option_dropdown').setAttribute('data-ddtype', 'none');
 }

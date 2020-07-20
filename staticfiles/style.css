@@ -6,7 +6,7 @@ html,body {
     height:100%;
 }
 
-body{ 
+body{
     background-color:#eee;
     color:#333;
     font-family:"Helvetica","Arial",sans-serif;
@@ -55,14 +55,14 @@ footer a {
 }
 
 
-header {    
-    z-index: 999;
+header {
+    z-index: 50;
     position: fixed;
     width: calc(100% - 1rem);
-    
+
     display: grid;
     grid-template-columns: auto 1fr auto;
-    
+
     background: #AAA;
     border-bottom: 1px solid #888;
     padding: 0.5rem;
@@ -94,12 +94,12 @@ header .logo .apppath.multiple {
     margin-top: 4px;
     padding: 0.1rem 0.25rem;
     opacity: 1.0;
-    
+
     cursor: pointer;
-    
+
     display: flex;
     align-items: center;
-    
+
     user-select: none;
 }
 
@@ -118,14 +118,18 @@ header .btn {
     min-height: 24px;
     margin: 4px;
     border: 1px solid #000;
-    
+
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     background-color: #666;
     color: #EEE;
     cursor: pointer;
+}
+
+header .btnpad {
+    width: 1.5rem;
 }
 
 header .btn:hover {
@@ -135,10 +139,10 @@ header .btn:hover {
 main {
     display: flex;
     justify-content: center;
-    
+
     padding-top:     80px; /* space for header */
     padding-bottom: 100px; /* space for footer */
-    
+
     margin-left: 1rem;
     margin-right: 1rem;
 }
@@ -146,26 +150,26 @@ main {
 
 #toast {
     position: fixed;
-    
+
     right: 0px;
-    
+
     width: 100%;
     max-width: 300px;
     margin: 0 16px;
-    
+
     background-color: #666;
     border: 1px solid #222;
     border-radius: 2px;
     box-shadow: 0 0 12px -4px #000;
-    
+
     color: #fff;
     font-size: 16px;
-    
+
     padding: 6px;
     user-select: none;
-    
+
     transition: top 350ms, opacity 350ms;
-    
+
     text-align: center;
 }
 
@@ -191,7 +195,7 @@ main {
     transition: none;
 }
 
-.apppath_dropdown {
+#apppath_dropdown {
     display: flex;
     flex-direction: column;
     background: #FFF;
@@ -199,102 +203,75 @@ main {
     border-bottom: none;
 
     margin-top: -1px;
-    
+
     position: absolute;
+
+    z-index: 65;
 }
 
-.apppath_dropdown .row {
+#apppath_dropdown .row {
     border-bottom: 1px solid #000;
-    
+
     padding: 0 0.33rem;
-    
+
     cursor: pointer;
-    
+
     user-select: none;
 }
 
-.apppath_dropdown .row:hover {
+#apppath_dropdown .row:hover {
     background: #CCF;
 }
 
+#option_dropdown {
+    display: flex;
+    flex-direction: column;
+    background: #FFF;
+    border: 1px solid #000;
+    border-bottom: none;
 
-/* https://loading.io/css/ */
+    margin-top: -1px;
 
-#content:not(:empty) + .lds-grid {
-    display: none !important;
-}
-
-.lds-grid {
     position: fixed;
-    top:  calc(50% - 40px);
-    left: calc(50% - 40px);
+    right: calc(0.5rem + 4px);
+    top: 55px;
+
+    min-width: 218px;
+
+    z-index: 65;
 }
 
-.lds-grid {
-    display: inline-block;
-    width: 80px;
-    height: 80px;
+#option_dropdown .row {
+    border-bottom: 1px solid #000;
 
-    transform: scale(3);
+    padding: 0 0.33rem;
+
+    cursor: pointer;
+
+    user-select: none;
 }
-.lds-grid div {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #888;
-    animation: lds-grid 1.2s linear infinite;
+
+#option_dropdown .row.active {
+    font-weight: bold;
+    background-color: #AFA;
 }
-.lds-grid div:nth-child(1) {
-    top: 8px;
-    left: 8px;
-    animation-delay: 0s;
+
+#option_dropdown .row:hover {
+    background: #CCF;
 }
-.lds-grid div:nth-child(2) {
-    top: 8px;
-    left: 32px;
-    animation-delay: -0.4s;
+
+#dropdown_background {
+    position: fixed;
+    display: block;
+
+    z-index: 40;
+
+    background-color: rgba(0, 0, 0, 0.001);
+
+    left:   0;
+    width:  100vw;
+
+    height: calc(100vh - 64px);
+    top:    64px;
 }
-.lds-grid div:nth-child(3) {
-    top: 8px;
-    left: 56px;
-    animation-delay: -0.8s;
-}
-.lds-grid div:nth-child(4) {
-    top: 32px;
-    left: 8px;
-    animation-delay: -0.4s;
-}
-.lds-grid div:nth-child(5) {
-    top: 32px;
-    left: 32px;
-    animation-delay: -0.8s;
-}
-.lds-grid div:nth-child(6) {
-    top: 32px;
-    left: 56px;
-    animation-delay: -1.2s;
-}
-.lds-grid div:nth-child(7) {
-    top: 56px;
-    left: 8px;
-    animation-delay: -0.8s;
-}
-.lds-grid div:nth-child(8) {
-    top: 56px;
-    left: 32px;
-    animation-delay: -1.2s;
-}
-.lds-grid div:nth-child(9) {
-    top: 56px;
-    left: 56px;
-    animation-delay: -1.6s;
-}
-@keyframes lds-grid {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
+

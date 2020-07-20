@@ -13,6 +13,7 @@
     <link rel="stylesheet" type="text/css" href="/regular.css">
     
     <link rel="stylesheet" type="text/css" href="/style.css">
+    <link rel="stylesheet" type="text/css" href="/style_animation.css">
     <link rel="stylesheet" type="text/css" href="/style_width.css">
     <link rel="stylesheet" type="text/css" href="/style_video.css">
     
@@ -37,7 +38,7 @@
                 <span>@Model.BaseDirs.First()</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
-            <div class="apppath_dropdown hidden">
+            <div id="apppath_dropdown" class="dropdown hidden">
                 @for (var i = 0; i < Model.BaseDirs.Count; i++)
                 {
                     <div class="row" data-path="@Model.BaseDirs[i]" data-idx="@i">@Model.BaseDirs[i]</div>
@@ -46,12 +47,41 @@
         </div>
 
         <div class="buttons">
-            <div class="btn btn-display"        data-mode="@Model.OptDisplayMode"  ><i class="far fa-eye"            ></i></div>
-            <div class="btn btn-order"          data-mode="@Model.OptOrderMode"    ><i class="fas fa-sort"           ></i></div>
-            <div class="btn btn-width"          data-mode="@Model.OptWidthMode"    ><i class="fas fa-text-width"     ></i></div>
-            <div class="btn btn-refresh"                                           ><i class="fas fa-sync-alt"       ></i></div>
-            <div class="btn btn-loadthumbnails" data-mode="@Model.OptThumbnailMode"><i class="fas fa-photo-video"    ></i></div>
-            <div class="btn btn-videomode"      data-mode="@Model.OptVideoMode"    ><i class="fas fa-broadcast-tower"></i></div>
+            <div class="btn btn-display"        
+                 data-mode="@Model.OptDisplayMode"  
+                 data-initial="@Model.OptDisplayMode"  
+                 data-options="@(Json.Serialize(new[]{"ListStyle: Grid", "ListStyle: Compact", "ListStyle: Tabular", "ListStyle: Detailed"}).ToString())"
+                 ><i class="far fa-eye"></i></div>
+            
+            <div class="btn btn-order"          
+                 data-mode="@Model.OptOrderMode"  
+                 data-initial="@Model.OptOrderMode"  
+                 data-options="@(Json.Serialize(new[]{"Sorting: Date [descending]", "Sorting: Date [ascending]", "Sorting: Title", "Sorting: Category", "Sorting: Views", "Sorting: Rating", "Sorting: Uploader" }).ToString())"
+                 ><i class="fas fa-sort"></i></div>
+            
+            <div class="btn btn-width"          
+                 data-mode="@Model.OptWidthMode"  
+                 data-initial="@Model.OptWidthMode"  
+                 data-options="@(Json.Serialize(new[]{"Width: Small", "Width: Medium", "Width: Wide", "Width: Full" }).ToString())"
+                 ><i class="fas fa-text-width"></i></div>
+            
+            <div class="btn btn-loadthumbnails" 
+                 data-mode="@Model.OptThumbnailMode"  
+                 data-initial="@Model.OptThumbnailMode"  
+                 data-options="@(Json.Serialize(new[]{"Thumbnails: Off", "Thumbnails: On (intelligent)", "Thumbnails: On (sequential)", "Thumbnails: On (parallel)" }).ToString())"
+                 ><i class="fas fa-photo-video"></i></div>
+            
+            <div class="btn btn-videomode"      
+                 data-mode="@Model.OptVideoMode"
+                 data-initial="@Model.OptVideoMode"
+                 data-options="@(Json.Serialize(new[]{"Playback: Disabled", "Playback: Seekable raw file", "Playback: Raw file", "Playback: Transcoded Webm stream", "Playback: Download file", "Playback: VLC Protocol Link" }).ToString())"
+                 ><i class="fas fa-broadcast-tower"></i></div>
+            
+            <div class="btnpad"></div>
+            
+            <div class="btn btn-refresh"><i class="fas fa-sync-alt"></i></div>
+            
+            <div id="option_dropdown" class="dropdown hidden"></div>
         </div>
 
     </header>
@@ -69,6 +99,7 @@
         youtube-dl Viewer (c) <a href="https://www.mikescher.com">mikescher.com</a> 2020
     </footer>
 
+    <div id="dropdown_background" class="hidden">&nbsp;</div>
 
 </div>
 
