@@ -830,4 +830,6 @@ function hideOptionDropDown()
 {
     document.querySelector('#option_dropdown').classList.add('hidden');
     document.querySelector('#option_dropdown').setAttribute('data-ddtype', 'none');
+
+    document.querySelector('#dropdown_background').classList.add('hidden');
 }
