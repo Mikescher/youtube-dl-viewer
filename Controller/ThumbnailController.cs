@@ -127,29 +127,32 @@ namespace youtube_dl_viewer.Controller
             }
             
             if (!File.Exists(pathCache)) { context.Response.StatusCode = 500; return; }
-            
-            await using var fs = new FileStream(pathCache, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             long dataoffset = int.MinValue;
             int  datalength = int.MinValue;
-            int prevcount = -1;
-            using (var br = new BinaryReader(fs, Encoding.UTF8, true))
-            {
-                prevcount = br.ReadByte();
+            int prevcount;
+            byte[] databin;
             
-                if (prevcount <= imageIndex) { context.Response.StatusCode = 500; return; }
-
-                for (var i = 0; i < imageIndex+1; i++)
+            await using (var fs = new FileStream(pathCache, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                using (var br = new BinaryReader(fs, Encoding.UTF8, true))
                 {
-                    dataoffset = br.ReadInt64();
-                    datalength = br.ReadInt32();
+                    prevcount = br.ReadByte();
+            
+                    if (prevcount <= imageIndex) { context.Response.StatusCode = 500; return; }
+
+                    for (var i = 0; i < imageIndex+1; i++)
+                    {
+                        dataoffset = br.ReadInt64();
+                        datalength = br.ReadInt32();
+                    }
                 }
+
+                fs.Seek(dataoffset, SeekOrigin.Begin);
+
+                databin = new byte[datalength];
+                fs.Read(databin, 0, datalength);
             }
-
-            fs.Seek(dataoffset, SeekOrigin.Begin);
-
-            var databin = new byte[datalength];
-            fs.Read(databin, 0, datalength);
             
             context.Response.Headers.Add("PreviewImageCount", prevcount.ToString());
             context.Response.Headers.Add("PathCache", pathCache);

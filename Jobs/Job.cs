@@ -56,6 +56,8 @@ namespace youtube_dl_viewer.Jobs
                 Unregister();
                 Running = false;
                 KillProxies();
+                
+                GC.Collect(); // ?!?
             }
         }
 

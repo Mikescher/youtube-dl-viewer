@@ -130,44 +130,45 @@ namespace youtube_dl_viewer.Jobs
                 }
 
                 ImageCount = prevCount;
-                
-                using var ms = new MemoryStream();
-                
-                using (var bw = new BinaryWriter(ms, Encoding.UTF8, true))
+
+                using (var ms = new MemoryStream())
                 {
-                    bw.Write((byte) prevCount);
-
-                    for (var i = 0; i < prevCount; i++)
-                    {
-                        bw.Write(0L);
-                        bw.Write(0);
-                    }
-                }
-
-                for (var i = 0; i < prevCount; i++)
-                {
-                    var pos = ms.Position;
-                    var bin = File.ReadAllBytes(Path.Combine(TempDir, (i+1) + ".jpg"));
-
-                    if (_queryImageIndex == i) ImageData = bin;
-                    
-                    ms.Seek(1 + i * (8 + 4), SeekOrigin.Begin);
                     using (var bw = new BinaryWriter(ms, Encoding.UTF8, true))
                     {
-                        bw.Write(pos);
-                        bw.Write(bin.Length);
-                    }
-                    ms.Seek(0, SeekOrigin.End);
+                        bw.Write((byte) prevCount);
 
-                    ms.Write(bin);
+                        for (var i = 0; i < prevCount; i++)
+                        {
+                            bw.Write(0L);
+                            bw.Write(0);
+                        }
+                    }
+                    
+                    for (var i = 0; i < prevCount; i++)
+                    {
+                        var pos = ms.Position;
+                        var bin = File.ReadAllBytes(Path.Combine(TempDir, (i+1) + ".jpg"));
+
+                        if (_queryImageIndex == i) ImageData = bin;
+                    
+                        ms.Seek(1 + i * (8 + 4), SeekOrigin.Begin);
+                        using (var bw = new BinaryWriter(ms, Encoding.UTF8, true))
+                        {
+                            bw.Write(pos);
+                            bw.Write(bin.Length);
+                        }
+                        ms.Seek(0, SeekOrigin.End);
+
+                        ms.Write(bin);
+                    }
+                    
+                    using (var fs = new FileStream(Destination, FileMode.Create, FileAccess.Write)) 
+                    {
+                        ms.Seek(0, SeekOrigin.Begin);
+                        ms.CopyTo(fs);
+                    }
                 }
                 
-                using (var fs = new FileStream(Destination, FileMode.Create, FileAccess.Write)) 
-                {
-                    ms.Seek(0, SeekOrigin.Begin);
-                    ms.CopyTo(fs);
-                }
-
                 GenFinished = true;
                 Unregister();
 
