@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Controller;
+using youtube_dl_viewer.Jobs;
 using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer
@@ -20,11 +21,13 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string Version => "0.10";
+        public static string Version => "0.12";
 
         private static string _currentDir = null;
         public static string CurrentDir => _currentDir ??= Environment.CurrentDirectory;
-        
+
+        public static ThumbnailExtractionMode ThumbnailExtraction = ThumbnailExtractionMode.Sequential;
+
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
@@ -38,6 +41,9 @@ namespace youtube_dl_viewer
         public static bool AutoOpenBrowser = false;
         
         public static string ConvertFFMPEGParams = @"-vb 256k -cpu-used -5 -deadline realtime";
+
+        public static int MaxPreviewImageCount = 32;
+        public static int MinPreviewImageCount = 8;
         
         /*
          * [0] ListStyle: Grid
@@ -161,8 +167,6 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("  --max-parallel-genprev=<v> Maximum amount of parallel ffmpeg calls to generate");
                 Console.Out.WriteLine("                               thumbnails and preview images");
                 Console.Out.WriteLine("                               Default := " + MaxParallelGenPreviewJobs);
-                Console.Out.WriteLine("  --preview-width=<value>    Width for generated preview and thumbnail images");
-                Console.Out.WriteLine("                               Default := " + PreviewImageWidth);
                 Console.Out.WriteLine("  --webm-convert-params=<v>  Additional parameters in ffmpeg call for video");
                 Console.Out.WriteLine("                               to (stream-able) webm");
                 Console.Out.WriteLine("                               Default := '" + ConvertFFMPEGParams + "'");
@@ -172,6 +176,21 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("                               # - generated thumbnails");
                 Console.Out.WriteLine("                               # - hover preview");
                 Console.Out.WriteLine("                               # - ...");
+                Console.Out.WriteLine("  --preview-width=<value>    Width for generated preview and thumbnail images");
+                Console.Out.WriteLine("                               Default := " + PreviewImageWidth);
+                Console.Out.WriteLine("  --thumnail-ex-mode=<v>     The algorithm to create preview images from the video file");
+                Console.Out.WriteLine("                               # [0] Sequential: Multiple calls to ffmpeg to");
+                Console.Out.WriteLine("                               #                 extract single frames (only one call at a time)");
+                Console.Out.WriteLine("                               #                 (only one call at a time)");
+                Console.Out.WriteLine("                               # [1] Parallel: Multiple calls to ffmpeg to");
+                Console.Out.WriteLine("                               #               extract single frames");
+                Console.Out.WriteLine("                               #               (all calls parallel)");
+                Console.Out.WriteLine("                               # [2] SingleCommand: Only a single call to ffmpeg");
+                Console.Out.WriteLine("                               #                    with an fps filter");
+                Console.Out.WriteLine("  --previewcount-max=<v>    The max amount of generated preview images per video");
+                Console.Out.WriteLine("                               Default := " + MaxPreviewImageCount);
+                Console.Out.WriteLine("  --previewcount-min=<v>    The minimum amount of generated preview images per video");
+                Console.Out.WriteLine("                               Default := " + MinPreviewImageCount);
                 Console.Out.WriteLine("  --open-browser             Automatically open browser after webserver");
                 Console.Out.WriteLine("                               is started (only works on desktop)");
                 Console.Out.WriteLine();
@@ -298,6 +317,9 @@ namespace youtube_dl_viewer
                 if (key == "max-parallel-genprev") MaxParallelGenPreviewJobs = int.Parse(value);
                 if (key == "preview-width")        PreviewImageWidth         = int.Parse(value);
                 if (key == "webm-convert-params")  ConvertFFMPEGParams       = value;
+                if (key == "thumnail-ex-mode")     ThumbnailExtraction       = (ThumbnailExtractionMode)int.Parse(value);
+                if (key == "previewcount-max")     MaxPreviewImageCount      = int.Parse(value);
+                if (key == "previewcount-min")     MinPreviewImageCount      = Math.Max(2, int.Parse(value));
             }
         }
 

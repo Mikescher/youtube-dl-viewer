@@ -109,6 +109,8 @@ namespace youtube_dl_viewer.Controller
                 if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; return; }
 
                 context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageCount.Value.ToString());
+                context.Response.Headers.Add("PathCache", pathCache);
+                context.Response.Headers.Add("PathVideo", videopath);
                 await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData);
                 return;
             }
@@ -137,6 +139,8 @@ namespace youtube_dl_viewer.Controller
             fs.Read(databin, 0, datalength);
             
             context.Response.Headers.Add("PreviewImageCount", prevcount.ToString());
+            context.Response.Headers.Add("PathCache", pathCache);
+            context.Response.Headers.Add("PathVideo", videopath);
             await context.Response.BodyWriter.WriteAsync(databin);
         }
     }

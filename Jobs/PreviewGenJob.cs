@@ -3,11 +3,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Jobs
 {
+    public enum ThumbnailExtractionMode
+    {
+        Sequential    = 0, // Multiple calls to ffmpeg to extract single frames (only one call at a time)
+        Parallel      = 1, // Multiple calls to ffmpeg to extract single frames (all calls parallel)
+        SingleCommand = 2, // single call to ffmpeg with fps filter
+    }
+
     public class PreviewGenJob : Job
     {
         public readonly string Destination;
@@ -15,7 +25,7 @@ namespace youtube_dl_viewer.Jobs
 
         public bool GenFinished = false;
 
-        private int? _queryImageIndex;
+        private readonly int? _queryImageIndex;
         
         public byte[] ImageData  = null;
         public int?   ImageCount = null;
@@ -41,90 +51,71 @@ namespace youtube_dl_viewer.Jobs
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
                 
-                var proc1 = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = "ffprobe",
-                        Arguments = $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"",
-                        CreateNoWindow = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                    }
-                };
-
-                var builder1Out = new StringBuilder();
-                proc1.OutputDataReceived += (sender, args) =>
-                {
-                    if (args.Data == null) return;
-                    if (builder1Out.Length == 0) builder1Out.Append(args.Data);
-                    else builder1Out.Append("\n" + args.Data);
-                };
-                proc1.ErrorDataReceived += (sender, args) =>
-                {
-                    if (args.Data == null) return;
-                    if (builder1Out.Length == 0) builder1Out.Append(args.Data);
-                    else builder1Out.Append("\n" + args.Data);
-                };
+                var (ecode1, outputProbe) = RunCommand("ffprobe", $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"");
                 
-                proc1.Start();
-                proc1.BeginOutputReadLine();
-                proc1.BeginErrorReadLine();
-                proc1.WaitForExit();
-
-                if (proc1.ExitCode != 0)
+                if (ecode1 != 0)
                 {
                     Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffprobe)");
                     return;
                 }
 
-                var videolen = double.Parse(builder1Out.ToString().Trim(), CultureInfo.InvariantCulture);
+                var videolen = double.Parse(outputProbe.Trim(), CultureInfo.InvariantCulture);
 
-                var framedistance = videolen / 32; // 16 frames by default (and max)
+                var framedistance = videolen / Program.MaxPreviewImageCount; // __ frames by default (and max)
 
                 if (framedistance < 5) framedistance = 5; // at least 10 sec dist between frames
 
-                if (framedistance > videolen / 8) framedistance = videolen / 8; // at least 4 frames
+                if (framedistance > videolen / 8) framedistance = videolen / Program.MinPreviewImageCount; // at least __ frames
                 
-                var proc2 = new Process
+                var taskList = new List<Task<(int, string)>>();
+
+                if (Program.ThumbnailExtraction == ThumbnailExtractionMode.Parallel)
                 {
-                    StartInfo = new ProcessStartInfo
+                    var currpos = 0.0;
+                    for (var i = 1; currpos < videolen; i++)
                     {
-                        FileName = "ffmpeg",
-                        Arguments = $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"",
-                        CreateNoWindow = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
+                        taskList.Add(RunCommandAsync("ffmpeg", $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\""));
+
+                        currpos += framedistance;
+                        if (framedistance < 0.1) break;
                     }
-                };
-                
 
-                var builder2Out = new StringBuilder();
-                proc2.OutputDataReceived += (sender, args) =>
-                {
-                    if (args.Data == null) return;
-                    if (builder2Out.Length == 0) builder2Out.Append(args.Data);
-                    else builder2Out.Append("\n" + args.Data);
-                };
-                proc2.ErrorDataReceived += (sender, args) =>
-                {
-                    if (args.Data == null) return;
-                    if (builder2Out.Length == 0) builder2Out.Append(args.Data);
-                    else builder2Out.Append("\n" + args.Data);
-                };
-                
-                proc2.Start();
-                proc2.BeginOutputReadLine();
-                proc2.BeginErrorReadLine();
-                proc2.WaitForExit();
+                    Task.WaitAll(taskList.Cast<Task>().ToArray());
 
-                if (proc2.ExitCode != 0)
-                {
-                    Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
-                    return;
+                    if (taskList.Any(t => t.Result.Item1 != 0))
+                    {
+                        Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                        return;
+                    }
                 }
+                else if (Program.ThumbnailExtraction == ThumbnailExtractionMode.Sequential)
+                {
+                    var currpos = 0.0;
+                    for (var i = 1; currpos < videolen; i++)
+                    {
+                        var (ecode2, _) = RunCommand("ffmpeg", $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"");
 
-                var prevCount = 0;
+                        if (ecode2 != 0)
+                        {
+                            Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                            return;
+                        }
+                        currpos += framedistance;
+                        if (framedistance < 0.1) break;
+                    }
+                }
+                else if (Program.ThumbnailExtraction == ThumbnailExtractionMode.SingleCommand)
+                {
+                    var (ecode2, _) = RunCommand("ffmpeg", $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"");
+
+                    if (ecode2 != 0)
+                    {
+                        Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                        return;
+                    }
+                }
+                
+                int prevCount;
                 for (var i = 1;; i++)
                 {
                     if (File.Exists(Path.Combine(TempDir, i+".jpg"))) continue;
@@ -214,6 +205,78 @@ namespace youtube_dl_viewer.Jobs
                     }
                 }
             }
+        }
+
+        private (int, string) RunCommand(string cmd, string args)
+        {
+            var proc1 = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = cmd,
+                    Arguments = args,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                }
+            };
+
+            var builderOut = new StringBuilder();
+            proc1.OutputDataReceived += (sender, oargs) =>
+            {
+                if (oargs.Data == null) return;
+                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
+                else builderOut.Append("\n" + oargs.Data);
+            };
+            proc1.ErrorDataReceived += (sender, oargs) =>
+            {
+                if (oargs.Data == null) return;
+                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
+                else builderOut.Append("\n" + oargs.Data);
+            };
+                
+            proc1.Start();
+            proc1.BeginOutputReadLine();
+            proc1.BeginErrorReadLine();
+            proc1.WaitForExit();
+
+            return (proc1.ExitCode, builderOut.ToString());
+        }
+        
+        private async Task<(int, string)> RunCommandAsync(string cmd, string args)
+        {
+            var proc1 = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = cmd,
+                    Arguments = args,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                }
+            };
+
+            var builderOut = new StringBuilder();
+            proc1.OutputDataReceived += (sender, oargs) =>
+            {
+                if (oargs.Data == null) return;
+                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
+                else builderOut.Append("\n" + oargs.Data);
+            };
+            proc1.ErrorDataReceived += (sender, oargs) =>
+            {
+                if (oargs.Data == null) return;
+                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
+                else builderOut.Append("\n" + oargs.Data);
+            };
+                
+            proc1.Start();
+            proc1.BeginOutputReadLine();
+            proc1.BeginErrorReadLine();
+            await proc1.WaitForExitAsync();
+
+            return (proc1.ExitCode, builderOut.ToString());
         }
     }
 }
