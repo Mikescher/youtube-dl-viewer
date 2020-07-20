@@ -10,6 +10,8 @@ const DATA =
     data: null,
     
     dropDownIDCounter: 10000,
+
+    currentAnimatedPreview: '',
 }
 
 $     = function(sel)       { return document.querySelector(sel); };
@@ -151,7 +153,7 @@ function initData(data)
         html += '<i class="icon_cached fas fa-cloud"></i>';
         
         {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/data/' + DATA.dataidx + '/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/data/' + DATA.dataidx + '/video/' + escapeHtml(meta['uid']) + '/thumb" data-videoid="'+escapeHtml(meta['uid'])+'" /></div>';
 
             if (info.hasNonNull('like_count') && info.hasNonNull('dislike_count'))
             {
@@ -248,8 +250,14 @@ function initData(data)
     for (const btn of $all('.btn-expand'))   btn.addEventListener('click', e => { btn.parentNode.classList.add('expanded'); e.stopPropagation(); });
     for (const btn of $all('.btn-collapse')) btn.addEventListener('click', e => { btn.parentNode.classList.remove('expanded'); e.stopPropagation(); });
 
-    for (const btn of $all('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id')) });
-    
+    for (const btn of $all('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id')); });
+
+    for (const tmb of $all('.video_entry .thumbnail'))
+    {
+        tmb.addEventListener('mouseenter', () => { onMouseEnterThumbnail(tmb); });
+        tmb.addEventListener('mouseleave', () => { onMouseLeaveThumbnail(tmb); });
+    }
+
     // noinspection JSIgnoredPromiseFromCall
     loadThumbnails();
 }
@@ -858,4 +866,76 @@ function hideOptionDropDown()
     $('#option_dropdown').setAttribute('data-ddtype', 'none');
 
     $('#dropdown_background').classList.add('hidden');
+}
+
+function onMouseEnterThumbnail(elem)
+{
+    let content = $('#content');
+    
+    if (parseInt($attr('.btn-loadthumbnails', 'data-mode')) === 0) return;
+    
+    if ($attr('main', 'data-has_ffmpeg').toLowerCase() === 'false') return;
+    if (!content.classList.contains('lstyle_grid') && !content.classList.contains('lstyle_detailed')) return;
+    
+    let img = elem.querySelector('img');
+    if (img.getAttribute('data-loaded') !== '1') return;
+    
+    let video_id = img.getAttribute('data-videoid');
+
+    DATA.currentAnimatedPreview = video_id;
+
+    const request = new XMLHttpRequest();
+    request.open('GET', '/data/'+DATA.dataidx+'/video/'+video_id+'/prev/'+0, true);
+
+    request.onload = function()
+    {
+        if (this.status >= 200 && this.status < 400)
+        {
+            const c = parseInt(request.getResponseHeader('PreviewImageCount'));
+
+            // noinspection JSIgnoredPromiseFromCall
+            animateThumbnailPreview(img, c, video_id);
+        }
+        else
+        {
+            console.error('Could not load preview images (status)');
+        }
+    };
+
+    request.onerror = function()
+    {
+        console.error('Could not load preview images (onerror)');
+    };
+
+    request.send();
+}
+
+async function animateThumbnailPreview(img, max, video_id)
+{
+    for (let i=0;;i++)
+    {
+        if (DATA.currentAnimatedPreview !== video_id) return;
+        
+        await setImageSource(img, '/data/'+DATA.dataidx+'/video/'+video_id+'/prev/'+(i%max));
+        await sleepAsync(333);
+        
+        if (((i+1)%max) === 0) await sleepAsync(666);
+    }
+}
+
+function onMouseLeaveThumbnail(elem)
+{
+    let img = elem.querySelector('img');
+    if (img.getAttribute('data-loaded') !== '1') return;
+
+    let video_id = img.getAttribute('data-videoid');
+    
+    if (DATA.currentAnimatedPreview !== video_id)
+    {
+        DATA.currentAnimatedPreview = '';
+        return;
+    }
+
+    DATA.currentAnimatedPreview = '';
+    img.src = img.getAttribute('data-realurl');
 }

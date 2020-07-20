@@ -101,6 +101,7 @@ namespace youtube_dl_viewer.Controller
                 if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; return; }
                 if (proxy.Job.ImageData.Count <= imageIndex) { context.Response.StatusCode = 500; return; }
 
+                context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageData.Count.ToString());
                 await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData[imageIndex]);
                 return;
             }
@@ -109,11 +110,12 @@ namespace youtube_dl_viewer.Controller
 
             long dataoffset = int.MinValue;
             int  datalength = int.MinValue;
+            int prevcount = -1;
             using (var br = new BinaryReader(fs, Encoding.UTF8, true))
             {
-                var count = br.ReadByte();
+                prevcount = br.ReadByte();
             
-                if (count <= imageIndex) { context.Response.StatusCode = 500; return; }
+                if (prevcount <= imageIndex) { context.Response.StatusCode = 500; return; }
 
                 for (var i = 0; i < imageIndex+1; i++)
                 {
@@ -126,6 +128,8 @@ namespace youtube_dl_viewer.Controller
 
             var databin = new byte[datalength];
             fs.Read(databin, 0, datalength);
+            
+            context.Response.Headers.Add("PreviewImageCount", prevcount.ToString());
             await context.Response.BodyWriter.WriteAsync(databin);
         }
     }

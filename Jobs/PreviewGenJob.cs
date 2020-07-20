@@ -80,11 +80,11 @@ namespace youtube_dl_viewer.Jobs
 
                 var videolen = double.Parse(builderOut.ToString().Trim(), CultureInfo.InvariantCulture);
 
-                var framedistance = videolen / 16; // 16 frames by default (and max)
+                var framedistance = videolen / 32; // 16 frames by default (and max)
 
-                if (framedistance < 10) framedistance = 10; // at least 10 sec dist between frames
+                if (framedistance < 5) framedistance = 5; // at least 10 sec dist between frames
 
-                if (framedistance > videolen / 4) framedistance = videolen / 4; // at least 4 frames
+                if (framedistance > videolen / 8) framedistance = videolen / 8; // at least 4 frames
                 
                 var proc2 = new Process
                 {
