@@ -34,7 +34,7 @@
     <header>
         <div class="logo">
             <div class="apptitle">youtube-dl Viewer <span class="version">@Model.Version</span></div>
-            <div class="apppath @Html.Raw((Model.BaseDirs.Count > 1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Model.BaseDirs))">
+            <div class="apppath @Html.Raw((Model.BaseDirs.Count > 1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Model.BaseDirs))" data-initial="0">
                 <span>@Model.BaseDirs.First()</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
@@ -49,7 +49,7 @@
         <div class="buttons">
             <div class="btn btn-display"        
                  data-mode="@Model.OptDisplayMode"  
-                 data-initial="@Model.OptDisplayMode"  
+                 data-initial="@Model.OptDisplayMode"
                  data-options="@(Json.Serialize(new[]{"ListStyle: Grid", "ListStyle: Compact", "ListStyle: Tabular", "ListStyle: Detailed"}).ToString())"
                  ><i class="far fa-eye"></i></div>
             

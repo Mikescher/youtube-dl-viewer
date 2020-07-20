@@ -12,6 +12,10 @@ const DATA =
     dropDownIDCounter: 10000,
 }
 
+$     = function(sel)       { return document.querySelector(sel); };
+$all  = function(sel)       { return document.querySelectorAll(sel); };
+$attr = function(sel, attr) { return document.querySelector(sel).getAttribute(attr); }
+
 function escapeHtml(text) 
 {
     if (typeof text !== "string") text = (""+text).toString();
@@ -43,29 +47,31 @@ function formatNumber(num)
 
 window.onload = function() 
 {
+    DATA.dataidx = parseInt($attr('.apppath', 'data-initial'));
+    
     for (const e of location.hash.replace('#','').split('&'))
     {
         const [key, val] = e.split('=');
 
-        if (key === 'display')   document.querySelector('.btn-display').setAttribute('data-mode', val);
-        if (key === 'order')     document.querySelector('.btn-order').setAttribute('data-mode', val);
-        if (key === 'width')     document.querySelector('.btn-width').setAttribute('data-mode', val);
-        if (key === 'thumb')     document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', val);
-        if (key === 'videomode') document.querySelector('.btn-videomode').setAttribute('data-mode', val);
+        if (key === 'display')   $('.btn-display').setAttribute('data-mode', val);
+        if (key === 'order')     $('.btn-order').setAttribute('data-mode', val);
+        if (key === 'width')     $('.btn-width').setAttribute('data-mode', val);
+        if (key === 'thumb')     $('.btn-loadthumbnails').setAttribute('data-mode', val);
+        if (key === 'videomode') $('.btn-videomode').setAttribute('data-mode', val);
         if (key === 'dir')       DATA.dataidx = parseInt(val);
     }
     
     updateDisplaymodeClass(false);
     updateDisplaywidthClass(false);
 
-    document.querySelector('.apppath span').innerHTML = escapeHtml(JSON.parse(document.querySelector('.apppath').getAttribute('data-dirs'))[DATA.dataidx]);
+    $('.apppath span').innerHTML = escapeHtml(JSON.parse($attr('.apppath', 'data-dirs'))[DATA.dataidx]);
 
     loadDataFromServer(true);
 };
 
 function loadDataFromServer(initial)
 {
-    document.querySelector('#content').innerHTML = '';
+    $('#content').innerHTML = '';
     
     const request = new XMLHttpRequest();
     request.open('GET', '/data/'+DATA.dataidx+'/json', true);
@@ -102,11 +108,11 @@ function initData(data)
         hasArrayWithValues: function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; },
     }
 
-    document.querySelector('#content').innerHTML = '';
+    $('#content').innerHTML = '';
     
     let videos = data['videos'];
     
-    const sortmode = parseInt(document.querySelector('.btn-order').getAttribute('data-mode'));
+    const sortmode = parseInt($attr('.btn-order', 'data-mode'));
 
     if (sortmode === 0) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * -1);
     if (sortmode === 1) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * +1);
@@ -249,12 +255,12 @@ function initData(data)
         html += "\n\n";
     }
 
-    document.querySelector('#content').innerHTML = html;
+    $('#content').innerHTML = html;
 
-    for (const btn of document.querySelectorAll('.btn-expand'))   btn.addEventListener('click', e => { btn.parentNode.classList.add('expanded'); e.stopPropagation(); });
-    for (const btn of document.querySelectorAll('.btn-collapse')) btn.addEventListener('click', e => { btn.parentNode.classList.remove('expanded'); e.stopPropagation(); });
+    for (const btn of $all('.btn-expand'))   btn.addEventListener('click', e => { btn.parentNode.classList.add('expanded'); e.stopPropagation(); });
+    for (const btn of $all('.btn-collapse')) btn.addEventListener('click', e => { btn.parentNode.classList.remove('expanded'); e.stopPropagation(); });
 
-    for (const btn of document.querySelectorAll('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id')) });
+    for (const btn of $all('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id')) });
     
     // noinspection JSIgnoredPromiseFromCall
     loadThumbnails();
@@ -328,7 +334,7 @@ function loadThumbnails()
 {
     DATA.thumbnailInvocationCounter++;
 
-    const mode = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
+    const mode = parseInt($attr('.btn-loadthumbnails', 'data-mode'));
     if (mode === 0) 
     {
         unloadThumbnails(); 
@@ -352,7 +358,7 @@ function loadThumbnails()
 
 function unloadThumbnails()
 {
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    for (const thumb of $all('.thumb_img_loadable'))
     {
         if (thumb.getAttribute('data-loaded') === '0') continue;
         
@@ -366,7 +372,7 @@ async function loadThumbnailsIntelligentAsync()
     const ctr = DATA.thumbnailInvocationCounter;
 
     // in-viewport => parallel
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    for (const thumb of $all('.thumb_img_loadable'))
     {
         if (DATA.thumbnailInvocationCounter !== ctr) return;
 
@@ -384,7 +390,7 @@ async function loadThumbnailsIntelligentAsync()
     }
 
     // in-viewport => sequential
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    for (const thumb of $all('.thumb_img_loadable'))
     {
         if (DATA.thumbnailInvocationCounter !== ctr) return;
 
@@ -403,7 +409,7 @@ async function loadThumbnailsSequentialAsync()
 {
     const ctr = DATA.thumbnailInvocationCounter;
 
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    for (const thumb of $all('.thumb_img_loadable'))
     {
         if (DATA.thumbnailInvocationCounter !== ctr) return;
 
@@ -424,7 +430,7 @@ async function loadThumbnailsParallelAsync()
 {
     const ctr = DATA.thumbnailInvocationCounter;
 
-    for (const thumb of document.querySelectorAll('.thumb_img_loadable'))
+    for (const thumb of $all('.thumb_img_loadable'))
     {
         if (DATA.thumbnailInvocationCounter !== ctr) return;
 
@@ -485,14 +491,14 @@ async function setImageSource(image, src)
 
 function initButtons()
 {
-    document.querySelector('.btn-display').addEventListener('click', () => 
+    $('.btn-display').addEventListener('click', () => 
     {
-        const current = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
-        const options = JSON.parse(document.querySelector('.btn-display').getAttribute('data-options'));
+        const current = parseInt($attr('.btn-display', 'data-mode'));
+        const options = JSON.parse($attr('.btn-display', 'data-options'));
 
         showOptionDropDown('display', current, options, v =>
         {
-            document.querySelector('.btn-display').setAttribute('data-mode', v.toString());
+            $('.btn-display').setAttribute('data-mode', v.toString());
             showToast(options[v]);
             updateLocationHash();
 
@@ -502,14 +508,14 @@ function initButtons()
         });
     });
 
-    document.querySelector('.btn-width').addEventListener('click', () =>
+    $('.btn-width').addEventListener('click', () =>
     {
-        const current = parseInt(document.querySelector('.btn-width').getAttribute('data-mode'));
-        const options = JSON.parse(document.querySelector('.btn-width').getAttribute('data-options'));
+        const current = parseInt($attr('.btn-width', 'data-mode'));
+        const options = JSON.parse($attr('.btn-width', 'data-options'));
 
         showOptionDropDown('width', current, options, v =>
         {
-            document.querySelector('.btn-width').setAttribute('data-mode', v.toString());
+            $('.btn-width').setAttribute('data-mode', v.toString());
             showToast(options[v]);
             updateLocationHash();
 
@@ -519,14 +525,14 @@ function initButtons()
         });
     });
 
-    document.querySelector('.btn-order').addEventListener('click', () =>
+    $('.btn-order').addEventListener('click', () =>
     {
-        const current = parseInt(document.querySelector('.btn-order').getAttribute('data-mode'));
-        const options = JSON.parse(document.querySelector('.btn-order').getAttribute('data-options'));
+        const current = parseInt($attr('.btn-order', 'data-mode'));
+        const options = JSON.parse($attr('.btn-order', 'data-options'));
         
         showOptionDropDown('order', current, options, v => 
         {
-            document.querySelector('.btn-order').setAttribute('data-mode', v.toString());
+            $('.btn-order').setAttribute('data-mode', v.toString());
             showToast(options[v]);
             updateLocationHash();
             
@@ -534,11 +540,11 @@ function initButtons()
         });
     });
 
-    document.querySelector('.btn-refresh').addEventListener('click', () => 
+    $('.btn-refresh').addEventListener('click', () => 
     {
         showToast('Refreshing data');
         
-        document.querySelector('#content').innerHTML = '';
+        $('#content').innerHTML = '';
         
         const request = new XMLHttpRequest();
         request.open('GET', '/data/'+DATA.dataidx+'/refresh', true);
@@ -566,14 +572,14 @@ function initButtons()
         request.send();
     });
     
-    document.querySelector('.btn-loadthumbnails').addEventListener('click', () =>
+    $('.btn-loadthumbnails').addEventListener('click', () =>
     {
-        const current = parseInt(document.querySelector('.btn-loadthumbnails').getAttribute('data-mode'));
-        const options = JSON.parse(document.querySelector('.btn-loadthumbnails').getAttribute('data-options'));
+        const current = parseInt($attr('.btn-loadthumbnails', 'data-mode'));
+        const options = JSON.parse($attr('.btn-loadthumbnails', 'data-options'));
 
         showOptionDropDown('loadthumbnails', current, options, v =>
         {
-            document.querySelector('.btn-loadthumbnails').setAttribute('data-mode', v.toString());
+            $('.btn-loadthumbnails').setAttribute('data-mode', v.toString());
             showToast(options[v]);
             updateLocationHash();
 
@@ -581,40 +587,40 @@ function initButtons()
         });
     });
 
-    document.querySelector('.btn-videomode').addEventListener('click', () =>
+    $('.btn-videomode').addEventListener('click', () =>
     {
-        const current = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
-        const options = JSON.parse(document.querySelector('.btn-videomode').getAttribute('data-options'));
+        const current = parseInt($attr('.btn-videomode', 'data-mode'));
+        const options = JSON.parse($attr('.btn-videomode', 'data-options'));
 
         showOptionDropDown('videomode', current, options, v =>
         {
-            document.querySelector('.btn-videomode').setAttribute('data-mode', v.toString());
+            $('.btn-videomode').setAttribute('data-mode', v.toString());
             showToast(options[v]);
             updateLocationHash();
 
-            const curr = document.querySelector('#fullsizevideo');
+            const curr = $('#fullsizevideo');
             if (curr !== null) showVideo(curr.getAttribute("data-id"));
         });
     });
 
-    const apm = document.querySelector('.apppath.multiple');
+    const apm = $('.apppath.multiple');
     if (apm !== null) 
     {
         apm.addEventListener('click', () => 
         { 
-            if (document.querySelector('#apppath_dropdown.hidden') !== null) 
+            if ($('#apppath_dropdown.hidden') !== null) 
                 showPathDropDown();
             else 
                 hidePathDropDown();
         });
-        for (const row of document.querySelectorAll('#apppath_dropdown .row'))
+        for (const row of $all('#apppath_dropdown .row'))
         {
             row.addEventListener('click', () => 
             {
-                hideDropDown();
+                hidePathDropDown();
                 if (DATA.dataidx !== parseInt(row.getAttribute('data-idx')))
                 {
-                    document.querySelector('.apppath span').innerHTML = escapeHtml(row.getAttribute('data-path'));
+                    $('.apppath span').innerHTML = escapeHtml(row.getAttribute('data-path'));
                     DATA.dataidx = parseInt(row.getAttribute('data-idx'));
                     updateLocationHash();
                     loadDataFromServer(false);
@@ -626,19 +632,34 @@ function initButtons()
 
 function updateLocationHash()
 {
-    location.hash = 'display='   + document.querySelector('.btn-display').getAttribute('data-mode')        + '&' +
-                    'order='     + document.querySelector('.btn-order').getAttribute('data-mode')          + '&' +
-                    'width='     + document.querySelector('.btn-width').getAttribute('data-mode')          + '&' +
-                    'thumb='     + document.querySelector('.btn-loadthumbnails').getAttribute('data-mode') + '&' +
-                    'videomode=' + document.querySelector('.btn-videomode').getAttribute('data-mode')      + '&' +
-                    'dir='       + DATA.dataidx;
+    let hash = [];
+
+    if ($attr('.btn-display', 'data-mode') !== $attr('.btn-display', 'data-initial'))
+        hash.push('display=' + $attr('.btn-display', 'data-mode'));
+
+    if ($attr('.btn-order', 'data-mode') !== $attr('.btn-order', 'data-initial'))
+        hash.push('order=' + $attr('.btn-order', 'data-mode'));
+
+    if ($attr('.btn-width', 'data-mode') !== $attr('.btn-width', 'data-initial'))
+        hash.push('width=' + $attr('.btn-width', 'data-mode'));
+
+    if ($attr('.btn-loadthumbnails', 'data-mode') !== $attr('.btn-loadthumbnails', 'data-initial'))
+        hash.push('thumb=' + $attr('.btn-loadthumbnails', 'data-mode'));
+
+    if ($attr('.btn-videomode', 'data-mode') !== $attr('.btn-videomode', 'data-initial'))
+        hash.push('videomode=' + $attr('.btn-videomode', 'data-mode'));
+
+    if (DATA.dataidx !== parseInt($attr('.apppath', 'data-initial')))
+        hash.push('dir='   + DATA.dataidx);
+    
+    location.hash = hash.join('&');
 }
 
 function updateDisplaymodeClass(toast)
 {
-    const main = document.querySelector('#content');
+    const main = $('#content');
 
-    const mode = parseInt(document.querySelector('.btn-display').getAttribute('data-mode'));
+    const mode = parseInt($attr('.btn-display', 'data-mode'));
 
     main.classList.remove('lstyle_detailed');
     main.classList.remove('lstyle_grid');
@@ -653,9 +674,9 @@ function updateDisplaymodeClass(toast)
 
 function updateDisplaywidthClass(toast)
 {
-    const content = document.querySelector('#content');
+    const content = $('#content');
 
-    const mode = parseInt(document.querySelector('.btn-width').getAttribute('data-mode'));
+    const mode = parseInt($attr('.btn-width', 'data-mode'));
 
     content.classList.remove('lstyle_width_small');
     content.classList.remove('lstyle_width_medium');
@@ -672,7 +693,7 @@ function initEvents()
 {
     window.addEventListener('scroll', () => { loadThumbnails(); });
 
-    document.querySelector('#dropdown_background').addEventListener('click', () => 
+    $('#dropdown_background').addEventListener('click', () => 
     {
         hideAllDropDowns();
     });
@@ -688,7 +709,7 @@ function htmlToElement(html)
 
 function removeVideo()
 {
-    const vid = document.querySelector('#fullsizevideo');
+    const vid = $('#fullsizevideo');
     if (vid === null) return;
 
     const videlem = vid.querySelector('video');
@@ -701,10 +722,10 @@ function removeVideo()
 
 function showVideo(id)
 {
-    const old = document.querySelector('#fullsizevideo');
+    const old = $('#fullsizevideo');
     if (old !== null) removeVideo();
     
-    const mode = parseInt(document.querySelector('.btn-videomode').getAttribute('data-mode'));
+    const mode = parseInt($('.btn-videomode').getAttribute('data-mode'));
 
     if (mode === 0) return;
 
@@ -732,22 +753,22 @@ function showVideo(id)
     html += '  </div>';
     html += '</div>';
     
-    const main = document.querySelector('#root');
+    const main = $('#root');
     main.insertBefore(htmlToElement(html), main.firstChild);
 
-    const fsv = document.querySelector('#fullsizevideo');
+    const fsv = $('#fullsizevideo');
     fsv.addEventListener('click', function () { removeVideo(); })
 }
 
 function clearToast()
 {
-    document.querySelector('#toast').classList.add('vanished');
+    $('#toast').classList.add('vanished');
 }
 
 function showToast(txt)
 {
     clearTimeout(DATA.toastTimeoutID);
-    const toaster = document.querySelector('#toast');
+    const toaster = $('#toast');
     toaster.innerText = txt;
 
     toaster.classList.add('vanished');
@@ -761,36 +782,36 @@ function hideAllDropDowns()
     hidePathDropDown();
     hideOptionDropDown();
 
-    document.querySelector('#dropdown_background').classList.add('hidden');
+    $('#dropdown_background').classList.add('hidden');
 }
 
 function showPathDropDown()
 {
     hideAllDropDowns();
     
-    const img = document.querySelector('.apppath i');
+    const img = $('.apppath i');
     img.classList.remove('fa-chevron-down');
     img.classList.add('fa-chevron-up');
 
-    document.querySelector('#apppath_dropdown').classList.remove('hidden');
+    $('#apppath_dropdown').classList.remove('hidden');
 
-    document.querySelector('#dropdown_background').classList.remove('hidden');
+    $('#dropdown_background').classList.remove('hidden');
 }
 
 function hidePathDropDown()
 {
-    const img = document.querySelector('.apppath i');
+    const img = $('.apppath i');
     img.classList.add('fa-chevron-down');
     img.classList.remove('fa-chevron-up');
 
-    document.querySelector('#apppath_dropdown').classList.add('hidden');
+    $('#apppath_dropdown').classList.add('hidden');
     
-    document.querySelector('#dropdown_background').classList.add('hidden');
+    $('#dropdown_background').classList.add('hidden');
 }
 
 function showOptionDropDown(type, current, options, lambda)
 {
-    const dd = document.querySelector('#option_dropdown');
+    const dd = $('#option_dropdown');
     
     if (dd.getAttribute('data-ddtype') === type) { hideAllDropDowns(); return; }
     
@@ -815,7 +836,7 @@ function showOptionDropDown(type, current, options, lambda)
 
     for (const id of ids)
     {
-        const elem = document.querySelector('#' + id);
+        const elem = $('#' + id);
         elem.addEventListener('click', () => 
         {
             hideOptionDropDown();
@@ -823,13 +844,13 @@ function showOptionDropDown(type, current, options, lambda)
         });
     }
     
-    document.querySelector('#dropdown_background').classList.remove('hidden');
+    $('#dropdown_background').classList.remove('hidden');
 }
 
 function hideOptionDropDown()
 {
-    document.querySelector('#option_dropdown').classList.add('hidden');
-    document.querySelector('#option_dropdown').setAttribute('data-ddtype', 'none');
+    $('#option_dropdown').classList.add('hidden');
+    $('#option_dropdown').setAttribute('data-ddtype', 'none');
 
-    document.querySelector('#dropdown_background').classList.add('hidden');
+    $('#dropdown_background').classList.add('hidden');
 }
