@@ -169,14 +169,18 @@ namespace youtube_dl_viewer.Jobs
                 }
 
                 GenFinished = true;
+                Unregister();
 
-                for(;;) // Wait for disengaged proxies
+                if (_queryImageIndex != null)
                 {
-                    lock (SuperLock)
+                    for(;;) // Wait for disengaged proxies
                     {
-                        if (Proxies.Count != 0) break;
+                        lock (SuperLock)
+                        {
+                            if (Proxies.Count != 0) break;
+                        }
+                        Thread.Sleep(100);
                     }
-                    Thread.Sleep(100);
                 }
                 
                 

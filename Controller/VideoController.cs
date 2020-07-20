@@ -109,11 +109,13 @@ namespace youtube_dl_viewer.Controller
             
             using var proxy = JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, pathCache)); 
 
-            while (!File.Exists(proxy.Job.Temp))
+            while (!proxy.Killed && !File.Exists(proxy.Job.Temp))
             {
                 if (!proxy.Job.Running) return;
                 await Task.Delay(0);
             }
+            
+            if (proxy.Killed) { context.Response.StatusCode = 500; return; }
                 
             await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             try
@@ -121,6 +123,8 @@ namespace youtube_dl_viewer.Controller
                 var buffer = new byte[4096];
                 for (;;)
                 {
+                    if (proxy.Killed) { context.Response.StatusCode = 500; return; }
+                    
                     var convertFin = proxy.Job.ConvertFinished;
                     
                     var read = await fs.ReadAsync(buffer);
@@ -152,11 +156,13 @@ namespace youtube_dl_viewer.Controller
             
             using var proxy = JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, null)); 
 
-            while (!File.Exists(proxy.Job.Temp))
+            while (!proxy.Killed && !File.Exists(proxy.Job.Temp))
             {
                 if (!proxy.Job.Running) return;
                 await Task.Delay(0);
             }
+            
+            if (proxy.Killed) { context.Response.StatusCode = 500; return; }
                 
             await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
@@ -165,6 +171,8 @@ namespace youtube_dl_viewer.Controller
                 var buffer = new byte[4096];
                 for (;;)
                 {
+                    if (proxy.Killed) { context.Response.StatusCode = 500; return; }
+                    
                     var convertFin = proxy.Job.ConvertFinished;
                     
                     var read = await fs.ReadAsync(buffer);

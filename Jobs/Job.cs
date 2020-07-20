@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace youtube_dl_viewer.Jobs
@@ -54,9 +55,22 @@ namespace youtube_dl_viewer.Jobs
             {
                 Unregister();
                 Running = false;
+                KillProxies();
             }
         }
-        
+
+        protected void KillProxies()
+        {
+            lock (SuperLock)
+            {
+                if (!Proxies.Any()) return;
+                
+                Console.Out.WriteLine($"Manually detach {Proxies.Count} proxies from Job [{Name}]");
+                        
+                foreach (var proxy in Proxies) proxy.Kill();
+                Proxies.Clear();
+            }
+        }
 
         public void Unregister()
         {

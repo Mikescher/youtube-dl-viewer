@@ -30,6 +30,8 @@ namespace youtube_dl_viewer.Jobs
             Unregister();
             Running = false;
             ConvertFinished = true;
+
+            KillProxies();
         }
 
         protected override void Run()

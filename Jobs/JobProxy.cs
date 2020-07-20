@@ -4,7 +4,10 @@ namespace youtube_dl_viewer.Jobs
 {
     public class JobProxy<T> : IJobProxy, IDisposable where T : Job
     {
-        public readonly T Job;
+        public T Job;
+
+        public bool Killed => Job == null;
+        
         private JobProxy(T job)
         {
             Job = job;
@@ -18,6 +21,12 @@ namespace youtube_dl_viewer.Jobs
         public void Dispose()
         {
             Job.UnregisterProxy(this);
+            Job = null;
+        }
+
+        public void Kill()
+        {
+            Job = null;
         }
     }
 }

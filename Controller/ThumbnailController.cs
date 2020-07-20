@@ -37,7 +37,7 @@ namespace youtube_dl_viewer.Controller
             {
                 if (pathVideo == null) { context.Response.StatusCode = 404; return; }
 
-                await GetPreviewImage(context, pathVideo, 0);
+                await GetPreviewImage(context, pathVideo, 1);
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace youtube_dl_viewer.Controller
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
 
-            await GetPreviewImage(context, pathVideo, 0);
+            await GetPreviewImage(context, pathVideo, 1);
         }
 
         public static async Task GetPreview(HttpContext context)
@@ -99,21 +99,34 @@ namespace youtube_dl_viewer.Controller
 
             var pathCache = GetPreviewCachePath(videopath);
 
+            if (pathCache == null)
+            {
+                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, null, imageIndex)))
+                {
+                    while (!proxy.Killed && !proxy.Job.GenFinished) await Task.Delay(50);
+
+                    if (proxy.Killed)                            { context.Response.StatusCode = 500; return; }
+                    
+                    if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; return; }
+                    if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; return; }
+
+                    context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageCount.Value.ToString());
+                    context.Response.Headers.Add("PathCache", "null");
+                    context.Response.Headers.Add("PathVideo", videopath);
+                    await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData);
+                    return;
+                }
+            }
+            
             if (!File.Exists(pathCache))
             {
-                using var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, pathCache, imageIndex)); // [!] pathCache can be null
-
-                while (!proxy.Job.GenFinished) await Task.Delay(50);
-
-                if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; return; }
-                if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; return; }
-
-                context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageCount.Value.ToString());
-                context.Response.Headers.Add("PathCache", pathCache);
-                context.Response.Headers.Add("PathVideo", videopath);
-                await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData);
-                return;
+                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, pathCache, null)))
+                {
+                    while (!proxy.Killed && !proxy.Job.GenFinished) await Task.Delay(50);
+                }
             }
+            
+            if (!File.Exists(pathCache)) { context.Response.StatusCode = 500; return; }
             
             await using var fs = new FileStream(pathCache, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 

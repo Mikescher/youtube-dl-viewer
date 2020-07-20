@@ -21,16 +21,18 @@ namespace youtube_dl_viewer.Jobs
                 {
                     if (cjob.Source == src)
                     {
+                        if (!attach) return null;
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
-                        return attach ? JobProxy<T>.Create(cjob) : null;
+                        return JobProxy<T>.Create(cjob);
                     }
                 }
                 foreach (var cjob in _queuedJobs)
                 {
                     if (cjob.Source == src)
                     {
+                        if (!attach) return null;
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
-                        return attach ? JobProxy<T>.Create(cjob) : null;
+                        return JobProxy<T>.Create(cjob);
                     }
                 }
 
@@ -57,12 +59,14 @@ namespace youtube_dl_viewer.Jobs
             lock (LockObject)
             {
                 var ok = _activeJobs.Remove(job);
-                Console.Out.WriteLine($"Unregistered Job [{job.Name}] (change={ok}) ({_queuedJobs.Count} jobs in queue) ({_activeJobs.Count}/{MaxParallelism} jobs running)");
+                if (!ok) return;
+                
+                Console.Out.WriteLine($"Unregister Job [{job.Name}] ({_queuedJobs.Count} jobs in queue) ({_activeJobs.Count}/{MaxParallelism} jobs running)");
 
                 while (_activeJobs.Count < MaxParallelism && _queuedJobs.Any())
                 {
                     var qjob = _queuedJobs.Pop();
-                    Console.Out.WriteLine($"Start new Job [{qjob.Name}] (from queue) ({qjob.ProxyCount} attached proxies) ({_queuedJobs.Count} jobs in queue) ({_activeJobs.Count}/{MaxParallelism} jobs running)");
+                    Console.Out.WriteLine($"Start new Job [{qjob.Name}] (from queue) ({qjob.ProxyCount} attached proxies) ({_queuedJobs.Count} jobs in queue) ({_activeJobs.Count+1}/{MaxParallelism} jobs running)");
                     qjob.Start();
                     _activeJobs.Add(qjob);
                 }

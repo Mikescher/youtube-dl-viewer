@@ -925,7 +925,7 @@ function onMouseEnterThumbnail(elem)
 
 async function animateThumbnailPreview(img, max, video_id)
 {
-    for (let i=0;;i++)
+    for (let i=1;;i++)
     {
         if (DATA.currentAnimatedPreview !== video_id) return;
         

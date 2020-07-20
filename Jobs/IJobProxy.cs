@@ -2,6 +2,6 @@
 {
     public interface IJobProxy
     {
-        
+        void Kill();
     }
 }
