@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -19,7 +20,7 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string Version => "0.6";
+        public static string Version => "0.7";
 
         private static string _currentDir = null;
         public static string CurrentDir => _currentDir ?? (_currentDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
@@ -33,6 +34,8 @@ namespace youtube_dl_viewer
         public static int PreviewImageWidth = 480;
 
         public static bool HasValidFFMPEG = true;
+
+        public static bool AutoOpenBrowser = false;
         
         public static string ConvertFFMPEGParams = @"-vb 256k -cpu-used -5 -deadline realtime";
         
@@ -162,12 +165,14 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("  --webm-convert-params=<v>  Additional parameters in ffmpeg call for video");
                 Console.Out.WriteLine("                               to (stream-able) webm");
                 Console.Out.WriteLine("                               Default := '" + ConvertFFMPEGParams + "'");
-                Console.Out.WriteLine("  --no-ffmpeg=<value>        Disable all features that depend on a");
+                Console.Out.WriteLine("  --no-ffmpeg                Disable all features that depend on a");
                 Console.Out.WriteLine("                               system ffmpeg installation");
                 Console.Out.WriteLine("                               # - live webm transcode");
                 Console.Out.WriteLine("                               # - generated thumbnails");
                 Console.Out.WriteLine("                               # - hover preview");
                 Console.Out.WriteLine("                               # - ...");
+                Console.Out.WriteLine("  --open-browser             Automatically open browser after webserver");
+                Console.Out.WriteLine("                               is started (only works on desktop)");
                 Console.Out.WriteLine();
                 return;
             }
@@ -196,6 +201,20 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine();
             Console.Out.WriteLine($"[#] Starting webserver on http://localhost:{Port}/");
             Console.Out.WriteLine();
+
+            if (AutoOpenBrowser)
+            {
+                Console.Out.WriteLine("[#] Launching Webbrowser");
+                
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    Process.Start(new ProcessStartInfo($"http://localhost:{Port}/") { UseShellExecute = true });
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    Process.Start("xdg-open", $"http://localhost:{Port}/");
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    Process.Start("open", $"http://localhost:{Port}/");
+                
+                Console.Out.WriteLine();
+            }
             
             
             CreateHostBuilder(args).Build().Run();
@@ -248,6 +267,12 @@ namespace youtube_dl_viewer
                 if (arg.ToLower() == "--no-ffmpeg")
                 {
                     HasValidFFMPEG = false;
+                    continue;
+                }
+                
+                if (arg.ToLower() == "--open-browser")
+                {
+                    AutoOpenBrowser = true;
                     continue;
                 }
                 
