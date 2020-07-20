@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using youtube_dl_viewer.Controller;
 using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer
@@ -63,6 +64,7 @@ namespace youtube_dl_viewer
          * [2] Playback: Raw file
          * [3] Playback: Transcoded Webm stream
          * [4] Playback: Download file
+         * [5] Playback: VLC Protocol Link
          */
         public static int OptVideoMode = 4;
 
@@ -302,8 +304,8 @@ namespace youtube_dl_viewer
                     (
                         new JProperty("info", jinfo),
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
-                        new JProperty("cache_file", CacheDir == null ? null : Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")),
-                        new JProperty("cached", CacheDir != null && File.Exists(Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")))
+                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
+                        new JProperty("cached", CacheDir != null && File.Exists(VideoController.GetStreamCachePath(pathVideo)))
                     ))
                 ));
             }
@@ -360,9 +362,9 @@ namespace youtube_dl_viewer
                             new JProperty("title", Path.GetFileNameWithoutExtension(pathVideo))
                         )),
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
-                        new JProperty("cache_file", CacheDir == null ? null : Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")),
-                        new JProperty("cached", CacheDir != null && File.Exists(Path.Combine(CacheDir, pathVideo.Sha256() + ".webm")))
-                    ))
+                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo),
+                        new JProperty("cached", CacheDir != null && File.Exists(VideoController.GetStreamCachePath(pathVideo)))
+                    )))
                 ));
             }
 

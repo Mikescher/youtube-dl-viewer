@@ -4,34 +4,17 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using youtube_dl_viewer.Jobs;
 using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Controller
 {
     public static class VideoController
     {
-        public static async Task GetThumbnail(HttpContext context)
+        public static string GetStreamCachePath(string pathVideo)
         {
-            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
-            var id  = (string)context.Request.RouteValues["id"];
-
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
-
-            var pathThumbnail = obj["meta"]?.Value<string>("path_thumbnail");
-            if (pathThumbnail == null) { context.Response.StatusCode = 404; return; }
-
-            var data = await File.ReadAllBytesAsync(pathThumbnail);
-            
-            context.Response.Headers.Add(HeaderNames.ContentLength, data.Length.ToString());
-            context.Response.Headers.Add(HeaderNames.ContentDisposition, "attachment;filename=" + Path.GetFileName(pathThumbnail));
-
-            if (Path.GetExtension(pathThumbnail).Equals(".png",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/png");
-            if (Path.GetExtension(pathThumbnail).Equals(".svg",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/svg+xml");
-            if (Path.GetExtension(pathThumbnail).Equals(".jpg",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
-            if (Path.GetExtension(pathThumbnail).Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
-            if (Path.GetExtension(pathThumbnail).Equals(".webp", StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/webp");
-            
-            await context.Response.BodyWriter.WriteAsync(data);
+            if (Program.CacheDir == null) return null;
+            return Path.Combine(Program.CacheDir, "stream_" + pathVideo.Sha256() + ".webm");
         }
         
         public static async Task GetVideoFile(HttpContext context)
@@ -100,10 +83,8 @@ namespace youtube_dl_viewer.Controller
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             if (pathVideo == null) { context.Response.StatusCode = 404; return; }
 
-            var pathCache = (Program.CacheDir == null) ? null : Path.Combine(Program.CacheDir, pathVideo.Sha256() + ".webm");
+            var pathCache = GetStreamCachePath(pathVideo);
             
-            var pathTemp = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B")+".webm");
-
             if (pathCache != null && File.Exists(pathCache))
             {
                 await GetSeekableFile(context, pathCache);
@@ -111,169 +92,95 @@ namespace youtube_dl_viewer.Controller
             }
             
             if (pathCache != null) 
-                await GetVideoStreamWithCache(context, pathVideo, pathCache, pathTemp);
+                await GetVideoStreamWithCache(context, pathVideo, pathCache);
             else                     
-                await GetVideoStreamWithoutCache(context, pathVideo, pathTemp);
+                await GetVideoStreamWithoutCache(context, pathVideo);
         }
 
-        private static async Task GetVideoStreamWithCache(HttpContext context, string pathVideo, string pathCache, string pathTemp)
+        private static async Task GetVideoStreamWithCache(HttpContext context, string pathVideo, string pathCache)
         {
+            context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
+            
+            using var proxy = JobRegistry.GetOrStartConvertJob(pathVideo, pathCache);
+
+            while (!File.Exists(proxy.Job.Temp))
+            {
+                if (!proxy.Job.Running) return;
+                await Task.Delay(0);
+            }
+                
+            await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             try
             {
-                var cmd = $" -i \"{pathVideo}\" -f webm -vcodec libvpx-vp9 -vb 256k -cpu-used -5 -deadline realtime {pathTemp}";
-
-                var proc = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = "ffmpeg",
-                        Arguments = cmd,
-                        CreateNoWindow = true,
-                    }
-                };
-
-                context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
-            
-                proc.Start();
-
-                while (!File.Exists(pathTemp))
-                {
-                    if (proc.HasExited && !File.Exists(pathTemp)) return;
-                    await Task.Delay(0);
-                }
-            
-                await using var fs = new FileStream(pathTemp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
                 var buffer = new byte[4096];
                 for (;;)
                 {
-                    var procFinished = proc.HasExited;
-                
+                    var convertFin = proxy.Job.ConvertFinished;
+                    
                     var read = await fs.ReadAsync(buffer);
 
                     if (read > 0)
                     {
-                        if (!context.RequestAborted.IsCancellationRequested)
-                        {
-                            await context.Response.BodyWriter.WriteAsync(buffer.AsMemory(0, read));
-                            await context.Response.BodyWriter.FlushAsync();
-                        }
-                    }
-                    else
-                    {
-                        if (procFinished && proc.ExitCode == 0)
-                        {
-                            for (var i = 0; i < 15; i++) // 15 retries
-                            {
-                                try
-                                {
-                                    try { fs.Close(); } catch (Exception) { /* ignore */ }
-                                    File.Move(pathTemp, pathCache);
-                                    if (File.Exists(pathCache) && new FileInfo(pathCache).Length == 0) File.Delete(pathCache);
-                                    break;
-                                }
-                                catch (IOException)
-                                {
-                                    await Task.Delay(2 * 1000);
-                                }
-                            }
-
-                            return;
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                for (var i = 0; i < 5; i++) // 5 retries
-                {
-                    try
-                    {
-                        if (File.Exists(pathTemp)) File.Delete(pathTemp);
-                        break;
-                    }
-                    catch (IOException)
-                    {
-                        await Task.Delay(5 * 1000);
-                    }
-                }
-            }
-        }
-
-        private static async Task GetVideoStreamWithoutCache(HttpContext context, string pathVideo, string pathTemp)
-        {
-            try
-            {
-                var cmd = $" -i \"{pathVideo}\" -f webm -vcodec libvpx-vp9 -vb 256k -cpu-used -5 -deadline realtime {pathTemp}";
-
-                var proc = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = "ffmpeg",
-                        Arguments = cmd,
-                        CreateNoWindow = true,
-                    }
-                };
-
-                context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
-            
-                proc.Start();
-
-                while (!File.Exists(pathTemp))
-                {
-                    if (context.RequestAborted.IsCancellationRequested)
-                    {
-                        if (!proc.HasExited) proc.Kill(true);
-                        return;
-                    }
-                
-                    if (proc.HasExited && !File.Exists(pathTemp)) return;
-                    await Task.Delay(0);
-                }
-            
-                await using var fs = new FileStream(pathTemp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-                var buffer = new byte[4096];
-                for (;;)
-                {
-                    if (context.RequestAborted.IsCancellationRequested)
-                    {
-                        if (!proc.HasExited) proc.Kill(true);
-                        return;
-                    }
-                
-                    var procFinished = proc.HasExited;
-                
-                    var read = await fs.ReadAsync(buffer);
-
-                    if (read > 0)
-                    {
+                        if (context.RequestAborted.IsCancellationRequested) return;
+                    
                         await context.Response.BodyWriter.WriteAsync(buffer.AsMemory(0, read));
                         await context.Response.BodyWriter.FlushAsync();
                     }
                     else
                     {
-                        if (procFinished && proc.ExitCode == 0) return;
+                        if (convertFin) return;
                     }
-
-                    await Task.Delay(100);
                 }
             }
             finally
             {
-                for (var i = 0; i < 5; i++) // 5 retries
+                try { fs?.Close(); } catch (Exception) { /* ignore */ }
+            }
+        }
+
+        private static async Task GetVideoStreamWithoutCache(HttpContext context, string pathVideo)
+        {
+            context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
+            
+            using var proxy = JobRegistry.GetOrStartConvertJob(pathVideo, null);
+
+            while (!File.Exists(proxy.Job.Temp))
+            {
+                if (!proxy.Job.Running) return;
+                await Task.Delay(0);
+            }
+                
+            await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            try
+            {
+                var buffer = new byte[4096];
+                for (;;)
                 {
-                    try
+                    var convertFin = proxy.Job.ConvertFinished;
+                    
+                    var read = await fs.ReadAsync(buffer);
+
+                    if (read > 0)
                     {
-                        if (File.Exists(pathTemp)) File.Delete(pathTemp);
-                        break;
+                        if (context.RequestAborted.IsCancellationRequested)
+                        {
+                            proxy.Job.Abort();
+                            return;
+                        }
+                    
+                        await context.Response.BodyWriter.WriteAsync(buffer.AsMemory(0, read));
+                        await context.Response.BodyWriter.FlushAsync();
                     }
-                    catch (IOException)
+                    else
                     {
-                        await Task.Delay(5 * 1000);
+                        if (convertFin) return;
                     }
                 }
+            }
+            finally
+            {
+                try { fs?.Close(); } catch (Exception) { /* ignore */ }
             }
         }
 

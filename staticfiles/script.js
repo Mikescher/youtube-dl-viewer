@@ -704,7 +704,7 @@ function showVideo(id)
 
     if (mode === 5)
     {
-        window.open('vlc://'+window.location.protocol + "//" + window.location.host + '/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/file', '_blank').focus();
+        window.open('vlc://'+window.location.protocol + "//" + window.location.host + '/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/seek', '_self');
         return;
     }
 
