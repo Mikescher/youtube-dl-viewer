@@ -15,7 +15,11 @@ namespace youtube_dl_viewer.Controller
         {
             if (pathVideo == null) return null;
             if (Program.CacheDir == null) return null;
-            return Path.Combine(Program.CacheDir, "prev_" + pathVideo.Sha256() + ".dat");
+            
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                return Path.Combine(Program.CacheDir, "prev_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".dat");
+            else
+                return Path.Combine(Program.CacheDir, "prev_" + pathVideo.Sha256() + ".dat");
         }
         
         public static async Task GetThumbnail(HttpContext context)

@@ -21,6 +21,9 @@ namespace youtube_dl_viewer
 
         public static string Version => "0.6";
 
+        private static string _currentDir = null;
+        public static string CurrentDir => _currentDir ?? (_currentDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
+        
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
