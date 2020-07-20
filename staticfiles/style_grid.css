@@ -108,3 +108,24 @@
 #content.lstyle_grid .video_entry:hover .duration {
   display: inherit;
 }
+
+#content.lstyle_grid.lstyle_videomode_3 .video_entry.webm-cached .icon_cached {
+  grid-column: 1;
+  grid-row: 1;
+
+  justify-self: left;
+  align-self: start;
+
+  display: inherit;
+
+  margin: 4px;
+
+  font-size: 0.7rem;
+  color: #0B0;
+
+  background: rgba(0, 0, 0, 0.65);
+  padding: 2px;
+  border-radius: 4px;
+
+  z-index: 1;
+}

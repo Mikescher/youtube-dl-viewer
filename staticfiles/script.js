@@ -63,6 +63,7 @@ window.onload = function()
     
     updateDisplaymodeClass(false);
     updateDisplaywidthClass(false);
+    updateVideomodeClass();
 
     $('.apppath span').innerHTML = escapeHtml(JSON.parse($attr('.apppath', 'data-dirs'))[DATA.dataidx]);
 
@@ -147,6 +148,8 @@ function initData(data)
         
         html += '<div class="' + ve_cls + '" data-id="'+escapeHtml(meta['uid'])+'">';
 
+        html += '<i class="icon_cached fas fa-cloud"></i>';
+        
         if (info.hasNonNull('thumbnail')) 
         {
             html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/data/' + DATA.dataidx + '/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
@@ -540,38 +543,6 @@ function initButtons()
         });
     });
 
-    $('.btn-refresh').addEventListener('click', () => 
-    {
-        showToast('Refreshing data');
-        
-        $('#content').innerHTML = '';
-        
-        const request = new XMLHttpRequest();
-        request.open('GET', '/data/'+DATA.dataidx+'/refresh', true);
-
-        request.onload = function()
-        {
-            if (this.status >= 200 && this.status < 400)
-            {
-                DATA.data = this.response;
-                initData(JSON.parse(DATA.data));
-
-                showToast('Data refreshed');
-            }
-            else
-            {
-                showToast('Could not refresh data');
-            }
-        };
-
-        request.onerror = function()
-        {
-            showToast('Could not refresh data');
-        };
-
-        request.send();
-    });
-    
     $('.btn-loadthumbnails').addEventListener('click', () =>
     {
         const current = parseInt($attr('.btn-loadthumbnails', 'data-mode'));
@@ -597,10 +568,44 @@ function initButtons()
             $('.btn-videomode').setAttribute('data-mode', v.toString());
             showToast(options[v]);
             updateLocationHash();
+            
+            updateVideomodeClass();
 
             const curr = $('#fullsizevideo');
             if (curr !== null) showVideo(curr.getAttribute("data-id"));
         });
+    });
+
+    $('.btn-refresh').addEventListener('click', () =>
+    {
+        showToast('Refreshing data');
+
+        $('#content').innerHTML = '';
+
+        const request = new XMLHttpRequest();
+        request.open('GET', '/data/'+DATA.dataidx+'/refresh', true);
+
+        request.onload = function()
+        {
+            if (this.status >= 200 && this.status < 400)
+            {
+                DATA.data = this.response;
+                initData(JSON.parse(DATA.data));
+
+                showToast('Data refreshed');
+            }
+            else
+            {
+                showToast('Could not refresh data');
+            }
+        };
+
+        request.onerror = function()
+        {
+            showToast('Could not refresh data');
+        };
+
+        request.send();
     });
 
     const apm = $('.apppath.multiple');
@@ -687,6 +692,17 @@ function updateDisplaywidthClass(toast)
     if (mode === 1) { content.classList.add('lstyle_width_medium'); if (toast) showToast('Width: Medium');   }
     if (mode === 2) { content.classList.add('lstyle_width_wide');   if (toast) showToast('Width: Wide');  }
     if (mode === 3) { content.classList.add('lstyle_width_full');   if (toast) showToast('Width: Full'); }
+}
+
+function updateVideomodeClass()
+{
+    const content = $('#content');
+
+    const mode = parseInt($attr('.btn-videomode', 'data-mode'));
+
+    for (let i=0; i<10; i++) content.classList.remove('lstyle_videomode_'+i);
+
+    content.classList.add('lstyle_videomode_'+mode);
 }
 
 function initEvents() 

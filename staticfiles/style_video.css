@@ -3,19 +3,19 @@
   position: fixed;
   background-color: rgba(0, 0, 0, 0.85);
   width: 100%;
-  height: calc(100% - 64px);
-  top: 64px;
+  height: calc(100% - 70px);
+  top: 70px;
   
   display: flex;
   align-items: center;
   justify-content: center;
 
-  z-index: 1;
+  z-index: 5;
 }
 
 #fullsizevideo .vidcontainer {
-  width:  calc(100% - 16px);
-  height: calc(100% - 16px);
+  width:  calc(100% - 32px);
+  height: calc(100% - 32px);
   
   display: flex;
   align-items: center;
