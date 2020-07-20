@@ -426,16 +426,17 @@ namespace youtube_dl_viewer
                         new JProperty("path_video", pathVideo),
                         new JProperty("path_video_abs", Path.GetFullPath(pathVideo)),
                         new JProperty("path_thumbnail", pathThumb),
-                        new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p))))
+                        new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p)))),
+                        
+                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
+                        new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
+                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
+                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))))
                     )),
                     new JProperty("data", new JObject
                     (
                         new JProperty("info", jinfo),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
-                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
-                        new JProperty("cached", cacheFiles.Contains(VideoController.GetStreamCachePath(pathVideo))),
-                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
-                        new JProperty("cached_previews", cacheFiles.Contains(ThumbnailController.GetPreviewCachePath(pathVideo)))
+                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
                     ))
                 ));
             }
@@ -484,7 +485,12 @@ namespace youtube_dl_viewer
                         new JProperty("path_video", pathVideo),
                         new JProperty("path_video_abs", Path.GetFullPath(pathVideo)),
                         new JProperty("path_thumbnail", pathThumb),
-                        new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p))))
+                        new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p)))),
+                        
+                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
+                        new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
+                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
+                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))))
                     )),
                     new JProperty("data", new JObject
                     (
@@ -492,11 +498,7 @@ namespace youtube_dl_viewer
                         (
                             new JProperty("title", Path.GetFileNameWithoutExtension(pathVideo))
                         )),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
-                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
-                        new JProperty("cached", cacheFiles.Contains(VideoController.GetStreamCachePath(pathVideo))),
-                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
-                        new JProperty("cached_previews", cacheFiles.Contains(ThumbnailController.GetPreviewCachePath(pathVideo)))
+                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
                     ))
                 ));
             }

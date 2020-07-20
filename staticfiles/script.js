@@ -146,8 +146,8 @@ function initData(data)
         info.__proto__ = json_proto;
 
         let ve_cls = 'video_entry';
-        if (vid['data']['cached']) ve_cls += ' webm-cached';
-        if (vid['data']['cached_previews']) ve_cls += ' preview-cached';
+        if (meta['cached']) ve_cls += ' webm-cached';
+        if (meta['cached_previews']) ve_cls += ' preview-cached';
         
         let filelink = meta['path_video_abs'];
         if (filelink.startsWith('/')) filelink = 'file://'  + filelink;
