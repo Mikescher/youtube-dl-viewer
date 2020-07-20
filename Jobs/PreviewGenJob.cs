@@ -15,11 +15,15 @@ namespace youtube_dl_viewer.Jobs
 
         public bool GenFinished = false;
 
-        public List<byte[]> ImageData;
+        private int? _queryImageIndex;
         
-        public PreviewGenJob(AbsJobManager man, string src, string dst) : base(man, src)
+        public byte[] ImageData  = null;
+        public int?   ImageCount = null;
+        
+        public PreviewGenJob(AbsJobManager man, string src, string dst, int? imgIdx) : base(man, src)
         {
             Destination = dst;
+            _queryImageIndex = imgIdx;
             TempDir = Path.Combine(Path.GetTempPath(), "yt_dl_p_" + Guid.NewGuid().ToString("B"));
             Directory.CreateDirectory(TempDir);
         }
@@ -134,6 +138,8 @@ namespace youtube_dl_viewer.Jobs
                     return;
                 }
 
+                ImageCount = prevCount;
+                
                 using var ms = new MemoryStream();
                 
                 using (var bw = new BinaryWriter(ms, Encoding.UTF8, true))
@@ -147,12 +153,12 @@ namespace youtube_dl_viewer.Jobs
                     }
                 }
 
-                var imagdat = new List<byte[]>();
-                
                 for (var i = 0; i < prevCount; i++)
                 {
                     var pos = ms.Position;
                     var bin = File.ReadAllBytes(Path.Combine(TempDir, (i+1) + ".jpg"));
+
+                    if (_queryImageIndex == i) ImageData = bin;
                     
                     ms.Seek(1 + i * (8 + 4), SeekOrigin.Begin);
                     using (var bw = new BinaryWriter(ms, Encoding.UTF8, true))
@@ -162,7 +168,6 @@ namespace youtube_dl_viewer.Jobs
                     }
                     ms.Seek(0, SeekOrigin.End);
 
-                    imagdat.Add(bin);
                     ms.Write(bin);
                 }
                 
@@ -172,8 +177,18 @@ namespace youtube_dl_viewer.Jobs
                     ms.CopyTo(fs);
                 }
 
-                ImageData = imagdat;
                 GenFinished = true;
+
+                for(;;) // Wait for disengaged proxies
+                {
+                    lock (SuperLock)
+                    {
+                        if (Proxies.Count != 0) break;
+                    }
+                    Thread.Sleep(100);
+                }
+                
+                
             }
             finally
             {

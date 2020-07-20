@@ -883,8 +883,10 @@ function onMouseEnterThumbnail(elem)
     let content = $('#content');
     
     if (parseInt($attr('.btn-loadthumbnails', 'data-mode')) === 0) return;
-    
+
     if ($attr('main', 'data-has_ffmpeg').toLowerCase() === 'false') return;
+    if ($attr('main', 'data-has_cache').toLowerCase() === 'false') return;
+    
     if (!content.classList.contains('lstyle_grid') && !content.classList.contains('lstyle_detailed')) return;
     
     let img = elem.querySelector('img');
@@ -926,9 +928,10 @@ async function animateThumbnailPreview(img, max, video_id)
     {
         if (DATA.currentAnimatedPreview !== video_id) return;
         
+        const t = performance.now();
         await setImageSource(img, '/data/'+DATA.dataidx+'/video/'+video_id+'/prev/'+(i%max));
-        await sleepAsync(333);
-        
+        await sleepAsync(Math.max(0, 333 - (performance.now() - t)));
+
         if (((i+1)%max) === 0) await sleepAsync(666);
     }
 }

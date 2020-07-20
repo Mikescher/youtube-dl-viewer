@@ -12,7 +12,7 @@ namespace youtube_dl_viewer.Controller
 {
     public static class ThumbnailController
     {
-        private static string GetPreviewCachePath(string pathVideo)
+        public static string GetPreviewCachePath(string pathVideo)
         {
             if (pathVideo == null) return null;
             if (Program.CacheDir == null) return null;
@@ -43,11 +43,11 @@ namespace youtube_dl_viewer.Controller
 
             
             var pathCache = GetPreviewCachePath(pathVideo);
-            if (pathCache != null && !File.Exists(pathCache) && Program.HasValidFFMPEG)
+            if (pathCache != null && Program.HasValidFFMPEG && !File.Exists(pathCache))
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
-                JobRegistry.PreviewGenJobs.StartOrQueue(pathVideo, (man) => new PreviewGenJob(man, pathVideo, pathCache), false); // runs as background job
+                JobRegistry.PreviewGenJobs.StartOrQueue(pathVideo, (man) => new PreviewGenJob(man, pathVideo, pathCache, null), false); // runs as background job
             }
             
             var data = await File.ReadAllBytesAsync(pathThumbnail);
@@ -78,6 +78,8 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task GetPreview(HttpContext context)
         {
+            if (Program.CacheDir == null) { context.Response.StatusCode = 400; return; }
+            
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
             var img = int.Parse((string)context.Request.RouteValues["img"]);
@@ -99,15 +101,15 @@ namespace youtube_dl_viewer.Controller
 
             if (!File.Exists(pathCache))
             {
-                using var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, pathCache)); // [!] pathCache can be null
+                using var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, pathCache, imageIndex)); // [!] pathCache can be null
 
                 while (!proxy.Job.GenFinished) await Task.Delay(50);
 
                 if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; return; }
-                if (proxy.Job.ImageData.Count <= imageIndex) { context.Response.StatusCode = 500; return; }
+                if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; return; }
 
-                context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageData.Count.ToString());
-                await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData[imageIndex]);
+                context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageCount.Value.ToString());
+                await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData);
                 return;
             }
             

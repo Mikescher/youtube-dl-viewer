@@ -28,8 +28,8 @@ namespace youtube_dl_viewer
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
-        public static int MaxParallelConvertJobs    = 2;
-        public static int MaxParallelGenPreviewJobs = 6;
+        public static int MaxParallelConvertJobs    = 3;
+        public static int MaxParallelGenPreviewJobs = 2;
 
         public static int PreviewImageWidth = 480;
 
@@ -341,6 +341,10 @@ namespace youtube_dl_viewer
 
             var idsAreUnique = true;
             var idlist = new HashSet<string>();
+
+            var cacheFiles = (CacheDir == null)
+                ? new HashSet<string>()
+                : Directory.EnumerateFiles(CacheDir).Select(Path.GetFileName).ToHashSet();
             
             foreach (var pathJson in filesInfo)
             {
@@ -407,7 +411,9 @@ namespace youtube_dl_viewer
                         new JProperty("info", jinfo),
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
                         new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
-                        new JProperty("cached", CacheDir != null && File.Exists(VideoController.GetStreamCachePath(pathVideo)))
+                        new JProperty("cached", cacheFiles.Contains(VideoController.GetStreamCachePath(pathVideo))),
+                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
+                        new JProperty("cached_previews", cacheFiles.Contains(ThumbnailController.GetPreviewCachePath(pathVideo)))
                     ))
                 ));
             }
@@ -466,7 +472,9 @@ namespace youtube_dl_viewer
                         )),
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
                         new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
-                        new JProperty("cached", CacheDir != null && File.Exists(VideoController.GetStreamCachePath(pathVideo)))
+                        new JProperty("cached", cacheFiles.Contains(VideoController.GetStreamCachePath(pathVideo))),
+                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
+                        new JProperty("cached_previews", cacheFiles.Contains(ThumbnailController.GetPreviewCachePath(pathVideo)))
                     ))
                 ));
             }
