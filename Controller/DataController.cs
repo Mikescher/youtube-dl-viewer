@@ -4,7 +4,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace youtube_dl_viewer.Controller
 {
-    public class DataController
+    public static class DataController
     {
         public static async Task GetData(HttpContext context)
         {

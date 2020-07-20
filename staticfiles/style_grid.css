@@ -88,6 +88,8 @@
 
   justify-content: start;
   align-items: start;
+
+  word-break: break-word;
 }
 
 #content.lstyle_grid .video_entry .duration {

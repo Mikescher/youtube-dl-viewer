@@ -150,25 +150,10 @@ function initData(data)
 
         html += '<i class="icon_cached fas fa-cloud"></i>';
         
-        if (info.hasNonNull('thumbnail')) 
         {
             html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/data/' + DATA.dataidx + '/video/' + escapeHtml(meta['uid']) + '/thumb" /></div>';
 
             if (info.hasNonNull('like_count') && info.hasNonNull('dislike_count'))
-            {
-                html += '<div class="likedislikebar">';
-                html += '  <div class="like_bar" style="width: ' + (100 * info["like_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="like_bar_count">' + escapeHtml(info["like_count"]) + '</div></div>';
-                html += '  <div class="dislike_bar" style="width: ' + (100 * info["dislike_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="dislike_bar_count">' + escapeHtml(info["dislike_count"]) + '</div></div>';
-                html += '</div>';
-            }
-
-            html += '</div>';
-        }
-        else 
-        {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img src="/thumb_empty.svg" alt="thumbnail" /></div> ';
-
-            if (info.hasNonNull('like_count') && info.has('dislike_count'))
             {
                 html += '<div class="likedislikebar">';
                 html += '  <div class="like_bar" style="width: ' + (100 * info["like_count"] / (info["like_count"] + info["dislike_count"])) + '%"><div class="like_bar_count">' + escapeHtml(info["like_count"]) + '</div></div>';

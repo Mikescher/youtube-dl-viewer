@@ -84,7 +84,7 @@ namespace youtube_dl_viewer.Jobs
                     {
                         if (proc.ExitCode != 0)
                         {
-                            Console.Out.WriteLine($"Job [{Name}] failed (non-zero exit code)");
+                            Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code)");
                             
                             lock (JobRegistry.LockConverter)
                             {
@@ -157,7 +157,7 @@ namespace youtube_dl_viewer.Jobs
                         Thread.Sleep(3 * 1000);
                     }
 
-                    if (i == 10) // 5 retries
+                    if (i == 10) // 10 retries
                     {
                         Console.Error.WriteLine("Delete of converted file (temp dir) failed finally");
                         break;

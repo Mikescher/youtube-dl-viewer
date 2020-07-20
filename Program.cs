@@ -362,9 +362,9 @@ namespace youtube_dl_viewer
                             new JProperty("title", Path.GetFileNameWithoutExtension(pathVideo))
                         )),
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
-                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo),
+                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
                         new JProperty("cached", CacheDir != null && File.Exists(VideoController.GetStreamCachePath(pathVideo)))
-                    )))
+                    ))
                 ));
             }
 
