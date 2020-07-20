@@ -107,7 +107,7 @@ namespace youtube_dl_viewer.Controller
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
-            using var proxy = JobRegistry.GetOrStartConvertJob(pathVideo, pathCache);
+            using var proxy = JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, pathCache)); 
 
             while (!File.Exists(proxy.Job.Temp))
             {
@@ -150,7 +150,7 @@ namespace youtube_dl_viewer.Controller
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
-            using var proxy = JobRegistry.GetOrStartConvertJob(pathVideo, null);
+            using var proxy = JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, null)); 
 
             while (!File.Exists(proxy.Job.Temp))
             {

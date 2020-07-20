@@ -148,7 +148,11 @@ function initData(data)
         let ve_cls = 'video_entry';
         if (vid['data']['cached']) ve_cls += ' webm-cached';
         
-        html += '<div class="' + ve_cls + '" data-id="'+escapeHtml(meta['uid'])+'">';
+        let filelink = meta['path_video_abs'];
+        if (filelink.startsWith('/')) filelink = 'file://'  + filelink;
+        else                          filelink = 'file:///' + filelink;
+        
+        html += '<div class="' + ve_cls + '" data-id="'+escapeHtml(meta['uid'])+'" data-filelink="'+escapeHtml(filelink)+'">';
 
         html += '<i class="icon_cached fas fa-cloud"></i>';
         
@@ -250,7 +254,7 @@ function initData(data)
     for (const btn of $all('.btn-expand'))   btn.addEventListener('click', e => { btn.parentNode.classList.add('expanded'); e.stopPropagation(); });
     for (const btn of $all('.btn-collapse')) btn.addEventListener('click', e => { btn.parentNode.classList.remove('expanded'); e.stopPropagation(); });
 
-    for (const btn of $all('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id')); });
+    for (const btn of $all('.video_entry')) btn.addEventListener('click', () => { showVideo(btn.getAttribute('data-id'), btn.getAttribute('data-filelink')); });
 
     for (const tmb of $all('.video_entry .thumbnail'))
     {
@@ -568,7 +572,7 @@ function initButtons()
             updateVideomodeClass();
 
             const curr = $('#fullsizevideo');
-            if (curr !== null) showVideo(curr.getAttribute("data-id"));
+            if (curr !== null) showVideo(curr.getAttribute("data-id"), curr.getAttribute("data-filelink"));
         });
     });
 
@@ -732,11 +736,11 @@ function removeVideo()
     vid.parentNode.removeChild(vid);
 }
 
-function showVideo(id)
+function showVideo(id, filelink)
 {
     const old = $('#fullsizevideo');
     if (old !== null) removeVideo();
-    
+
     const mode = parseInt($('.btn-videomode').getAttribute('data-mode'));
 
     if (mode === 0) return;
@@ -753,9 +757,15 @@ function showVideo(id)
         return;
     }
 
+    if (mode === 6)
+    {
+        window.open('vlc://'+filelink, '_self');
+        return;
+    }
+
     let html = '';
 
-    html += '<div id="fullsizevideo" data-id="'+escapeHtml(id)+'">';
+    html += '<div id="fullsizevideo" data-id="'+escapeHtml(id)+'" data-filelink="'+escapeHtml(filelink)+'">';
     html += '  <div class="vidcontainer">';
     html += '    <video width="320" height="240" controls autoplay>';
     if (mode === 1) html += '<source src="/data/'+DATA.dataidx+'/video/'+escapeHtml(id)+'/seek">';

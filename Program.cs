@@ -20,10 +20,10 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string Version => "0.8";
+        public static string Version => "0.10";
 
         private static string _currentDir = null;
-        public static string CurrentDir => _currentDir ?? (_currentDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
+        public static string CurrentDir => _currentDir ??= Environment.CurrentDirectory;
         
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
@@ -152,7 +152,8 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("                               # [2] Raw file");
                 Console.Out.WriteLine("                               # [3] Transcoded webm stream");
                 Console.Out.WriteLine("                               # [4] Download file");
-                Console.Out.WriteLine("                               # [5] VLC Protocol Link"); // https://github.com/stefansundin/vlc-protocol
+                Console.Out.WriteLine("                               # [5] VLC Protocol Link (stream)"); // https://github.com/stefansundin/vlc-protocol
+                Console.Out.WriteLine("                               # [6] VLC Protocol Link (local)");  // https://github.com/stefansundin/vlc-protocol
                 Console.Out.WriteLine("                               #");
                 Console.Out.WriteLine("  --max-parallel-convert=<v> Maximum amount of parallel ffmpeg calls to");
                 Console.Out.WriteLine("                               transcode video files to (stream-able) webm");
@@ -397,6 +398,7 @@ namespace youtube_dl_viewer
                         new JProperty("path_json", pathJson),
                         new JProperty("path_description", pathDesc),
                         new JProperty("path_video", pathVideo),
+                        new JProperty("path_video_abs", Path.GetFullPath(pathVideo)),
                         new JProperty("path_thumbnail", pathThumb),
                         new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p))))
                     )),
@@ -452,6 +454,7 @@ namespace youtube_dl_viewer
                         new JProperty("path_json", (object)null),
                         new JProperty("path_description", pathDesc),
                         new JProperty("path_video", pathVideo),
+                        new JProperty("path_video_abs", Path.GetFullPath(pathVideo)),
                         new JProperty("path_thumbnail", pathThumb),
                         new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p))))
                     )),

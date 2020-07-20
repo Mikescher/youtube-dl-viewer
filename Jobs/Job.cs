@@ -1,24 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
 
 namespace youtube_dl_viewer.Jobs
 {
     public abstract class Job
     {
+        public readonly string Source;
+        
         protected readonly List<IJobProxy> Proxies = new List<IJobProxy>();
         protected Thread Thread;
 
         public int ProxyCount => Proxies.Count;
         
         public bool Running = false;
-        
-        protected abstract object SuperLock { get; }
+
+        protected object SuperLock => _manager.LockObject;
         
         public abstract string Name { get; }
+
+        private AbsJobManager _manager;
         
+        protected Job(AbsJobManager man,string source)
+        {
+            Source = source;
+            _manager = man;
+        }
+
         public void Start()
         {
             Running = true;
@@ -31,9 +40,9 @@ namespace youtube_dl_viewer.Jobs
             try
             {
                 var sw = Stopwatch.StartNew();
-                
+
                 Run();
-                
+
                 Console.Out.WriteLine($"Job [{Name}] finished after {(sw.Elapsed):g}");
             }
             catch (Exception e)
@@ -41,9 +50,17 @@ namespace youtube_dl_viewer.Jobs
                 Console.Error.WriteLine("Error in Job:");
                 Console.Error.WriteLine(e);
             }
-            
+            finally
+            {
+                Unregister();
+                Running = false;
+            }
+        }
+        
 
-            Running = false;
+        public void Unregister()
+        {
+            _manager.Unregister(this);
         }
 
         public abstract void Abort();

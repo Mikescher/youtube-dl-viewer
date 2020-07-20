@@ -8,21 +8,17 @@ namespace youtube_dl_viewer.Jobs
 {
     public class ConvertJob : Job
     {
-        public readonly string Source;
         public readonly string Destination;
         public readonly string Temp;
 
         public bool ConvertFinished = false;
         public bool Aborted = false;
         
-        public ConvertJob(string src, string dst)
+        public ConvertJob(AbsJobManager man, string src, string dst) : base(man, src)
         {
-            Source = src;
             Destination = dst;
             Temp = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B") + ".webm");
         }
-
-        protected override object SuperLock => JobRegistry.LockConverter;
 
         public override string Name => $"Convert::{Path.GetFileName(Source)}";
 
@@ -31,12 +27,9 @@ namespace youtube_dl_viewer.Jobs
             Console.Out.WriteLine($"Abort Job [{Name}] forcefully");
             
             Aborted = true;
-            lock (JobRegistry.LockConverter)
-            {
-                JobRegistry.UnregisterConvertJob(this);
-                Running = false;
-                ConvertFinished = true;
-            }
+            Unregister();
+            Running = false;
+            ConvertFinished = true;
         }
 
         protected override void Run()
@@ -84,13 +77,8 @@ namespace youtube_dl_viewer.Jobs
                     if (Aborted) return;
                     if (proc.HasExited && !File.Exists(Temp))
                     {
-                        lock (JobRegistry.LockConverter)
-                        {
-                            JobRegistry.UnregisterConvertJob(this);
-                            this.Running = false;
-                            this.ConvertFinished = true;
-                            return;
-                        }
+                        this.ConvertFinished = true;
+                        return;
                     }
                     Thread.Sleep(0);
                 }
@@ -107,16 +95,11 @@ namespace youtube_dl_viewer.Jobs
                         {
                             Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code)");
                             
-                            lock (JobRegistry.LockConverter)
-                            {
-                                JobRegistry.UnregisterConvertJob(this);
-                                this.Running = false;
-                                this.ConvertFinished = true;
-                                return;
-                            }
+                            this.ConvertFinished = true;
+                            return;
                         }
 
-                        lock (JobRegistry.LockConverter)
+                        lock (SuperLock)
                         {
                             if (Proxies.Count != 0) continue;
 
@@ -140,8 +123,6 @@ namespace youtube_dl_viewer.Jobs
                                 }
                             }
 
-                            JobRegistry.UnregisterConvertJob(this);
-                            this.Running = false;
                             this.ConvertFinished = true;
                             return;
                         }
@@ -152,12 +133,7 @@ namespace youtube_dl_viewer.Jobs
             }
             finally
             {
-                lock (JobRegistry.LockConverter)
-                {
-                    JobRegistry.UnregisterConvertJob(this);
-                    this.Running = false;
-                    this.ConvertFinished = true;
-                }
+                this.ConvertFinished = true;
 
                 if (proc != null && !proc.HasExited)
                 {

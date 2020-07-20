@@ -10,7 +10,6 @@ namespace youtube_dl_viewer.Jobs
 {
     public class PreviewGenJob : Job
     {
-        public readonly string Source;
         public readonly string Destination;
         public readonly string TempDir;
 
@@ -18,15 +17,12 @@ namespace youtube_dl_viewer.Jobs
 
         public List<byte[]> ImageData;
         
-        public PreviewGenJob(string src, string dst)
+        public PreviewGenJob(AbsJobManager man, string src, string dst) : base(man, src)
         {
-            Source = src;
             Destination = dst;
             TempDir = Path.Combine(Path.GetTempPath(), "yt_dl_p_" + Guid.NewGuid().ToString("B"));
             Directory.CreateDirectory(TempDir);
         }
-
-        protected override object SuperLock => JobRegistry.LockPreviewGen;
 
         public override string Name => $"GenPreview::{Path.GetFileName(Source)}";
 
@@ -181,12 +177,7 @@ namespace youtube_dl_viewer.Jobs
             }
             finally
             {
-                lock (JobRegistry.LockPreviewGen)
-                {
-                    JobRegistry.UnregisterGenPreviewJob(this);
-                    this.Running = false;
-                    this.GenFinished = true;
-                }
+                this.GenFinished = true;
 
                 for (var i = 0;; i++)
                 {

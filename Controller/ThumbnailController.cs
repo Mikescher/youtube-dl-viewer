@@ -47,7 +47,7 @@ namespace youtube_dl_viewer.Controller
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
-                JobRegistry.GetOrQueuePreviewGenJob(pathVideo, pathCache, false); // runs as background job
+                JobRegistry.PreviewGenJobs.StartOrQueue(pathVideo, (man) => new PreviewGenJob(man, pathVideo, pathCache), false); // runs as background job
             }
             
             var data = await File.ReadAllBytesAsync(pathThumbnail);
@@ -99,7 +99,7 @@ namespace youtube_dl_viewer.Controller
 
             if (!File.Exists(pathCache))
             {
-                using var proxy = JobRegistry.GetOrQueuePreviewGenJob(videopath, pathCache); // [!] pathCache can be null
+                using var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, pathCache)); // [!] pathCache can be null
 
                 while (!proxy.Job.GenFinished) await Task.Delay(50);
 
