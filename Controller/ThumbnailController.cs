@@ -38,7 +38,7 @@ namespace youtube_dl_viewer.Controller
 
             
             var pathCache = GetPreviewCachePath(pathVideo);
-            if (pathCache != null && !File.Exists(pathCache))
+            if (pathCache != null && !File.Exists(pathCache) && Program.HasValidFFMPEG)
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
@@ -86,6 +86,8 @@ namespace youtube_dl_viewer.Controller
         
         private static async Task GetPreviewImage(HttpContext context, string videopath, int imageIndex)
         {
+            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; return; }
+            
             context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
 
             var pathCache = GetPreviewCachePath(videopath);

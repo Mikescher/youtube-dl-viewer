@@ -484,7 +484,7 @@ function initButtons()
         const current = parseInt($attr('.btn-display', 'data-mode'));
         const options = JSON.parse($attr('.btn-display', 'data-options'));
 
-        showOptionDropDown('display', current, options, v =>
+        showOptionDropDown('display', current, options, [], v =>
         {
             $('.btn-display').setAttribute('data-mode', v.toString());
             showToast(options[v]);
@@ -501,7 +501,7 @@ function initButtons()
         const current = parseInt($attr('.btn-width', 'data-mode'));
         const options = JSON.parse($attr('.btn-width', 'data-options'));
 
-        showOptionDropDown('width', current, options, v =>
+        showOptionDropDown('width', current, options, [], v =>
         {
             $('.btn-width').setAttribute('data-mode', v.toString());
             showToast(options[v]);
@@ -518,7 +518,7 @@ function initButtons()
         const current = parseInt($attr('.btn-order', 'data-mode'));
         const options = JSON.parse($attr('.btn-order', 'data-options'));
         
-        showOptionDropDown('order', current, options, v => 
+        showOptionDropDown('order', current, options, [], v => 
         {
             $('.btn-order').setAttribute('data-mode', v.toString());
             showToast(options[v]);
@@ -533,7 +533,7 @@ function initButtons()
         const current = parseInt($attr('.btn-loadthumbnails', 'data-mode'));
         const options = JSON.parse($attr('.btn-loadthumbnails', 'data-options'));
 
-        showOptionDropDown('loadthumbnails', current, options, v =>
+        showOptionDropDown('loadthumbnails', current, options, [], v =>
         {
             $('.btn-loadthumbnails').setAttribute('data-mode', v.toString());
             showToast(options[v]);
@@ -548,7 +548,10 @@ function initButtons()
         const current = parseInt($attr('.btn-videomode', 'data-mode'));
         const options = JSON.parse($attr('.btn-videomode', 'data-options'));
 
-        showOptionDropDown('videomode', current, options, v =>
+        let disabled = [];
+        if ($attr('main', 'data-has_ffmpeg').toLowerCase() === 'false') disabled.push(3);
+        
+        showOptionDropDown('videomode', current, options, disabled, v =>
         {
             $('.btn-videomode').setAttribute('data-mode', v.toString());
             showToast(options[v]);
@@ -810,7 +813,7 @@ function hidePathDropDown()
     $('#dropdown_background').classList.add('hidden');
 }
 
-function showOptionDropDown(type, current, options, lambda)
+function showOptionDropDown(type, current, options, disabledids, lambda)
 {
     const dd = $('#option_dropdown');
     
@@ -823,6 +826,7 @@ function showOptionDropDown(type, current, options, lambda)
     let html = '';
     for (let i=0; i < options.length; i++)
     {
+        if (disabledids.includes(i)) continue;
         const elemid = 'drow_' + (DATA.dropDownIDCounter++);
         let cls = 'row';
         if (i === current) cls += ' active';

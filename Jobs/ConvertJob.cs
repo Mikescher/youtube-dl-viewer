@@ -44,6 +44,8 @@ namespace youtube_dl_viewer.Jobs
             
             try
             {
+                if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
+                
                 var cmd = $" -i \"{Source}\" -f webm -vcodec libvpx-vp9 {Program.ConvertFFMPEGParams} {Temp}";
 
                 proc = new Process

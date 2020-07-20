@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using youtube_dl_viewer.Controller;
 using youtube_dl_viewer.Util;
 
@@ -11,6 +12,8 @@ namespace youtube_dl_viewer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            
+            services.AddLogging(c => c.ClearProviders());
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -30,8 +33,8 @@ namespace youtube_dl_viewer
                 endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
                 endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
 
-                endpoints.MapGet("/data/{idx:int}/video/{id}/thumb",         ThumbnailController.GetThumbnail);
-                endpoints.MapGet("/data/{idx:int}/video/{id}/thumbframe",    ThumbnailController.GetAutoThumbnail);
+                endpoints.MapGet("/data/{idx:int}/video/{id}/thumb",      ThumbnailController.GetThumbnail);
+                endpoints.MapGet("/data/{idx:int}/video/{id}/thumbframe", ThumbnailController.GetAutoThumbnail);
                 endpoints.MapGet("/data/{idx:int}/video/{id}/prev/{img}", ThumbnailController.GetPreview);
                 
                 endpoints.MapGet("/data/{idx:int}/video/{id}/seek",   VideoController.GetVideoSeek);

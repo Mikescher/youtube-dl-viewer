@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,6 +29,8 @@ namespace youtube_dl_viewer
 
         public static int PreviewImageWidth = 480;
 
+        public static bool HasValidFFMPEG = true;
+        
         public static string ConvertFFMPEGParams = @"-vb 256k -cpu-used -5 -deadline realtime";
         
         /*
@@ -101,61 +104,67 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("  youtube-dl-viewer --version");
                 Console.Out.WriteLine();
                 Console.Out.WriteLine("Options:");
-                Console.Out.WriteLine("  -h --help                Show this screen.");
-                Console.Out.WriteLine("  --version                Show version.");
-                Console.Out.WriteLine("  --port=<value>           The server port");
-                Console.Out.WriteLine("  --cache=<value>          Cache directory for transcoded webm files");
-                Console.Out.WriteLine("  --path=<value>           Path to the video data");
-                Console.Out.WriteLine("                             # (default = current_dir)");
-                Console.Out.WriteLine("                             # can be specified multiple times");
-                Console.Out.WriteLine("                             #");
-                Console.Out.WriteLine("  --display=<value>        The display mode");
-                Console.Out.WriteLine("                             # [0] Disabled");
-                Console.Out.WriteLine("                             # [1] Seekable raw file");
-                Console.Out.WriteLine("                             # [2] Raw file");
-                Console.Out.WriteLine("                             # [3] Transcoded Webm stream");
-                Console.Out.WriteLine("                             # [4] Download file");
-                Console.Out.WriteLine("                             #");
-                Console.Out.WriteLine("  --order=<value>          The display order");
-                Console.Out.WriteLine("                             # [0] Date [descending]");
-                Console.Out.WriteLine("                             # [1] Date [ascending]");
-                Console.Out.WriteLine("                             # [2] Title");
-                Console.Out.WriteLine("                             # [3] Category");
-                Console.Out.WriteLine("                             # [4] Views");
-                Console.Out.WriteLine("                             # [5] Rating");
-                Console.Out.WriteLine("                             # [6] Uploader");
-                Console.Out.WriteLine("                             #");
-                Console.Out.WriteLine("  --width=<value>          The display list width");
-                Console.Out.WriteLine("                             # [0] Small");
-                Console.Out.WriteLine("                             # [1] Medium");
-                Console.Out.WriteLine("                             # [2] Wide");
-                Console.Out.WriteLine("                             # [3] Full");
-                Console.Out.WriteLine("                             #");
-                Console.Out.WriteLine("  --thumbnailmode=<value>  The thumbnail loading mode");
-                Console.Out.WriteLine("                             # [0] Off");
-                Console.Out.WriteLine("                             # [1] On (intelligent)");
-                Console.Out.WriteLine("                             # [2] On (sequential)");
-                Console.Out.WriteLine("                             # [3] On (parallel)");
-                Console.Out.WriteLine("                             #");
-                Console.Out.WriteLine("  --videomode=<value>      The video playback mode");
-                Console.Out.WriteLine("                             # [0] Disabled");
-                Console.Out.WriteLine("                             # [1] Seekable raw file");
-                Console.Out.WriteLine("                             # [2] Raw file");
-                Console.Out.WriteLine("                             # [3] Transcoded webm stream");
-                Console.Out.WriteLine("                             # [4] Download file");
-                Console.Out.WriteLine("                             # [5] VLC Protocol Link"); // https://github.com/stefansundin/vlc-protocol
-                Console.Out.WriteLine("                             #");
-                Console.Out.WriteLine("  --max-parallel-convert=<v> Maximum amount of parallel ffmpeg calls to transcode");
-                Console.Out.WriteLine("                             video files to (stream-able) webm");
-                Console.Out.WriteLine("                             Default := " + MaxParallelConvertJobs);
+                Console.Out.WriteLine("  -h --help                  Show this screen.");
+                Console.Out.WriteLine("  --version                  Show version.");
+                Console.Out.WriteLine("  --port=<value>             The server port");
+                Console.Out.WriteLine("  --cache=<value>            Cache directory for transcoded webm files");
+                Console.Out.WriteLine("  --path=<value>             Path to the video data");
+                Console.Out.WriteLine("                               # (default = current_dir)");
+                Console.Out.WriteLine("                               # can be specified multiple times");
+                Console.Out.WriteLine("                               #");
+                Console.Out.WriteLine("  --display=<value>          The display mode");
+                Console.Out.WriteLine("                               # [0] Disabled");
+                Console.Out.WriteLine("                               # [1] Seekable raw file");
+                Console.Out.WriteLine("                               # [2] Raw file");
+                Console.Out.WriteLine("                               # [3] Transcoded Webm stream");
+                Console.Out.WriteLine("                               # [4] Download file");
+                Console.Out.WriteLine("                               #");
+                Console.Out.WriteLine("  --order=<value>            The display order");
+                Console.Out.WriteLine("                               # [0] Date [descending]");
+                Console.Out.WriteLine("                               # [1] Date [ascending]");
+                Console.Out.WriteLine("                               # [2] Title");
+                Console.Out.WriteLine("                               # [3] Category");
+                Console.Out.WriteLine("                               # [4] Views");
+                Console.Out.WriteLine("                               # [5] Rating");
+                Console.Out.WriteLine("                               # [6] Uploader");
+                Console.Out.WriteLine("                               #");
+                Console.Out.WriteLine("  --width=<value>            The display list width");
+                Console.Out.WriteLine("                               # [0] Small");
+                Console.Out.WriteLine("                               # [1] Medium");
+                Console.Out.WriteLine("                               # [2] Wide");
+                Console.Out.WriteLine("                               # [3] Full");
+                Console.Out.WriteLine("                               #");
+                Console.Out.WriteLine("  --thumbnailmode=<value>    The thumbnail loading mode");
+                Console.Out.WriteLine("                               # [0] Off");
+                Console.Out.WriteLine("                               # [1] On (intelligent)");
+                Console.Out.WriteLine("                               # [2] On (sequential)");
+                Console.Out.WriteLine("                               # [3] On (parallel)");
+                Console.Out.WriteLine("                               #");
+                Console.Out.WriteLine("  --videomode=<value>        The video playback mode");
+                Console.Out.WriteLine("                               # [0] Disabled");
+                Console.Out.WriteLine("                               # [1] Seekable raw file");
+                Console.Out.WriteLine("                               # [2] Raw file");
+                Console.Out.WriteLine("                               # [3] Transcoded webm stream");
+                Console.Out.WriteLine("                               # [4] Download file");
+                Console.Out.WriteLine("                               # [5] VLC Protocol Link"); // https://github.com/stefansundin/vlc-protocol
+                Console.Out.WriteLine("                               #");
+                Console.Out.WriteLine("  --max-parallel-convert=<v> Maximum amount of parallel ffmpeg calls to");
+                Console.Out.WriteLine("                               transcode video files to (stream-able) webm");
+                Console.Out.WriteLine("                               Default := " + MaxParallelConvertJobs);
                 Console.Out.WriteLine("  --max-parallel-genprev=<v> Maximum amount of parallel ffmpeg calls to generate");
-                Console.Out.WriteLine("                             thumbnails and preview images");
-                Console.Out.WriteLine("                             Default := " + MaxParallelGenPreviewJobs);
+                Console.Out.WriteLine("                               thumbnails and preview images");
+                Console.Out.WriteLine("                               Default := " + MaxParallelGenPreviewJobs);
                 Console.Out.WriteLine("  --preview-width=<value>    Width for generated preview and thumbnail images");
-                Console.Out.WriteLine("                             Default := " + PreviewImageWidth);
+                Console.Out.WriteLine("                               Default := " + PreviewImageWidth);
                 Console.Out.WriteLine("  --webm-convert-params=<v>  Additional parameters in ffmpeg call for video");
-                Console.Out.WriteLine("                             to (stream-able) webm");
-                Console.Out.WriteLine("                             Default := '" + ConvertFFMPEGParams + "'");
+                Console.Out.WriteLine("                               to (stream-able) webm");
+                Console.Out.WriteLine("                               Default := '" + ConvertFFMPEGParams + "'");
+                Console.Out.WriteLine("  --no-ffmpeg=<value>        Disable all features that depend on a");
+                Console.Out.WriteLine("                               system ffmpeg installation");
+                Console.Out.WriteLine("                               # - live webm transcode");
+                Console.Out.WriteLine("                               # - generated thumbnails");
+                Console.Out.WriteLine("                               # - hover preview");
+                Console.Out.WriteLine("                               # - ...");
                 Console.Out.WriteLine();
                 return;
             }
@@ -171,8 +180,15 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine($"> Start enumerating video data [{i}]: {DataDirs[i]}");
                 RefreshData(i);
                 Console.Out.WriteLine($"> Video data enumerated: {Data[i].obj.Count} entries found");
+                Console.Out.WriteLine();
             }
-            
+
+            if (HasValidFFMPEG) // if disabled by cmd switch then wwe don't need to check
+            {
+                Console.Out.WriteLine($"> Verifying ffmpeg installation");
+                VerifyFFMPEG();
+                Console.Out.WriteLine();
+            }
             
             Console.Out.WriteLine();
             Console.Out.WriteLine($"[#] Starting webserver on http://localhost:{Port}/");
@@ -180,6 +196,34 @@ namespace youtube_dl_viewer
             
             
             CreateHostBuilder(args).Build().Run();
+        }
+
+        private static void VerifyFFMPEG()
+        {
+            try
+            {
+                var proc = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "ffmpeg",
+                        Arguments = "-version",
+                        CreateNoWindow = true,
+                    }
+                };
+
+                proc.Start();
+                proc.WaitForExit();
+                if (proc.ExitCode != 0) throw new Exception("Exitcode");
+                
+                Console.Out.WriteLine($"  : ffmpeg installation seems to be ok");
+                HasValidFFMPEG = true;
+            }
+            catch (Exception)
+            {
+                Console.Out.WriteLine($"  : ffmpeg could not be found ... disabling live transcode and preview generators");
+                HasValidFFMPEG = false;
+            }
         }
 
         private static void ParseArgs(IEnumerable<string> args)
@@ -195,6 +239,12 @@ namespace youtube_dl_viewer
                 if (arg.ToLower() == "--version")
                 {
                     OptVersion = true;
+                    continue;
+                }
+                
+                if (arg.ToLower() == "--no-ffmpeg")
+                {
+                    HasValidFFMPEG = false;
                     continue;
                 }
                 
@@ -217,7 +267,8 @@ namespace youtube_dl_viewer
                 if (key == "cache")                CacheDir                  = value;
                 if (key == "max-parallel-convert") MaxParallelConvertJobs    = int.Parse(value);
                 if (key == "max-parallel-genprev") MaxParallelGenPreviewJobs = int.Parse(value);
-                if (key == "preview-width")        PreviewImageWidth = int.Parse(value);
+                if (key == "preview-width")        PreviewImageWidth         = int.Parse(value);
+                if (key == "webm-convert-params")  ConvertFFMPEGParams       = value;
             }
         }
 

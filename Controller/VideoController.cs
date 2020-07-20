@@ -98,6 +98,8 @@ namespace youtube_dl_viewer.Controller
 
         private static async Task GetVideoStreamWithCache(HttpContext context, string pathVideo, string pathCache)
         {
+            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; return; }
+            
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
             using var proxy = JobRegistry.GetOrStartConvertJob(pathVideo, pathCache);
@@ -139,6 +141,8 @@ namespace youtube_dl_viewer.Controller
 
         private static async Task GetVideoStreamWithoutCache(HttpContext context, string pathVideo)
         {
+            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; return; }
+            
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
             using var proxy = JobRegistry.GetOrStartConvertJob(pathVideo, null);

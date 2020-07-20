@@ -39,6 +39,8 @@ namespace youtube_dl_viewer.Jobs
         {
             try
             {
+                if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
+                
                 var proc1 = new Process
                 {
                     StartInfo = new ProcessStartInfo
