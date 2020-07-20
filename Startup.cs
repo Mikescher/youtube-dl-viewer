@@ -32,7 +32,7 @@ namespace youtube_dl_viewer
 
                 endpoints.MapGet("/data/{idx:int}/video/{id}/thumb",         ThumbnailController.GetThumbnail);
                 endpoints.MapGet("/data/{idx:int}/video/{id}/thumbframe",    ThumbnailController.GetAutoThumbnail);
-                endpoints.MapGet("/data/{idx:int}/video/{id}/preview/{img}", ThumbnailController.GetPreview);
+                endpoints.MapGet("/data/{idx:int}/video/{id}/prev/{img}", ThumbnailController.GetPreview);
                 
                 endpoints.MapGet("/data/{idx:int}/video/{id}/seek",   VideoController.GetVideoSeek);
                 endpoints.MapGet("/data/{idx:int}/video/{id}/file",   VideoController.GetVideoFile);

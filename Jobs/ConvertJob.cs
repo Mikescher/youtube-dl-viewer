@@ -44,7 +44,7 @@ namespace youtube_dl_viewer.Jobs
             
             try
             {
-                var cmd = $" -i \"{Source}\" -f webm -vcodec libvpx-vp9 -vb 256k -cpu-used -5 -deadline realtime {Temp}";
+                var cmd = $" -i \"{Source}\" -f webm -vcodec libvpx-vp9 {Program.ConvertFFMPEGParams} {Temp}";
 
                 proc = new Process
                 {

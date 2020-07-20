@@ -18,11 +18,18 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
+        public static string Version => "0.5";
+
         public static List<string> DataDirs = new List<string>();
         public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
-        public static string Version => "0.5";
+        public static int MaxParallelConvertJobs    = 2;
+        public static int MaxParallelGenPreviewJobs = 6;
 
+        public static int PreviewImageWidth = 480;
+
+        public static string ConvertFFMPEGParams = @"-vb 256k -cpu-used -5 -deadline realtime";
+        
         /*
          * [0] ListStyle: Grid
          * [1] ListStyle: Compact
@@ -138,6 +145,17 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("                             # [4] Download file");
                 Console.Out.WriteLine("                             # [5] VLC Protocol Link"); // https://github.com/stefansundin/vlc-protocol
                 Console.Out.WriteLine("                             #");
+                Console.Out.WriteLine("  --max-parallel-convert=<v> Maximum amount of parallel ffmpeg calls to transcode");
+                Console.Out.WriteLine("                             video files to (stream-able) webm");
+                Console.Out.WriteLine("                             Default := " + MaxParallelConvertJobs);
+                Console.Out.WriteLine("  --max-parallel-genprev=<v> Maximum amount of parallel ffmpeg calls to generate");
+                Console.Out.WriteLine("                             thumbnails and preview images");
+                Console.Out.WriteLine("                             Default := " + MaxParallelGenPreviewJobs);
+                Console.Out.WriteLine("  --preview-width=<value>    Width for generated preview and thumbnail images");
+                Console.Out.WriteLine("                             Default := " + PreviewImageWidth);
+                Console.Out.WriteLine("  --webm-convert-params=<v>  Additional parameters in ffmpeg call for video");
+                Console.Out.WriteLine("                             to (stream-able) webm");
+                Console.Out.WriteLine("                             Default := '" + ConvertFFMPEGParams + "'");
                 Console.Out.WriteLine();
                 return;
             }
@@ -189,14 +207,17 @@ namespace youtube_dl_viewer
 
                 if (value.StartsWith("\"") && value.EndsWith("\"")) value = value.Substring(1, value.Length - 2);
 
-                if (key == "display")       OptDisplayMode   = int.Parse(value);
-                if (key == "order")         OptOrderMode     = int.Parse(value);
-                if (key == "width")         OptWidthMode     = int.Parse(value);
-                if (key == "thumbnailmode") OptThumbnailMode = int.Parse(value);
-                if (key == "videomode")     OptVideoMode     = int.Parse(value);
-                if (key == "path")          DataDirs.Add(value);
-                if (key == "port")          Port             = int.Parse(value);
-                if (key == "cache")         CacheDir         = value;
+                if (key == "display")              OptDisplayMode            = int.Parse(value);
+                if (key == "order")                OptOrderMode              = int.Parse(value);
+                if (key == "width")                OptWidthMode              = int.Parse(value);
+                if (key == "thumbnailmode")        OptThumbnailMode          = int.Parse(value);
+                if (key == "videomode")            OptVideoMode              = int.Parse(value);
+                if (key == "path")                 DataDirs.Add(value);
+                if (key == "port")                 Port                      = int.Parse(value);
+                if (key == "cache")                CacheDir                  = value;
+                if (key == "max-parallel-convert") MaxParallelConvertJobs    = int.Parse(value);
+                if (key == "max-parallel-genprev") MaxParallelGenPreviewJobs = int.Parse(value);
+                if (key == "preview-width")        PreviewImageWidth = int.Parse(value);
             }
         }
 

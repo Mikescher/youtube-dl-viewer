@@ -89,7 +89,7 @@ namespace youtube_dl_viewer.Jobs
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = "ffmpeg",
-                        Arguments = $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale=480:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"",
+                        Arguments = $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"",
                         CreateNoWindow = true,
                     }
                 };
