@@ -16,6 +16,8 @@ namespace youtube_dl_viewer.Jobs
         public int ProxyCount => Proxies.Count;
         
         public bool Running = false;
+        
+        public bool Started = false;
 
         protected object SuperLock => _manager.LockObject;
         
@@ -32,6 +34,7 @@ namespace youtube_dl_viewer.Jobs
         public void Start()
         {
             Running = true;
+            Started = true;
             Thread = new Thread(JobRun);
             Thread.Start();
         }

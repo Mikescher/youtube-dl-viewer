@@ -109,6 +109,8 @@ namespace youtube_dl_viewer.Controller
             
             using var proxy = JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, pathCache)); 
 
+            while (!proxy.Killed && !proxy.Job.Started) await Task.Delay(100);
+            
             while (!proxy.Killed && !File.Exists(proxy.Job.Temp))
             {
                 if (!proxy.Job.Running) return;

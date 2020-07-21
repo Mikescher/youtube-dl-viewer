@@ -21,7 +21,7 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string Version => "0.12";
+        public static string Version => "0.13";
 
         private static string _currentDir = null;
         public static string CurrentDir => _currentDir ??= Environment.CurrentDirectory;
