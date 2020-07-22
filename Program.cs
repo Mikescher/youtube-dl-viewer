@@ -20,7 +20,7 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string Version => "0.14";
+        public static string Version => "0.15";
 
         private static string _currentDir = null;
         public static string CurrentDir => _currentDir ??= Environment.CurrentDirectory;
@@ -101,6 +101,9 @@ namespace youtube_dl_viewer
 
         public static string CacheDir = null;
 
+        public static string FFMPEGExec  = "ffmpeg";
+        public static string FFPROBEExec = "ffprobe";
+
         public static void Main(string[] args)
         {
             ParseArgs(args);
@@ -174,6 +177,8 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("  --webm-convert-params=<v>  Additional parameters in ffmpeg call for video");
                 Console.Out.WriteLine("                               to (stream-able) webm");
                 Console.Out.WriteLine("                               Default := '" + ConvertFFMPEGParams + "'");
+                Console.Out.WriteLine("  --exec-ffmpeg=<path>       Alternative path to the ffmpeg executable");
+                Console.Out.WriteLine("  --exec-ffprobe=<path>      Alternative path to the ffprobe executable");
                 Console.Out.WriteLine("  --no-ffmpeg                Disable all features that depend on a");
                 Console.Out.WriteLine("                               system ffmpeg installation");
                 Console.Out.WriteLine("                               # - live webm transcode");
@@ -248,54 +253,99 @@ namespace youtube_dl_viewer
 
         private static void VerifyFFMPEG()
         {
-            var start = DateTime.Now;
-            
             try
             {
-                var proc = new Process
                 {
-                    StartInfo = new ProcessStartInfo
+                    var start = DateTime.Now;
+                    
+                    var proc = new Process
                     {
-                        FileName = "ffmpeg",
-                        Arguments = "-version",
-                        CreateNoWindow = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                    }
-                };
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = Program.FFMPEGExec,
+                            Arguments = "-version",
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                        }
+                    };
 
-                var builderOut = new StringBuilder();
-                proc.OutputDataReceived += (sender, args) =>
-                {
-                    if (args.Data == null) return;
-                    if (builderOut.Length == 0) builderOut.Append(args.Data);
-                    else builderOut.Append("\n" + args.Data);
-                };
-                proc.ErrorDataReceived += (sender, args) =>
-                {
-                    if (args.Data == null) return;
-                    if (builderOut.Length == 0) builderOut.Append(args.Data);
-                    else builderOut.Append("\n" + args.Data);
-                };
+                    var builderOut = new StringBuilder();
+                    proc.OutputDataReceived += (sender, args) =>
+                    {
+                        if (args.Data == null) return;
+                        if (builderOut.Length == 0) builderOut.Append(args.Data);
+                        else builderOut.Append("\n" + args.Data);
+                    };
+                    proc.ErrorDataReceived += (sender, args) =>
+                    {
+                        if (args.Data == null) return;
+                        if (builderOut.Length == 0) builderOut.Append(args.Data);
+                        else builderOut.Append("\n" + args.Data);
+                    };
 
-                proc.Start();
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
-                proc.WaitForExit();
+                    proc.Start();
+                    proc.BeginOutputReadLine();
+                    proc.BeginErrorReadLine();
+                    proc.WaitForExit();
                 
-                if (FFMPEGDebugDir != null)
-                {
-                    File.WriteAllText(Path.Combine(FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[test].log"), $"> ffmpeg -version\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                    if (FFMPEGDebugDir != null)
+                    {
+                        File.WriteAllText(Path.Combine(FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[ffmpeg-test].log"), $"> {Program.FFMPEGExec} -version\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                    }
+                
+                    if (proc.ExitCode != 0) throw new Exception("Exitcode");
                 }
                 
-                if (proc.ExitCode != 0) throw new Exception("Exitcode");
+                {
+                    var start = DateTime.Now;
+
+                    var proc = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = Program.FFPROBEExec,
+                            Arguments = "-version",
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                        }
+                    };
+
+                    var builderOut = new StringBuilder();
+                    proc.OutputDataReceived += (sender, args) =>
+                    {
+                        if (args.Data == null) return;
+                        if (builderOut.Length == 0) builderOut.Append(args.Data);
+                        else builderOut.Append("\n" + args.Data);
+                    };
+                    proc.ErrorDataReceived += (sender, args) =>
+                    {
+                        if (args.Data == null) return;
+                        if (builderOut.Length == 0) builderOut.Append(args.Data);
+                        else builderOut.Append("\n" + args.Data);
+                    };
+
+                    proc.Start();
+                    proc.BeginOutputReadLine();
+                    proc.BeginErrorReadLine();
+                    proc.WaitForExit();
                 
-                Console.Out.WriteLine("  : ffmpeg installation seems to be ok");
+                    if (FFMPEGDebugDir != null)
+                    {
+                        File.WriteAllText(Path.Combine(FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[ffprobe-test].log"), $"> {Program.FFMPEGExec} -version\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                    }
+                
+                    if (proc.ExitCode != 0) throw new Exception("Exitcode");
+                }
+
+                
+                Console.Out.WriteLine("  : ffmpeg+ffprobe installation seems to be ok");
                 HasValidFFMPEG = true;
             }
             catch (Exception)
             {
-                Console.Out.WriteLine("  : ffmpeg could not be found ... disabling live transcode and preview generators");
+                Console.Out.WriteLine("  : ffmpeg+ffprobe could not be found ... disabling live transcode and preview generators");
                 HasValidFFMPEG = false;
             }
         }
@@ -359,6 +409,8 @@ namespace youtube_dl_viewer
                 if (key == "previewcount-max")     MaxPreviewImageCount      = int.Parse(value);
                 if (key == "previewcount-min")     MinPreviewImageCount      = Math.Max(2, int.Parse(value));
                 if (key == "ffmpeg-debug-dir")     FFMPEGDebugDir            = value;
+                if (key == "exec-ffmpeg")          FFMPEGExec                = value;
+                if (key == "exec-ffprobe")         FFPROBEExec               = value;
             }
         }
 

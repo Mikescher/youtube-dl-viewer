@@ -51,7 +51,7 @@ namespace youtube_dl_viewer.Jobs
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
                 
-                var (ecode1, outputProbe) = RunCommand("ffprobe", $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
+                var (ecode1, outputProbe) = RunCommand(Program.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
                 
                 if (ecode1 != 0)
                 {
@@ -74,7 +74,7 @@ namespace youtube_dl_viewer.Jobs
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        taskList.Add(RunCommandAsync("ffmpeg", $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}"));
+                        taskList.Add(RunCommandAsync(Program.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}"));
 
                         currpos += framedistance;
                         if (framedistance < 0.1) break;
@@ -93,7 +93,7 @@ namespace youtube_dl_viewer.Jobs
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        var (ecode2, _) = RunCommand("ffmpeg", $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
+                        var (ecode2, _) = RunCommand(Program.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
 
                         if (ecode2 != 0)
                         {
@@ -106,7 +106,7 @@ namespace youtube_dl_viewer.Jobs
                 }
                 else if (Program.ThumbnailExtraction == ThumbnailExtractionMode.SingleCommand)
                 {
-                    var (ecode2, _) = RunCommand("ffmpeg", $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
+                    var (ecode2, _) = RunCommand(Program.FFMPEGExec, $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
 
                     if (ecode2 != 0)
                     {

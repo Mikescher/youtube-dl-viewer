@@ -50,7 +50,7 @@ namespace youtube_dl_viewer.Jobs
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = "ffmpeg",
+                        FileName = Program.FFMPEGExec,
                         Arguments = cmd,
                         CreateNoWindow = true,
                         RedirectStandardOutput = true,
@@ -95,7 +95,7 @@ namespace youtube_dl_viewer.Jobs
                     {
                         if (!ConvertFinished && Program.FFMPEGDebugDir != null)
                         {
-                            File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[convert].log"), $"> ffmpeg {cmd}\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                            File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[convert].log"), $"> {Program.FFMPEGExec} {cmd}\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
                         }
                         ConvertFinished = true;
                     }

@@ -112,6 +112,7 @@ youtube-dl-viewer supports playing the videos by clicking on them, there are mul
  - **Transcoded webm stream:**  
    This mode uses a [ffmpeg](https://ffmpeg.org/) to transcode the video file to webm file and stream it to the user.  
    A working ffmpeg installation is required because youtube-dl-viewer will simply call the ffmpeg command. If you do not have (and do not want) a ffmpeg installation you can start youtube-dl-viewer with the command `--no-ffmpeg` to disable all ffmpeg dependent functionality.  
+   If you don't want to use the default ffmpeg of your system you can specify an executable with the arguments `--exec-ffmpeg` and `--exec-ffprobe` 
    You can tweak the ffmpeg parameters with the parameter `--webm-convert-params`.  
    Depending on the video, the parameter and you machine ffmpeg may not be able to encode the video fast enough for a smooth playback. To fix this prolem (at least a bit) you can supply youtube-dl-viewer with a `--cache` path where past converted videos will be remembered so that the next time the converted artifacts will be re-used.  
    Also you can limit the maximum amount of parallel ffmpeg conversion jobs with the `--max-parallel-convert` parameter.
