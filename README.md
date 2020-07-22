@@ -249,6 +249,11 @@ Common problems are:
 2. The (source) video is in a format that your ffmpeg installation cannot read
 3. youtube-dl-viewer (or the spawned ffmpeg process) has no permission to write to your temp directory
  
+#### - Debugging ffmpeg output
+
+By specifying a dirctory in the `--ffmpeg-debug-dir` argument you can inspect the ffmpeg output.  
+For every ffmpeg call we make a new file is created with the invoked command, ffmpeg output and exit code.  
+This is especially useful for cases where some specific codec is not supported by your ffmpeg version
 
 #### - realpath(): Permission denied
 

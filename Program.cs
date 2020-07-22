@@ -6,13 +6,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Controller;
 using youtube_dl_viewer.Jobs;
-using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer
 {
@@ -21,7 +20,7 @@ namespace youtube_dl_viewer
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
-        public static string Version => "0.13";
+        public static string Version => "0.14";
 
         private static string _currentDir = null;
         public static string CurrentDir => _currentDir ??= Environment.CurrentDirectory;
@@ -44,6 +43,8 @@ namespace youtube_dl_viewer
         
         public static string ConvertFFMPEGParams = @"-vb 256k -cpu-used -5 -deadline realtime";
 
+        public static string FFMPEGDebugDir = null;
+        
         public static int MaxPreviewImageCount = 32;
         public static int MinPreviewImageCount = 8;
         
@@ -197,6 +198,7 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("  --no-auto-previews         Do not automatically generate all previews in the background");
                 Console.Out.WriteLine("  --open-browser             Automatically open browser after webserver");
                 Console.Out.WriteLine("                               is started (only works on desktop)");
+                Console.Out.WriteLine("  --ffmpeg-debug-dir=<dir>   Directory where all ffmpeg ouput is written to (for debugging)");
                 Console.Out.WriteLine();
                 return;
             }
@@ -210,7 +212,7 @@ namespace youtube_dl_viewer
             for (var i = 0; i < DataDirs.Count; i++)
             {
                 Console.Out.WriteLine($"> Start enumerating video data [{i}]: {DataDirs[i]}");
-                RefreshData(i);
+                DataController.CreateData(i);
                 Console.Out.WriteLine($"> Video data enumerated: {Data[i].obj.Count} entries found");
                 Console.Out.WriteLine();
             }
@@ -246,6 +248,8 @@ namespace youtube_dl_viewer
 
         private static void VerifyFFMPEG()
         {
+            var start = DateTime.Now;
+            
             try
             {
                 var proc = new Process
@@ -255,19 +259,43 @@ namespace youtube_dl_viewer
                         FileName = "ffmpeg",
                         Arguments = "-version",
                         CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                     }
                 };
 
+                var builderOut = new StringBuilder();
+                proc.OutputDataReceived += (sender, args) =>
+                {
+                    if (args.Data == null) return;
+                    if (builderOut.Length == 0) builderOut.Append(args.Data);
+                    else builderOut.Append("\n" + args.Data);
+                };
+                proc.ErrorDataReceived += (sender, args) =>
+                {
+                    if (args.Data == null) return;
+                    if (builderOut.Length == 0) builderOut.Append(args.Data);
+                    else builderOut.Append("\n" + args.Data);
+                };
+
                 proc.Start();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
                 proc.WaitForExit();
+                
+                if (FFMPEGDebugDir != null)
+                {
+                    File.WriteAllText(Path.Combine(FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[test].log"), $"> ffmpeg -version\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                }
+                
                 if (proc.ExitCode != 0) throw new Exception("Exitcode");
                 
-                Console.Out.WriteLine($"  : ffmpeg installation seems to be ok");
+                Console.Out.WriteLine("  : ffmpeg installation seems to be ok");
                 HasValidFFMPEG = true;
             }
             catch (Exception)
             {
-                Console.Out.WriteLine($"  : ffmpeg could not be found ... disabling live transcode and preview generators");
+                Console.Out.WriteLine("  : ffmpeg could not be found ... disabling live transcode and preview generators");
                 HasValidFFMPEG = false;
             }
         }
@@ -330,6 +358,7 @@ namespace youtube_dl_viewer
                 if (key == "thumnail-ex-mode")     ThumbnailExtraction       = (ThumbnailExtractionMode)int.Parse(value);
                 if (key == "previewcount-max")     MaxPreviewImageCount      = int.Parse(value);
                 if (key == "previewcount-min")     MinPreviewImageCount      = Math.Max(2, int.Parse(value));
+                if (key == "ffmpeg-debug-dir")     FFMPEGDebugDir            = value;
             }
         }
 
@@ -359,182 +388,6 @@ namespace youtube_dl_viewer
                 socket.Close();
             }
             return port;
-        }
-
-        public static string RefreshData(int index)
-        {
-            var datafiles = Directory.EnumerateFiles(DataDirs[index]).OrderBy(p => p.ToLower()).ToList();
-            var processedFiles = new List<string>();
-
-            var filesSubs = datafiles.Where(p => p.EndsWith(".vtt")).ToList();
-            var filesInfo = datafiles.Where(p => p.EndsWith(".info.json")).ToList();
-
-            var resultVideos = new JArray();
-
-            var idsAreUnique = true;
-            var idlist = new HashSet<string>();
-
-            var cacheFiles = (CacheDir == null)
-                ? new HashSet<string>()
-                : Directory.EnumerateFiles(CacheDir).Select(Path.GetFileName).ToHashSet();
-            
-            foreach (var pathJson in filesInfo)
-            {
-                JObject jinfo;
-                try
-                {
-                    jinfo = JObject.Parse(File.ReadAllText(pathJson));
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Could not parse file: '{pathJson}'", e);
-                }
-
-                var id = jinfo.Value<string>("id");
-                if (id == null || idlist.Contains(id)) idsAreUnique = false;
-                idlist.Add(id);
-                
-                var dir = Path.GetDirectoryName(pathJson);
-                if (dir == null) continue;
-
-                var filenameJson = Path.GetFileName(pathJson);
-
-                var filenameBase = filenameJson.Substring(0, filenameJson.Length - ".info.json".Length);
-
-                var pathDesc = Path.Combine(dir, filenameBase + ".description");
-                if (!datafiles.Contains(pathDesc)) pathDesc = null;
-
-                var pathVideo = ExtVideo.Select(ext => Path.Combine(dir, filenameBase + "." + ext)).FirstOrDefault(p => datafiles.Contains(p));
-                if (pathVideo == null) continue;
-
-                var pathThumb = ExtThumbnail.Select(ext => Path.Combine(dir, filenameBase + "." + ext)).FirstOrDefault(p => datafiles.Contains(p));
-
-                var pathSubs = filesSubs
-                    .Where(p => dir == Path.GetDirectoryName(p))
-                    .Where(p => Path.GetFileName(p).EndsWith(".vtt"))
-                    .Where(p => Path.GetFileName(p).StartsWith(filenameBase + "."))
-                    .ToList();
-                
-                processedFiles.Add(pathJson);
-                if (pathDesc != null) processedFiles.Add(pathDesc);
-                if (pathThumb != null) processedFiles.Add(pathThumb);
-                processedFiles.Add(pathVideo);
-                processedFiles.AddRange(pathSubs);
-                
-                resultVideos.Add(new JObject
-                (
-                    new JProperty("meta", new JObject
-                    (
-                        new JProperty("uid", id),
-                        
-                        new JProperty("directory", dir),
-                        
-                        new JProperty("filename_base", filenameBase),
-                        
-                        new JProperty("path_json", pathJson),
-                        new JProperty("path_description", pathDesc),
-                        new JProperty("path_video", pathVideo),
-                        new JProperty("path_video_abs", Path.GetFullPath(pathVideo)),
-                        new JProperty("path_thumbnail", pathThumb),
-                        new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p)))),
-                        
-                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
-                        new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
-                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
-                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))))
-                    )),
-                    new JProperty("data", new JObject
-                    (
-                        new JProperty("info", jinfo),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
-                    ))
-                ));
-            }
-
-            foreach (var pathVideo in datafiles.Except(processedFiles).Where(p => ExtVideo.Any(q => string.Equals("." + q, Path.GetExtension(p), StringComparison.CurrentCultureIgnoreCase))))
-            {
-                var id = pathVideo.Sha256();
-                if (id == null || idlist.Contains(id)) idsAreUnique = false;
-                idlist.Add(id);
-                
-                var dir = Path.GetDirectoryName(pathVideo);
-                if (dir == null) continue;
-
-                var filenameVideo = Path.GetFileName(pathVideo);
-
-                var filenameBase = Path.GetFileNameWithoutExtension(filenameVideo);
-
-                var pathDesc = Path.Combine(dir, filenameBase + ".description");
-                if (!datafiles.Contains(pathDesc)) pathDesc = null;
-
-                var pathThumb = ExtThumbnail.Select(ext => Path.Combine(dir, filenameBase + "." + ext)).FirstOrDefault(p => datafiles.Contains(p));
-
-                var pathSubs = filesSubs
-                    .Where(p => dir == Path.GetDirectoryName(p))
-                    .Where(p => Path.GetFileName(p).EndsWith(".vtt"))
-                    .Where(p => Path.GetFileName(p).StartsWith(filenameBase + "."))
-                    .ToList();
-                
-                if (pathDesc != null) processedFiles.Add(pathDesc);
-                if (pathThumb != null) processedFiles.Add(pathThumb);
-                processedFiles.Add(pathVideo);
-                processedFiles.AddRange(pathSubs);
-                
-                resultVideos.Add(new JObject
-                (
-                    new JProperty("meta", new JObject
-                    (
-                        new JProperty("uid", id),
-                        
-                        new JProperty("directory", dir),
-                        
-                        new JProperty("filename_base", filenameBase),
-                        
-                        new JProperty("path_json", (object)null),
-                        new JProperty("path_description", pathDesc),
-                        new JProperty("path_video", pathVideo),
-                        new JProperty("path_video_abs", Path.GetFullPath(pathVideo)),
-                        new JProperty("path_thumbnail", pathThumb),
-                        new JProperty("paths_subtitle", new JObject(pathSubs.Select(p => new JProperty(Path.GetFileNameWithoutExtension(p).Substring(filenameBase.Length+1), p)))),
-                        
-                        new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
-                        new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
-                        new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
-                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))))
-                    )),
-                    new JProperty("data", new JObject
-                    (
-                        new JProperty("info", new JObject
-                        (
-                            new JProperty("title", Path.GetFileNameWithoutExtension(pathVideo))
-                        )),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
-                    ))
-                ));
-            }
-
-            if (!idsAreUnique)
-            {
-                var uid = 10000;
-                foreach (var rv in resultVideos)
-                {
-                    rv["meta"]?["uid"]?.Replace(new JProperty("uid", uid.ToString()));
-                    uid++;
-                }
-            }
-
-            var result = new JObject
-            (
-                new JProperty("videos", resultVideos),
-                new JProperty("missing", new JArray(datafiles.Except(processedFiles).ToArray<object>()))
-            );
-
-            var jsonstr = result.ToString(Formatting.Indented);
-            var jsonobj = resultVideos.ToDictionary(rv => rv["meta"]?.Value<string>("uid"), rv => (JObject) rv);
-            
-            Data[index] = (jsonstr, jsonobj);
-
-            return jsonstr;
         }
     }
 }

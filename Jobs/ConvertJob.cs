@@ -37,6 +37,8 @@ namespace youtube_dl_viewer.Jobs
         protected override void Run()
         {
             Process proc = null;
+
+            var start = DateTime.Now;
             
             try
             {
@@ -88,8 +90,15 @@ namespace youtube_dl_viewer.Jobs
                 for (;;)
                 {
                     if (Aborted) return;
-                    
-                    if (proc.HasExited) ConvertFinished = true;
+
+                    if (proc.HasExited)
+                    {
+                        if (!ConvertFinished && Program.FFMPEGDebugDir != null)
+                        {
+                            File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[convert].log"), $"> ffmpeg {cmd}\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                        }
+                        ConvertFinished = true;
+                    }
                     
                     if (proc.HasExited && Proxies.Count == 0)
                     {
