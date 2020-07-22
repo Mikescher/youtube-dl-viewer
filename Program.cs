@@ -39,6 +39,8 @@ namespace youtube_dl_viewer
         public static bool HasValidFFMPEG = true;
 
         public static bool AutoOpenBrowser = false;
+
+        public static bool AutoPreviewGen = true;
         
         public static string ConvertFFMPEGParams = @"-vb 256k -cpu-used -5 -deadline realtime";
 
@@ -187,10 +189,11 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("                               #               (all calls parallel)");
                 Console.Out.WriteLine("                               # [2] SingleCommand: Only a single call to ffmpeg");
                 Console.Out.WriteLine("                               #                    with an fps filter");
-                Console.Out.WriteLine("  --previewcount-max=<v>    The max amount of generated preview images per video");
+                Console.Out.WriteLine("  --previewcount-max=<v>     The max amount of generated preview images per video");
                 Console.Out.WriteLine("                               Default := " + MaxPreviewImageCount);
-                Console.Out.WriteLine("  --previewcount-min=<v>    The minimum amount of generated preview images per video");
+                Console.Out.WriteLine("  --previewcount-min=<v>     The minimum amount of generated preview images per video");
                 Console.Out.WriteLine("                               Default := " + MinPreviewImageCount);
+                Console.Out.WriteLine("  --no-auto-previews         Do not automatically generate all previews in the background");
                 Console.Out.WriteLine("  --open-browser             Automatically open browser after webserver");
                 Console.Out.WriteLine("                               is started (only works on desktop)");
                 Console.Out.WriteLine();
@@ -293,6 +296,12 @@ namespace youtube_dl_viewer
                 if (arg.ToLower() == "--open-browser")
                 {
                     AutoOpenBrowser = true;
+                    continue;
+                }
+                
+                if (arg.ToLower() == "--no-auto-previews ")
+                {
+                    AutoPreviewGen = false;
                     continue;
                 }
                 

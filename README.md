@@ -1,0 +1,244 @@
+## Introduction
+
+This is a (cross platform) web app to display videos downloaded by [youtube-dl](https://youtube-dl.org/) (or similiar tools) and view them inside your browser in a nice (youtube-like) UI.
+
+## Screenshots
+
+![preview](README_FILES/animation.gif)
+
+## Usage
+
+#### - Local Usage
+
+The easiest way to use is to simply drop the binary in teh directory with the video files, run it and open the displayed URL in your browser.  
+For a bit more customization you can create a `.bat` or `.sh` wrapper to run it with a few parameter
+
+~~~batch
+REM Example:
+REM (remove comments before copying)
+
+youtube-dl-viewer.exe                                ^
+  --cache="C:\Users\me\AppData\Local\Tempytdl_cache" ^  # specify cache directory for generated thumbnails
+  --videomode=6                                      ^  # default to local vlc protocol links for playback
+  --thumbnailmode=2                                  ^  # default to grid 
+  --open-browser                                        # autom. open browser after startup
+~~~
+
+#### - Server Usage
+
+Another use case is to have your video files synchronized to a server and host a permanent instance of youtube-dl-viewer there.  
+Then you can either access if via the specified port or use [nginx/apache as a reverse proxy](https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html)
+
+~~~bash
+#!/bin/bash
+
+DOTNET_BUNDLE_EXTRACT_BASE_DIR=/home/web_aspnet/dot_net_cache/
+export DOTNET_BUNDLE_EXTRACT_BASE_DIR
+
+./youtube-dl-viewer --port=9876                                                              \
+                    --cache="/media/youtube-dl-viewer_cache/"                                \
+                    --display=0 --order=0 --width=1 --thumbnailmode=1 --videomode=3          \
+                    --path="/media/nextcloud/data/Mikescher/files/Videos/YoutubePlaylist1"   \
+                    --path="/media/nextcloud/data/Mikescher/files/Videos/YoutubePlaylist2"   \
+                    --path="/media/filecloud/data/Mikescher/files/Videos/YoutubePlaylist3"
+~~~
+
+~~~
+<VirtualHost *:80>
+        ServerName  example.com
+
+        ProxyPreserveHost On
+        ProxyRequests off
+        ProxyPass        / http://127.0.0.1:9876/
+        ProxyPassReverse / http://127.0.0.1:9876/
+
+        ErrorLog /var/log/apache2/error_youtube-dl-viewer.log
+        LogLevel warn
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+~~~
+
+For synchronization you can use for example nextcloud, but every solution where youtube-dl-viewer can access the raw files on your filesystem works.
+
+
+#### - youtube-dl
+
+You can use any youtube-dl parameters as you want.  
+youtube-dl-viewer will use any data it has, the only neccessary file is the actual video. But it will also use and display available metadata (aka `*.info.json`, `*.description` and thumbnails).  
+
+My youtube-dl parameters are these:
+~~~
+youtube-dl 
+
+--download-archive "{archive_location}"
+--output "{ouput_location}\%%(playlist_index)s - %%(title)s.%%(ext)s"
+
+--format "bestvideo+bestaudio/best"
+
+--no-overwrites
+--restrict-filenames
+--ignore-errors 
+
+--write-description
+--write-info-json
+--write-annotations
+--write-thumbnail
+--all-subs
+
+--recode-video mkv
+
+
+"https://www.youtube.com/{playlist_url}"
+~~~
+
+If you start backup from scratch I would recommend to use `--recode-video webm`. webm (or mp4) is by default a format that can be streamed to your browser, this way you can easily watch the directly in your browser.  
+Otherwise you can either use the `transcoded webm stream` option, where the video is live transcoded via ffmpeg (needs to be installed), or the vlc protocol link where the file is streamed to your vlc media player
+
+
+#### - Playback options
+
+youtube-dl-viewer supports playing the videos by clicking on them, there are multiple modes for this available:
+
+ - **Disabled:**  
+   Does not play the video. Duh.
+ - **Seekable raw file:**  
+   Try to play the video in a native browser <media> element. This will only work if the video is already in a supported streamable format, which is (currently) only webm and mp4 (and only mp4's generated with the correct parameters). If the video format is not supported you will get an error meddage in your browser
+ - **Raw file:**  
+   This is mostly the same as **Seekable raw file**, with the same limitations. But this one also does not support HTTP range requests, which means you can't easily skip forward in the video.
+ - **Transcoded webm stream:**  
+   This mode uses a [ffmpeg](https://ffmpeg.org/) to transcode the video file to webm file and stream it to the user.  
+   A working ffmpeg installation is required because youtube-dl-viewer will simply call the ffmpeg command. If you do not have (and do not want) a ffmpeg installation you can start youtube-dl-viewer with the command `--no-ffmpeg` to disable all ffmpeg dependent functionality.  
+   You can tweak the ffmpeg parameters with the parameter `--webm-convert-params`.  
+   Depending on the video, the parameter and you machine ffmpeg may not be able to encode the video fast enough for a smooth playback. To fix this prolem (at least a bit) you can supply youtube-dl-viewer with a `--cache` path where past converted videos will be remembered so that the next time the converted artifacts will be re-used.  
+   Also you can limit the maximum amount of parallel ffmpeg conversion jobs with the `--max-parallel-convert` parameter.
+ - **Download file:**  
+  Simply prompt the user to download the video file.
+ - **VLC protocol link (stream):**  
+  Opens a `vlc://...` link to the video file. This is useful if your videos are in a format that's generally streamable but simply not supported by your browser (a common example is mkv).  
+  Unfortunately vlc is not a protocol that's supported by default so you have to manually register it, an implementation/installation can be found at [stefansundin/vlc-protocol](https://github.com/stefansundin/vlc-protocol/).  
+  This option depends on a working `vlc://` protocol and the fact that the video format is supported by [VLC](https://www.videolan.org/vlc/).
+ - **VLC protocol link (local):**  
+  This is mostly the same as **VLC protocol link (stream)** but it adds the local file path to your vlc playlist and not the video url.  
+  This is preferable if youtube-dl-viewer is running on your machine, because then the VLC Player doesn't have to yo through web requests to get the file and can simply read it from your hard drive, but of course this only works if VLC can access the original video file path (eg if its not running on a server)
+
+## Advanced Usage
+
+#### - Multiple Paths
+
+You can supply multiple `--path="{path}"` arguments, the first one will be used by default and you can switch to a different path in the top left area of the website.
+
+#### - Reload
+
+Via the reload button in the top right you can force a re-scan of all the video and metadata on the filesystem, this is usually only done on application startup.
+
+#### - Live transcode with ffmpeg
+
+youtube-dl-viewer can use [ffmpeg](https://ffmpeg.org/) to transcode the video file to a webm file and stream it directly to the user.  
+A working ffmpeg installation is required and needs to be accesible. Youtube-dl-viewer will simply call the ffmpeg command with the appropiate parameters.  
+Simply select **Transcoded webm stream** in the top right corner as your playback mode to choose this.
+
+If you do not have (and do not want) a ffmpeg installation you can start youtube-dl-viewer with the command `--no-ffmpeg` to disable all ffmpeg dependent functionality.  
+You can tweak the ffmpeg parameters with the parameter `--webm-convert-params`, the default values are optimized for fast transcoding, if you want you can change that to a more quality-oriented aproach.  
+Depending on the video, the parameter and you machine ffmpeg may not be able to encode the video fast enough for a smooth playback.
+To fix this prolem (at least a bit) you can supply youtube-dl-viewer with a `--cache` path where past converted videos will be saved.
+The next time you want to play that specific video the cached files will be used.  
+You can limit the maximum amount of parallel ffmpeg conversion jobs with the `--max-parallel-convert` parameter.
+
+> **[!] Note**   
+> If you already have your files in .webm format (or an appropiate .mp4) you can skip all this complexity and simply serve the files directly via the **Seekable raw file** playback mode.  
+> And if you only use youtube-dl-viewer on a single computer you control it would also be easier (and yield better results) to install the VLC URL protocol and use that playback mode.  
+
+#### - Generated Thumbnails (ffmpeg)
+
+By default youtube-dl-viewer uses the thumbnails that it finds with the video file (either referenced in the info.json file, or a image file with teh same filename as the video).
+But if there isn't a suitable thumbnail it uses ffmpeg to generate one from the video file.  
+This uses the same behaviour as ffmpeg generated previews, we simply generate the preview images (see below) and use the second preview image as our thumbnail.  
+For more information see the following section.
+
+This can be deactivated (as all ffmpeg dependent functionality with the `--no-ffmpeg` parameter)
+
+#### - Generated Previews (ffmpeg)
+
+In `Grid` and `Detailed` mode you can hover over a video thumbnail and see an animation consisting of multiple frames from the video.  
+These frames are extracted using ffmpeg at regular intervals. Because it can take a few seconds to get the images (depending on your machine and the video) it is recommended to specify a `--cache` directory where the preview files will be cached.  
+
+You can modify this behaviour with the following program arguments:
+  - `--preview-width`: The width of the generated image files (the height is automatically calculated)
+  - `--max-parallel-genprev`: The maximum amount of parallel preview-generation jobs. 
+  - `--previewcount-min`: The minimum amount of preview frames per video file (can still be less if the video is too short)
+  - `--previewcount-max`: The maximum amount of preview frames per video file
+  - `--thumnail-ex-mode`: Choose one of the three ways to extract the frames:
+     * `0`: **Sequential:** Call ffmpeg multiple times for each frame, one call after the other
+     * `1`: **Parallel:** Call ffmpeg multiple times for each frame, all calls parallel (can lead to many simultaneous ffmpeg processes)
+     * `2`: **SingleCommand:** Call ffmpeg oce with the appropiate filter arguments, leads to frames that are more precisely positioned (at the exact timestamps), but takes longer.
+     
+If the video does not have a provided thumbnail the second (!) preview frame is also used as an thumbnail
+
+> **[!] Note**  
+> If a cache directory is specified youtube-dl-viewer will try to generate previews for all videos in the background so that for all videos cached previews will exist.  
+> To disable this use the `--no-auto-previews` option
+
+This can be deactivated (as all ffmpeg dependent functionality with the `--no-ffmpeg` parameter)
+
+#### - VLC Protocol links
+
+The playback modes **VLC protocol link (stream)** and **VLC protocol link (local)** use "vlc url protocol" links (`vlc://...`).  
+This means they try to launch your locally installed VLC player with a specific URI (either a local file or a streamable link).  
+Your client needs to support these links, the easiest way is to use the ready-made scripts from [stefansundin](https://github.com/stefansundin/vlc-protocol).
+
+#### - Cache directory
+
+As soon as you intend to do anything work intensive (ffmpeg live transcode, generated thumbnails, preview frames) it is **very** recommended to specify a cache directory to cache the results of these jobs.  
+Files in the cache directory normally contain the sha256sum of video file path in their filename to identify them (under windows its the relative path to support remvable media).  
+You can at any time delete some or all files in the cache directory (e.g. only keep the newest x files) and the files will be re-created the next time they are needed.
+
+## Commandline manual
+
+You can run `youtube-dl-viewer --help` to get a list of all available commandline arguments
+
+
+## FAQ
+
+
+#### - Can't play video
+
+If your browser tells you `No video with supported format and MIME type found` that means that the specified playback mode (button in top right corner) failed.  
+
+If you are on `Seekable raw file` or `Raw file` that means that the video files on your hard drive are not supported by your browser (generally only webm and mp4 are supported and in my experience only webm works good).
+
+If you are on `Transcoded Webm stream` that means that youtube-dl-viewer could not live transcode your video file.  
+First please look at the output of youtube-dl-viewer to see what exactly happened.
+
+Common problems are:  
+
+1. You don't have ffmpeg installed or it's not in your PATH so youtube-dl-viewer cannot execute it.
+2. The (source) video is in a format that your ffmpeg installation cannot read
+3. youtube-dl-viewer (or the spawned ffmpeg process) has no permission to write to your temp directory
+ 
+
+#### - realpath(): Permission denied
+
+If you get the following error on start (on linux):
+~~~
+realpath(): Permission denied
+Failure processing application bundle.
+Failed to determine location for extracting embedded files
+DOTNET_BUNDLE_EXTRACT_BASE_DIR is not set, and a read-write temp-directory couldn't be created.
+A fatal error was encountered. Could not extract contents of the bundle
+~~~
+
+You need to set `DOTNET_BUNDLE_EXTRACT_BASE_DIR` to a valid path in your run script (or somewhere else such that the environment variable is set)
+
+~~~bash
+#!/bin/bash
+
+DOTNET_BUNDLE_EXTRACT_BASE_DIR=/tmp/dot_net_cache/
+export DOTNET_BUNDLE_EXTRACT_BASE_DIR
+
+./youtube-dl-viewer
+~~~
+
+
+#### - The tabular view looks strange
+
+The view mode `Tabular` uses the css subgrid feature which is currently [only supported in firefox](https://caniuse.com/#feat=css-subgrid). Which is great because I generally recommend people to not support that other company that tries to have a monopoly of every internet related thing...

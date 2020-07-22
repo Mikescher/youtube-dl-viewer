@@ -43,7 +43,7 @@ namespace youtube_dl_viewer.Controller
 
             
             var pathCache = GetPreviewCachePath(pathVideo);
-            if (pathCache != null && Program.HasValidFFMPEG && !File.Exists(pathCache))
+            if (Program.AutoPreviewGen && pathCache != null && Program.HasValidFFMPEG && !File.Exists(pathCache))
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
