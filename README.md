@@ -6,11 +6,11 @@ This is a (cross platform) web app to display videos downloaded by [youtube-dl](
 
 ![preview](README_FILES/animation.gif)
 
-## Usage
+## Usage / QuickStart
 
 #### - Local Usage
 
-The easiest way to use is to simply drop the binary in teh directory with the video files, run it and open the displayed URL in your browser.  
+The easiest way to use is to simply drop the binary in the directory with the video files, run it and open the displayed URL in your browser.  
 For a bit more customization you can create a `.bat` or `.sh` wrapper to run it with a few parameter
 
 ~~~batch
@@ -27,7 +27,7 @@ youtube-dl-viewer.exe                                ^
 #### - Server Usage
 
 Another use case is to have your video files synchronized to a server and host a permanent instance of youtube-dl-viewer there.  
-Then you can either access if via the specified port or use [nginx/apache as a reverse proxy](https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html)
+Then you can either access it directly via the specified port or use [nginx/apache as a reverse proxy](https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html)
 
 ~~~bash
 #!/bin/bash
@@ -64,7 +64,7 @@ For synchronization you can use for example nextcloud, but every solution where 
 #### - youtube-dl
 
 You can use any youtube-dl parameters as you want.  
-youtube-dl-viewer will use any data it has, the only neccessary file is the actual video. But it will also use and display available metadata (aka `*.info.json`, `*.description` and thumbnails).  
+youtube-dl-viewer will use any data it has, the only necessary file is the actual video. But it will also use and display available metadata (aka `*.info.json`, `*.description` and thumbnails).  
 
 My youtube-dl parameters are these:
 ~~~
@@ -92,7 +92,7 @@ youtube-dl
 ~~~
 
 If you start backup from scratch I would recommend to use `--recode-video webm`. webm (or mp4) is by default a format that can be streamed to your browser, this way you can easily watch the directly in your browser.  
-Otherwise you can either use the `transcoded webm stream` option, where the video is live transcoded via ffmpeg (needs to be installed), or the vlc protocol link where the file is streamed to your vlc media player
+Otherwise you can either use the `transcoded webm stream` option, where the video is live transcoded via ffmpeg (needs to be installed), or the VLC protocol link where the file is streamed to your VLC media player
 
 
 #### - Playback options
@@ -102,7 +102,7 @@ youtube-dl-viewer supports playing the videos by clicking on them, there are mul
  - **Disabled:**  
    Does not play the video. Duh.
  - **Seekable raw file:**  
-   Try to play the video in a native browser <media> element. This will only work if the video is already in a supported streamable format, which is (currently) only webm and mp4 (and only mp4's generated with the correct parameters). If the video format is not supported you will get an error meddage in your browser
+   Try to play the video in a native browser <media> element. This will only work if the video is already in a supported streamable format, which is (currently) only webm and mp4 (and only mp4's generated with the correct parameters). If the video format is not supported you will get an error message in your browser
  - **Raw file:**  
    This is mostly the same as **Seekable raw file**, with the same limitations. But this one also does not support HTTP range requests, which means you can't easily skip forward in the video.
  - **Transcoded webm stream:**  
@@ -118,7 +118,7 @@ youtube-dl-viewer supports playing the videos by clicking on them, there are mul
   Unfortunately vlc is not a protocol that's supported by default so you have to manually register it, an implementation/installation can be found at [stefansundin/vlc-protocol](https://github.com/stefansundin/vlc-protocol/).  
   This option depends on a working `vlc://` protocol and the fact that the video format is supported by [VLC](https://www.videolan.org/vlc/).
  - **VLC protocol link (local):**  
-  This is mostly the same as **VLC protocol link (stream)** but it adds the local file path to your vlc playlist and not the video url.  
+  This is mostly the same as **VLC protocol link (stream)** but it adds the local file path to your VLC playlist and not the video URL.  
   This is preferable if youtube-dl-viewer is running on your machine, because then the VLC Player doesn't have to yo through web requests to get the file and can simply read it from your hard drive, but of course this only works if VLC can access the original video file path (eg if its not running on a server)
 
 ## Advanced Usage
@@ -134,25 +134,25 @@ Via the reload button in the top right you can force a re-scan of all the video 
 #### - Live transcode with ffmpeg
 
 youtube-dl-viewer can use [ffmpeg](https://ffmpeg.org/) to transcode the video file to a webm file and stream it directly to the user.  
-A working ffmpeg installation is required and needs to be accesible. Youtube-dl-viewer will simply call the ffmpeg command with the appropiate parameters.  
+A working ffmpeg installation is required and needs to be accessible. Youtube-dl-viewer will simply call the ffmpeg command with the appropriate parameters.  
 Simply select **Transcoded webm stream** in the top right corner as your playback mode to choose this.
 
 If you do not have (and do not want) a ffmpeg installation you can start youtube-dl-viewer with the command `--no-ffmpeg` to disable all ffmpeg dependent functionality.  
-You can tweak the ffmpeg parameters with the parameter `--webm-convert-params`, the default values are optimized for fast transcoding, if you want you can change that to a more quality-oriented aproach.  
+You can tweak the ffmpeg parameters with the parameter `--webm-convert-params`, the default values are optimized for fast transcoding, if you want you can change that to a more quality-oriented approach.  
 Depending on the video, the parameter and you machine ffmpeg may not be able to encode the video fast enough for a smooth playback.
 To fix this prolem (at least a bit) you can supply youtube-dl-viewer with a `--cache` path where past converted videos will be saved.
 The next time you want to play that specific video the cached files will be used.  
 You can limit the maximum amount of parallel ffmpeg conversion jobs with the `--max-parallel-convert` parameter.
 
 > **[!] Note**   
-> If you already have your files in .webm format (or an appropiate .mp4) you can skip all this complexity and simply serve the files directly via the **Seekable raw file** playback mode.  
+> If you already have your files in .webm format (or an appropriate .mp4) you can skip all this complexity and simply serve the files directly via the **Seekable raw file** playback mode.  
 > And if you only use youtube-dl-viewer on a single computer you control it would also be easier (and yield better results) to install the VLC URL protocol and use that playback mode.  
 
 #### - Generated Thumbnails (ffmpeg)
 
-By default youtube-dl-viewer uses the thumbnails that it finds with the video file (either referenced in the info.json file, or a image file with teh same filename as the video).
+By default youtube-dl-viewer uses the thumbnails that it finds with the video file (either referenced in the info.json file, or a image file with the same filename as the video).
 But if there isn't a suitable thumbnail it uses ffmpeg to generate one from the video file.  
-This uses the same behaviour as ffmpeg generated previews, we simply generate the preview images (see below) and use the second preview image as our thumbnail.  
+This uses the same behavior as ffmpeg generated previews, we simply generate the preview images (see below) and use the second preview image as our thumbnail.  
 For more information see the following section.
 
 This can be deactivated (as all ffmpeg dependent functionality with the `--no-ffmpeg` parameter)
@@ -162,7 +162,7 @@ This can be deactivated (as all ffmpeg dependent functionality with the `--no-ff
 In `Grid` and `Detailed` mode you can hover over a video thumbnail and see an animation consisting of multiple frames from the video.  
 These frames are extracted using ffmpeg at regular intervals. Because it can take a few seconds to get the images (depending on your machine and the video) it is recommended to specify a `--cache` directory where the preview files will be cached.  
 
-You can modify this behaviour with the following program arguments:
+You can modify this behavior with the following program arguments:
   - `--preview-width`: The width of the generated image files (the height is automatically calculated)
   - `--max-parallel-genprev`: The maximum amount of parallel preview-generation jobs. 
   - `--previewcount-min`: The minimum amount of preview frames per video file (can still be less if the video is too short)
@@ -170,7 +170,7 @@ You can modify this behaviour with the following program arguments:
   - `--thumnail-ex-mode`: Choose one of the three ways to extract the frames:
      * `0`: **Sequential:** Call ffmpeg multiple times for each frame, one call after the other
      * `1`: **Parallel:** Call ffmpeg multiple times for each frame, all calls parallel (can lead to many simultaneous ffmpeg processes)
-     * `2`: **SingleCommand:** Call ffmpeg oce with the appropiate filter arguments, leads to frames that are more precisely positioned (at the exact timestamps), but takes longer.
+     * `2`: **SingleCommand:** Call ffmpeg oce with the appropriate filter arguments, leads to frames that are more precisely positioned (at the exact timestamps), but takes longer.
      
 If the video does not have a provided thumbnail the second (!) preview frame is also used as an thumbnail
 
@@ -182,20 +182,54 @@ This can be deactivated (as all ffmpeg dependent functionality with the `--no-ff
 
 #### - VLC Protocol links
 
-The playback modes **VLC protocol link (stream)** and **VLC protocol link (local)** use "vlc url protocol" links (`vlc://...`).  
+The playback modes **VLC protocol link (stream)** and **VLC protocol link (local)** use "VLC URL protocol" links (`vlc://...`).  
 This means they try to launch your locally installed VLC player with a specific URI (either a local file or a streamable link).  
 Your client needs to support these links, the easiest way is to use the ready-made scripts from [stefansundin](https://github.com/stefansundin/vlc-protocol).
 
 #### - Cache directory
 
 As soon as you intend to do anything work intensive (ffmpeg live transcode, generated thumbnails, preview frames) it is **very** recommended to specify a cache directory to cache the results of these jobs.  
-Files in the cache directory normally contain the sha256sum of video file path in their filename to identify them (under windows its the relative path to support remvable media).  
+Files in the cache directory normally contain the sha256sum of video file path in their filename to identify them (under windows its the relative path to support removable media).  
 You can at any time delete some or all files in the cache directory (e.g. only keep the newest x files) and the files will be re-created the next time they are needed.
+
+#### - Thumbnail mode
+
+In the top right corner you can choose the thumbnail loading mode (you can also specify the default as an program argument).
+
+1. **Off**  
+Do not load thumbnails (or preview frames)
+
+2. **On (sequential)**  
+Load all currently visible thumbnails one after the other
+
+3. **On (parallel)**  
+Load all currently visible thumbnails in parallel
+
+4. **On (intelligent)**  
+Load the currently visible thumbnails in parallel *and* pre-load non-visible thumbnails sequentially in the background
+
 
 ## Commandline manual
 
-You can run `youtube-dl-viewer --help` to get a list of all available commandline arguments
+You can run `youtube-dl-viewer --help` to get a list of all available commandline arguments.  
+Here are some common and useful arguments:
 
+ - `--port=<value>`:  
+   Specify the used port for the webserver (use a random one if not specified)
+ - `--cache=<value>`:  
+   The cache directory for transcoded webm files, generated thumbnails and preview frames
+ - `--display=<value>`, `--order=<value>`, `--width=<value>`, `--thumbnailmode=<value>`, `--videomode=<value>`:  
+   Set default values for the display/playback options in the top-right
+ - `--max-parallel-convert=<value>`, `--max-parallel-genprev=<value>`:  
+   Limit the amount of parallel (potentially long-runnnig) jobs 
+ - `--preview-width=<value>`, `--thumnail-ex-mode=<value>`, `--previewcount-max=<value>`, `--previewcount-min=<value>`, `--no-auto-previews`, `--no-ffmpeg`:  
+   Options for the preview frames extraction
+ - `--webm-convert-params=<value>`, `--no-ffmpeg`:  
+   Options for the webm live transcode
+ - `--version`:  
+   Output program version
+ - `--help`:  
+   Output help screen
 
 ## FAQ
 

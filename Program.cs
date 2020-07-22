@@ -121,7 +121,8 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine("  -h --help                  Show this screen.");
                 Console.Out.WriteLine("  --version                  Show version.");
                 Console.Out.WriteLine("  --port=<value>             The server port");
-                Console.Out.WriteLine("  --cache=<value>            Cache directory for transcoded webm files");
+                Console.Out.WriteLine("  --cache=<value>            Cache directory for transcoded webm files,");
+                Console.Out.WriteLine("                               generated thumbnails and preview frames");
                 Console.Out.WriteLine("  --path=<value>             Path to the video data");
                 Console.Out.WriteLine("                               # (default = current_dir)");
                 Console.Out.WriteLine("                               # can be specified multiple times");

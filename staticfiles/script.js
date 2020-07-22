@@ -390,7 +390,7 @@ async function loadThumbnailsIntelligentAsync()
         })
     }
 
-    // in-viewport => sequential
+    // all => sequential
     for (const thumb of $all('.thumb_img_loadable'))
     {
         if (DATA.thumbnailInvocationCounter !== ctr) return;
