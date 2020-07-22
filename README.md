@@ -1,6 +1,10 @@
 ## Introduction
 
-This is a (cross platform) web app to display videos downloaded by [youtube-dl](https://youtube-dl.org/) (or similiar tools) and view them inside your browser in a nice (youtube-like) UI.
+This is a (cross platform, standalone) web app to display videos downloaded by [youtube-dl](https://youtube-dl.org/) (or similiar tools) and view them inside your browser in a nice (youtube-like) UI.
+
+[Download from the github releases section](https://github.com/Mikescher/youtube-dl-viewer/releases/latest)  
+
+[Also available from my personal website](https://www.mikescher.com/programs/view/youtube-dl-viewer)  
 
 ## Screenshots
 
