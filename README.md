@@ -216,7 +216,7 @@ Load the currently visible thumbnails in parallel *and* pre-load non-visible thu
 
 ## Commandline manual
 
-You can run `youtube-dl-viewer --help` to get a list of all available commandline arguments.  
+You can run `youtube-dl-viewer --help` to get a list of all available commandline Args.  
 Here are some common and useful arguments:
 
  - `--port=<value>`:  

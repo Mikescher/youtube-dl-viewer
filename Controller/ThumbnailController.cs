@@ -15,12 +15,12 @@ namespace youtube_dl_viewer.Controller
         public static string GetPreviewCachePath(string pathVideo)
         {
             if (pathVideo == null) return null;
-            if (Program.CacheDir == null) return null;
+            if (Program.Args.CacheDir == null) return null;
             
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return Path.Combine(Program.CacheDir, "prev_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".dat");
+                return Path.Combine(Program.Args.CacheDir, "prev_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".dat");
             else
-                return Path.Combine(Program.CacheDir, "prev_" + pathVideo.Sha256() + ".dat");
+                return Path.Combine(Program.Args.CacheDir, "prev_" + pathVideo.Sha256() + ".dat");
         }
         
         public static async Task GetThumbnail(HttpContext context)
@@ -43,7 +43,7 @@ namespace youtube_dl_viewer.Controller
 
             
             var pathCache = GetPreviewCachePath(pathVideo);
-            if (Program.AutoPreviewGen && pathCache != null && Program.HasValidFFMPEG && !File.Exists(pathCache))
+            if (Program.Args.AutoPreviewGen && pathCache != null && Program.HasValidFFMPEG && !File.Exists(pathCache))
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
@@ -78,7 +78,7 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task GetPreview(HttpContext context)
         {
-            if (Program.CacheDir == null) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No cache directory specified"); return; }
+            if (Program.Args.CacheDir == null) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No cache directory specified"); return; }
             
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];

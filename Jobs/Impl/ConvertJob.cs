@@ -30,13 +30,13 @@ namespace youtube_dl_viewer.Jobs
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
                 
-                var cmd = $" -i \"{Source}\" -f webm -vcodec libvpx-vp9 {Program.ConvertFFMPEGParams} {Temp}";
+                var cmd = $" -i \"{Source}\" -f webm -vcodec libvpx-vp9 {Program.Args.ConvertFFMPEGParams} {Temp}";
 
                 proc = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = Program.FFMPEGExec,
+                        FileName = Program.Args.FFMPEGExec,
                         Arguments = cmd,
                         CreateNoWindow = true,
                         RedirectStandardOutput = true,
@@ -82,9 +82,9 @@ namespace youtube_dl_viewer.Jobs
                     Thread.Sleep(100);
                 }
                 
-                if (Program.FFMPEGDebugDir != null)
+                if (Program.Args.FFMPEGDebugDir != null)
                 {
-                    File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[convert].log"), $"> {Program.FFMPEGExec} {cmd}\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                    File.WriteAllText(Path.Combine(Program.Args.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[convert].log"), $"> {Program.Args.FFMPEGExec} {cmd}\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
                 }
                 
                 if (proc.ExitCode != 0)

@@ -45,7 +45,7 @@ namespace youtube_dl_viewer.Jobs
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
                 
-                var (ecode1, outputProbe) = RunCommand(Program.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
+                var (ecode1, outputProbe) = RunCommand(Program.Args.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
                 
                 if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
@@ -58,20 +58,20 @@ namespace youtube_dl_viewer.Jobs
 
                 var videolen = double.Parse(outputProbe.Trim(), CultureInfo.InvariantCulture);
 
-                var framedistance = videolen / Program.MaxPreviewImageCount; // __ frames by default (and max)
+                var framedistance = videolen / Program.Args.MaxPreviewImageCount; // __ frames by default (and max)
 
                 if (framedistance < 5) framedistance = 5; // at least 10 sec dist between frames
 
-                if (framedistance > videolen / 8) framedistance = videolen / Program.MinPreviewImageCount; // at least __ frames
+                if (framedistance > videolen / 8) framedistance = videolen / Program.Args.MinPreviewImageCount; // at least __ frames
                 
                 var taskList = new List<Task<(int, string)>>();
 
-                if (Program.ThumbnailExtraction == ThumbnailExtractionMode.Parallel)
+                if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.Parallel)
                 {
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        taskList.Add(RunCommandAsync(Program.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}"));
+                        taskList.Add(RunCommandAsync(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}"));
 
                         currpos += framedistance;
                         if (framedistance < 0.1) break;
@@ -88,12 +88,12 @@ namespace youtube_dl_viewer.Jobs
                         return;
                     }
                 }
-                else if (Program.ThumbnailExtraction == ThumbnailExtractionMode.Sequential)
+                else if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.Sequential)
                 {
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        var (ecode2, _) = RunCommand(Program.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
+                        var (ecode2, _) = RunCommand(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
 
                         if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
@@ -107,9 +107,9 @@ namespace youtube_dl_viewer.Jobs
                         if (framedistance < 0.1) break;
                     }
                 }
-                else if (Program.ThumbnailExtraction == ThumbnailExtractionMode.SingleCommand)
+                else if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.SingleCommand)
                 {
-                    var (ecode2, _) = RunCommand(Program.FFMPEGExec, $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
+                    var (ecode2, _) = RunCommand(Program.Args.FFMPEGExec, $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
 
                     if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
@@ -257,9 +257,9 @@ namespace youtube_dl_viewer.Jobs
             proc1.BeginErrorReadLine();
             proc1.WaitForExit();
 
-            if (Program.FFMPEGDebugDir != null)
+            if (Program.Args.FFMPEGDebugDir != null)
             {
-                File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[{desc}].log"), $"> {cmd} {args}\nExitCode:{proc1.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                File.WriteAllText(Path.Combine(Program.Args.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[{desc}].log"), $"> {cmd} {args}\nExitCode:{proc1.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
             }
 
             return (proc1.ExitCode, builderOut.ToString());
@@ -300,9 +300,9 @@ namespace youtube_dl_viewer.Jobs
             proc1.BeginErrorReadLine();
             await proc1.WaitForExitAsync();
 
-            if (Program.FFMPEGDebugDir != null)
+            if (Program.Args.FFMPEGDebugDir != null)
             {
-                File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[{desc}].log"), $"> {cmd} {args}\nExitCode:{proc1.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                await File.WriteAllTextAsync(Path.Combine(Program.Args.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[{desc}].log"), $"> {cmd} {args}\nExitCode:{proc1.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
             }
 
             return (proc1.ExitCode, builderOut.ToString());

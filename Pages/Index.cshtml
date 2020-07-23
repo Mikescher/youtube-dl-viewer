@@ -33,46 +33,46 @@
     <header>
         <div class="logo">
             <div class="apptitle">youtube-dl Viewer <span class="version">@Program.Version</span></div>
-            <div class="apppath @Html.Raw((Program.DataDirs.Count > 1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Program.DataDirs))" data-initial="0">
-                <span>@Program.DataDirs.First()</span>
+            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Program.Args.DataDirs))" data-initial="0">
+                <span>@Program.Args.DataDirs.First()</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div id="apppath_dropdown" class="dropdown hidden">
-                @for (var i = 0; i < Program.DataDirs.Count; i++)
+                @for (var i = 0; i < Program.Args.DataDirs.Count; i++)
                 {
-                    <div class="row" data-path="@Program.DataDirs[i]" data-idx="@i">@Program.DataDirs[i]</div>
+                    <div class="row" data-path="@Program.Args.DataDirs[i]" data-idx="@i">@Program.Args.DataDirs[i]</div>
                 }
             </div>
         </div>
 
         <div class="buttons">
             <div class="btn btn-display"        
-                 data-mode="@Program.OptDisplayMode"  
-                 data-initial="@Program.OptDisplayMode"
+                 data-mode="@Program.Args.OptDisplayMode"  
+                 data-initial="@Program.Args.OptDisplayMode"
                  data-options="@(Json.Serialize(new[]{"ListStyle: Grid", "ListStyle: Compact", "ListStyle: Tabular", "ListStyle: Detailed"}).ToString())"
                  ><i class="far fa-eye"></i></div>
             
             <div class="btn btn-order"          
-                 data-mode="@Program.OptOrderMode"  
-                 data-initial="@Program.OptOrderMode"  
+                 data-mode="@Program.Args.OptOrderMode"  
+                 data-initial="@Program.Args.OptOrderMode"  
                  data-options="@(Json.Serialize(new[]{"Sorting: Date [descending]", "Sorting: Date [ascending]", "Sorting: Title", "Sorting: Category", "Sorting: Views", "Sorting: Rating", "Sorting: Uploader" }).ToString())"
                  ><i class="fas fa-sort"></i></div>
             
             <div class="btn btn-width"          
-                 data-mode="@Program.OptWidthMode"  
-                 data-initial="@Program.OptWidthMode"  
+                 data-mode="@Program.Args.OptWidthMode"  
+                 data-initial="@Program.Args.OptWidthMode"  
                  data-options="@(Json.Serialize(new[]{"Width: Small", "Width: Medium", "Width: Wide", "Width: Full" }).ToString())"
                  ><i class="fas fa-text-width"></i></div>
             
             <div class="btn btn-loadthumbnails" 
-                 data-mode="@Program.OptThumbnailMode"  
-                 data-initial="@Program.OptThumbnailMode"  
+                 data-mode="@Program.Args.OptThumbnailMode"  
+                 data-initial="@Program.Args.OptThumbnailMode"  
                  data-options="@(Json.Serialize(new[]{"Thumbnails: Off", "Thumbnails: On (intelligent)", "Thumbnails: On (sequential)", "Thumbnails: On (parallel)" }).ToString())"
                  ><i class="fas fa-photo-video"></i></div>
             
             <div class="btn btn-videomode"      
-                 data-mode="@Program.OptVideoMode"
-                 data-initial="@Program.OptVideoMode"
+                 data-mode="@Program.Args.OptVideoMode"
+                 data-initial="@Program.Args.OptVideoMode"
                  data-options="@(Json.Serialize(new[]{"Playback: Disabled", "Playback: Seekable raw file", "Playback: Raw file", "Playback: Transcoded Webm stream", "Playback: Download file", "Playback: VLC Protocol Link (stream)", "Playback: VLC Protocol Link (local)" }).ToString())"
                  ><i class="fas fa-broadcast-tower"></i></div>
             
@@ -85,7 +85,7 @@
 
     </header>
 
-    <main data-has_ffmpeg="@Program.HasValidFFMPEG" data-has_cache="@(Program.CacheDir != null)">
+    <main data-has_ffmpeg="@Program.HasValidFFMPEG" data-has_cache="@(Program.Args.CacheDir != null)">
         <div class="lstyle_detailed lstyle_width_medium" id="content">
             <!-- js -->
         </div>

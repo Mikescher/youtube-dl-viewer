@@ -13,12 +13,12 @@ namespace youtube_dl_viewer.Controller
     {
         public static string GetStreamCachePath(string pathVideo)
         {
-            if (Program.CacheDir == null) return null;
+            if (Program.Args.CacheDir == null) return null;
             
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return Path.Combine(Program.CacheDir, "stream_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".webm");
+                return Path.Combine(Program.Args.CacheDir, "stream_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".webm");
             else
-                return Path.Combine(Program.CacheDir, "stream_" + pathVideo.Sha256() + ".webm");
+                return Path.Combine(Program.Args.CacheDir, "stream_" + pathVideo.Sha256() + ".webm");
         }
         
         public static async Task GetVideoFile(HttpContext context)

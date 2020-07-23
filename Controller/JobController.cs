@@ -25,7 +25,7 @@ namespace youtube_dl_viewer.Controller
         public static async Task ManuallyForcePreviewJobs(HttpContext context)
         {
             if (!Program.HasValidFFMPEG)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
-            if (Program.CacheDir == null) { context.Response.StatusCode = 500; await context.Response.WriteAsync("No cache directory specified"); return; }
+            if (Program.Args.CacheDir == null) { context.Response.StatusCode = 500; await context.Response.WriteAsync("No cache directory specified"); return; }
 
             var selector1 = (string)context.Request.RouteValues["selector1"];
             var selector2 = (string)context.Request.RouteValues["selector2"];
@@ -33,7 +33,7 @@ namespace youtube_dl_viewer.Controller
             List<(string json, Dictionary<string, JObject> obj)> selection1;
             if (selector1.ToLower() == "all" || selector1.ToLower() == "*")
             {
-                selection1 = (await Task.WhenAll(Program.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
+                selection1 = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
             }
             else
             {
@@ -70,7 +70,7 @@ namespace youtube_dl_viewer.Controller
         public static async Task ManuallyForceTranscodeJobs(HttpContext context)
         {
             if (!Program.HasValidFFMPEG)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
-            if (Program.CacheDir == null) { context.Response.StatusCode = 500; await context.Response.WriteAsync("No cache directory specified"); return; }
+            if (Program.Args.CacheDir == null) { context.Response.StatusCode = 500; await context.Response.WriteAsync("No cache directory specified"); return; }
 
             var selector1 = (string)context.Request.RouteValues["selector1"];
             var selector2 = (string)context.Request.RouteValues["selector2"];
@@ -78,7 +78,7 @@ namespace youtube_dl_viewer.Controller
             List<(string json, Dictionary<string, JObject> obj)> selection1;
             if (selector1.ToLower() == "all" || selector1.ToLower() == "*")
             {
-                selection1 = (await Task.WhenAll(Program.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
+                selection1 = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
             }
             else
             {
@@ -118,11 +118,11 @@ namespace youtube_dl_viewer.Controller
 
             if (idx.ToLower() == "all" || idx.ToLower() == "*")
             {
-                for (var i = 0; i < Program.DataDirs.Count; i++)
+                for (var i = 0; i < Program.Args.DataDirs.Count; i++)
                 {
                     var ddidx = i;
                     JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, ddidx), false);
-                    await context.Response.WriteAsync($"Started/Attached {Program.DataDirs.Count} new jobs");
+                    await context.Response.WriteAsync($"Started/Attached {Program.Args.DataDirs.Count} new jobs");
                 }
             }
             else

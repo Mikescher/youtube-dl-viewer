@@ -17,6 +17,27 @@ const DATA =
 $     = function(sel)       { return document.querySelector(sel); };
 $all  = function(sel)       { return document.querySelectorAll(sel); };
 $attr = function(sel, attr) { return document.querySelector(sel).getAttribute(attr); }
+$ajax = function(method, url) 
+{
+    return new Promise(resolve => 
+    {
+        const request = new XMLHttpRequest();
+        request.open(method, url, true);
+
+        request.onload  = function() 
+        {
+            let headerMap = {};
+            request.getAllResponseHeaders().trim().split(/[\r\n]+/).forEach(function (line) { const parts = line.split(': '); const header = parts.shift(); headerMap[header] = parts.join(': '); });
+            resolve({success: true, status: this.status, statusText: this.statusText, body: this.response, headers: headerMap });
+        }
+        request.onerror  = function()
+        {
+            resolve({ success: false, status: null, statusText: null, body: null, headers: null });
+        }
+        
+        request.send();
+    });
+}
 
 function escapeHtml(text) 
 {
@@ -47,7 +68,7 @@ function formatNumber(num)
     return num;
 }
 
-window.onload = function() 
+window.onload = async function() 
 {
     DATA.dataidx = parseInt($attr('.apppath', 'data-initial'));
     
@@ -69,37 +90,26 @@ window.onload = function()
 
     $('.apppath span').innerHTML = escapeHtml(JSON.parse($attr('.apppath', 'data-dirs'))[DATA.dataidx]);
 
-    loadDataFromServer(true);
+    await loadDataFromServer(true);
 };
 
-function loadDataFromServer(initial)
+async function loadDataFromServer(initial)
 {
     $('#content').innerHTML = '';
     
-    const request = new XMLHttpRequest();
-    request.open('GET', '/data/'+DATA.dataidx+'/json', true);
+    const response = await $ajax('GET', '/data/'+DATA.dataidx+'/json');
 
-    request.onload = function()
+    if (response.success && response.status >= 200 && response.status < 400)
     {
-        if (this.status >= 200 && this.status < 400)
-        {
-            DATA.data = this.response;
-            initData(JSON.parse(DATA.data));
-            if (initial) initButtons();
-            if (initial) initEvents();
-        }
-        else
-        {
-            showToast('Could not load data');
-        }
-    };
-
-    request.onerror = function()
+        DATA.data = response.body;
+        initData(JSON.parse(DATA.data));
+        if (initial) initButtons();
+        if (initial) initEvents();
+    }
+    else
     {
         showToast('Could not load data');
-    };
-
-    request.send();
+    }
 }
 
 function initData(data)
@@ -577,36 +587,25 @@ function initButtons()
         });
     });
 
-    $('.btn-refresh').addEventListener('click', () =>
+    $('.btn-refresh').addEventListener('click', async () =>
     {
         showToast('Refreshing data');
 
         $('#content').innerHTML = '';
 
-        const request = new XMLHttpRequest();
-        request.open('GET', '/data/'+DATA.dataidx+'/refresh', true);
+        const response = await $ajax('GET', '/data/'+DATA.dataidx+'/refresh');
 
-        request.onload = function()
+        if (response.success && response.status >= 200 && response.status < 400)
         {
-            if (this.status >= 200 && this.status < 400)
-            {
-                DATA.data = this.response;
-                initData(JSON.parse(DATA.data));
+            DATA.data = response.body;
+            initData(JSON.parse(DATA.data));
 
-                showToast('Data refreshed');
-            }
-            else
-            {
-                showToast('Could not refresh data');
-            }
-        };
-
-        request.onerror = function()
+            showToast('Data refreshed');
+        }
+        else
         {
-            showToast('Could not refresh data');
-        };
-
-        request.send();
+            showToast('Could not load data');
+        }
     });
 
     const apm = $('.apppath.multiple');
@@ -879,7 +878,7 @@ function hideOptionDropDown()
     $('#dropdown_background').classList.add('hidden');
 }
 
-function onMouseEnterThumbnail(elem)
+async function onMouseEnterThumbnail(elem)
 {
     let content = $('#content');
     
@@ -897,30 +896,18 @@ function onMouseEnterThumbnail(elem)
 
     DATA.currentAnimatedPreview = video_id;
 
-    const request = new XMLHttpRequest();
-    request.open('GET', '/data/'+DATA.dataidx+'/video/'+video_id+'/prev/'+0, true);
+    const response = await $ajax('GET', '/data/'+DATA.dataidx+'/video/'+video_id+'/prev/'+0);
 
-    request.onload = function()
+    if (response.success && response.status >= 200 && response.status < 400)
     {
-        if (this.status >= 200 && this.status < 400)
-        {
-            const c = parseInt(request.getResponseHeader('PreviewImageCount'));
+        const c = parseInt(response.headers['PreviewImageCount']);
 
-            // noinspection JSIgnoredPromiseFromCall
-            animateThumbnailPreview(img, c, video_id);
-        }
-        else
-        {
-            console.error('Could not load preview images (status)');
-        }
-    };
-
-    request.onerror = function()
+        await animateThumbnailPreview(img, c, video_id);
+    }
+    else
     {
-        console.error('Could not load preview images (onerror)');
-    };
-
-    request.send();
+        console.error('Could not load preview images (status)');
+    }
 }
 
 async function animateThumbnailPreview(img, max, video_id)

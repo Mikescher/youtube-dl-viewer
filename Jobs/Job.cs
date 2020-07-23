@@ -49,6 +49,8 @@ namespace youtube_dl_viewer.Jobs
 
         private void JobRun()
         {
+            while (!Program.Initialized) Thread.Sleep(100);
+            
             try
             {
                 var sw = Stopwatch.StartNew();

@@ -22,7 +22,7 @@ namespace youtube_dl_viewer.Jobs
             Index = index;
         }
 
-        public override string Name => $"DataCollect::{Index}::'{((Index>=0 && Index <= Program.DataDirs.Count)?Program.DataDirs[Index]:"ERR")}'";
+        public override string Name => $"DataCollect::{Index}::'{((Index>=0 && Index <= Program.Args.DataDirs.Count)?Program.Args.DataDirs[Index]:"ERR")}'";
 
         public override void Abort()
         {
@@ -62,7 +62,7 @@ namespace youtube_dl_viewer.Jobs
         
         public static (string jsonstr, Dictionary<string, JObject> jsonobj) CreateData(int index)
         {
-            var datafiles = Directory.EnumerateFiles(Program.DataDirs[index]).OrderBy(p => p.ToLower()).ToList();
+            var datafiles = Directory.EnumerateFiles(Program.Args.DataDirs[index]).OrderBy(p => p.ToLower()).ToList();
             var processedFiles = new List<string>();
 
             var filesSubs = datafiles.Where(p => p.EndsWith(".vtt")).ToList();
@@ -73,9 +73,9 @@ namespace youtube_dl_viewer.Jobs
             var idsAreUnique = true;
             var idlist = new HashSet<string>();
 
-            var cacheFiles = (Program.CacheDir == null)
+            var cacheFiles = (Program.Args.CacheDir == null)
                 ? new HashSet<string>()
-                : Directory.EnumerateFiles(Program.CacheDir).Select(Path.GetFileName).ToHashSet();
+                : Directory.EnumerateFiles(Program.Args.CacheDir).Select(Path.GetFileName).ToHashSet();
             
             foreach (var pathJson in filesInfo)
             {
