@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Jobs
 {
@@ -11,13 +14,16 @@ namespace youtube_dl_viewer.Jobs
     {
         public readonly string Destination;
         public readonly string Temp;
+        
+        private (int, int) _progress = (0, 1);
+        public override (int, int) Progress => _progress;
 
         public ConvertJob(AbsJobManager man, string src, string dst) : base(man, src)
         {
             Destination = dst;
             Temp = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B") + ".webm");
         }
-
+        
         public override string Name => $"Convert::'{Path.GetFileName(Source)}'";
 
         protected override void Run()
@@ -30,6 +36,19 @@ namespace youtube_dl_viewer.Jobs
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
                 
+                var (ecode1, outputProbe) = FFMPEGUtil.RunCommand(Program.Args.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
+                          
+                if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+
+                if (ecode1 != 0)
+                {
+                    Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffprobe)");
+                    ChangeState(JobState.Failed);
+                    return;
+                }
+
+                var videolen = double.Parse(outputProbe.Trim(), CultureInfo.InvariantCulture);
+
                 var cmd = $" -i \"{Source}\" -f webm -vcodec libvpx-vp9 {Program.Args.ConvertFFMPEGParams} {Temp}";
 
                 proc = new Process
@@ -50,12 +69,16 @@ namespace youtube_dl_viewer.Jobs
                     if (args.Data == null) return;
                     if (builderOut.Length == 0) builderOut.Append(args.Data);
                     else builderOut.Append("\n" + args.Data);
+
+                    ParseFFMpegOutputLine(args, videolen);
                 };
                 proc.ErrorDataReceived += (sender, args) =>
                 {
                     if (args.Data == null) return;
                     if (builderOut.Length == 0) builderOut.Append(args.Data);
                     else builderOut.Append("\n" + args.Data);
+
+                    ParseFFMpegOutputLine(args, videolen);
                 };
 
                 proc.Start();
@@ -161,9 +184,23 @@ namespace youtube_dl_viewer.Jobs
             }
         }
 
-        public override JObject AsJson()
+        private void ParseFFMpegOutputLine(DataReceivedEventArgs args, double videolen)
         {
-            var obj = base.AsJson();
+            if (args.Data.StartsWith("frame="))
+            {
+                var match = Regex.Match(args.Data, @"time=(?<time>[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{2})");
+                if (match.Success)
+                {
+                    var time = TimeSpan.Parse(match.Groups["time"].Value);
+
+                    _progress = ((int) Math.Ceiling((time.TotalSeconds / videolen) * 1000), 1000);
+                }
+            }
+        }
+
+        public override JObject AsJson(string managerName, string queue)
+        {
+            var obj = base.AsJson(managerName, queue);
             obj.Add(new JProperty("Destination", Destination));
             obj.Add(new JProperty("Temp", Temp));
             return obj;

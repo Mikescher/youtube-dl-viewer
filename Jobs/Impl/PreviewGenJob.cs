@@ -28,6 +28,9 @@ namespace youtube_dl_viewer.Jobs
         
         public byte[] ImageData  = null;
         public int?   ImageCount = null;
+
+        private (int, int) _progress = (0, Program.Args.MaxPreviewImageCount+1);
+        public override (int, int) Progress => _progress;
         
         public PreviewGenJob(AbsJobManager man, string src, string dst, int? imgIdx) : base(man, src)
         {
@@ -45,7 +48,9 @@ namespace youtube_dl_viewer.Jobs
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
                 
-                var (ecode1, outputProbe) = RunCommand(Program.Args.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
+                var (ecode1, outputProbe) = FFMPEGUtil.RunCommand(Program.Args.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
+                
+                _progress = (1, Program.Args.MaxPreviewImageCount+1);
                 
                 if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
@@ -71,13 +76,15 @@ namespace youtube_dl_viewer.Jobs
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        taskList.Add(RunCommandAsync(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}"));
+                        taskList.Add(FFMPEGUtil.RunCommandAsync(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}"));
 
                         currpos += framedistance;
                         if (framedistance < 0.1) break;
                     }
 
                     Task.WaitAll(taskList.Cast<Task>().ToArray());
+
+                    _progress = (2, 3);
 
                     if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
@@ -93,8 +100,10 @@ namespace youtube_dl_viewer.Jobs
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        var (ecode2, _) = RunCommand(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
-
+                        var (ecode2, _) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
+                        
+                        _progress = (i+1, (int)Math.Ceiling(videolen / framedistance) + 2);
+                        
                         if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
                         if (ecode2 != 0)
@@ -109,7 +118,9 @@ namespace youtube_dl_viewer.Jobs
                 }
                 else if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.SingleCommand)
                 {
-                    var (ecode2, _) = RunCommand(Program.Args.FFMPEGExec, $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
+                    var (ecode2, _) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
+
+                    _progress = (2, 3);
 
                     if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
@@ -178,6 +189,8 @@ namespace youtube_dl_viewer.Jobs
                     }
                 }
                 
+                _progress = (1, 1);
+                
                 ChangeState(JobState.Finished);
                 
                 if (_queryImageIndex != null)
@@ -222,95 +235,9 @@ namespace youtube_dl_viewer.Jobs
             }
         }
 
-        private (int, string) RunCommand(string cmd, string args, string desc)
+        public override JObject AsJson(string managerName, string queue)
         {
-            var start = DateTime.Now;
-            
-            var proc1 = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = cmd,
-                    Arguments = args,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                }
-            };
-
-            var builderOut = new StringBuilder();
-            proc1.OutputDataReceived += (sender, oargs) =>
-            {
-                if (oargs.Data == null) return;
-                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
-                else builderOut.Append("\n" + oargs.Data);
-            };
-            proc1.ErrorDataReceived += (sender, oargs) =>
-            {
-                if (oargs.Data == null) return;
-                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
-                else builderOut.Append("\n" + oargs.Data);
-            };
-                
-            proc1.Start();
-            proc1.BeginOutputReadLine();
-            proc1.BeginErrorReadLine();
-            proc1.WaitForExit();
-
-            if (Program.Args.FFMPEGDebugDir != null)
-            {
-                File.WriteAllText(Path.Combine(Program.Args.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[{desc}].log"), $"> {cmd} {args}\nExitCode:{proc1.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
-            }
-
-            return (proc1.ExitCode, builderOut.ToString());
-        }
-        
-        private async Task<(int, string)> RunCommandAsync(string cmd, string args, string desc)
-        {
-            var start = DateTime.Now;
-            
-            var proc1 = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = cmd,
-                    Arguments = args,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                }
-            };
-
-            var builderOut = new StringBuilder();
-            proc1.OutputDataReceived += (sender, oargs) =>
-            {
-                if (oargs.Data == null) return;
-                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
-                else builderOut.Append("\n" + oargs.Data);
-            };
-            proc1.ErrorDataReceived += (sender, oargs) =>
-            {
-                if (oargs.Data == null) return;
-                if (builderOut.Length == 0) builderOut.Append(oargs.Data);
-                else builderOut.Append("\n" + oargs.Data);
-            };
-                
-            proc1.Start();
-            proc1.BeginOutputReadLine();
-            proc1.BeginErrorReadLine();
-            await proc1.WaitForExitAsync();
-
-            if (Program.Args.FFMPEGDebugDir != null)
-            {
-                await File.WriteAllTextAsync(Path.Combine(Program.Args.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[{desc}].log"), $"> {cmd} {args}\nExitCode:{proc1.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
-            }
-
-            return (proc1.ExitCode, builderOut.ToString());
-        }
-
-        public override JObject AsJson()
-        {
-            var obj = base.AsJson();
+            var obj = base.AsJson(managerName, queue);
             obj.Add(new JProperty("Destination", Destination));
             obj.Add(new JProperty("TempDir", TempDir));
             obj.Add(new JProperty("QueryImageIndex", _queryImageIndex));

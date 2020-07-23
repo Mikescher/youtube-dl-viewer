@@ -1,0 +1,41 @@
+html,body 
+{
+  margin:0;
+  padding:0;
+  height:100%;
+  
+  font-family: Consolas, monospace;
+  background-color: #000;
+}
+
+#root 
+{
+  padding: 1rem;
+  color: #DDD;
+  
+  white-space: pre;
+  
+  overflow: hidden;
+}
+
+#font_test
+{
+  font-family: Consolas, monospace;
+  
+  position: absolute;
+  visibility: hidden;
+  height: auto;
+  width: auto;
+  white-space: nowrap;
+}
+
+.btn 
+{
+  color: #48F;
+  cursor: pointer;
+}
+.btn:hover 
+{
+  text-decoration: underline;
+}
+

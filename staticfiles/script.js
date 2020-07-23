@@ -27,7 +27,7 @@ $ajax = function(method, url)
         request.onload  = function() 
         {
             let headerMap = {};
-            request.getAllResponseHeaders().trim().split(/[\r\n]+/).forEach(function (line) { const parts = line.split(': '); const header = parts.shift(); headerMap[header] = parts.join(': '); });
+            request.getAllResponseHeaders().trim().split(/[\r\n]+/).forEach(function (line) { const parts = line.split(': '); const header = parts.shift(); headerMap[header.toLowerCase()] = parts.join(': '); });
             resolve({success: true, status: this.status, statusText: this.statusText, body: this.response, headers: headerMap });
         }
         request.onerror  = function()
@@ -900,7 +900,7 @@ async function onMouseEnterThumbnail(elem)
 
     if (response.success && response.status >= 200 && response.status < 400)
     {
-        const c = parseInt(response.headers['PreviewImageCount']);
+        const c = parseInt(response.headers['previewimagecount']);
 
         await animateThumbnailPreview(img, c, video_id);
     }

@@ -17,12 +17,15 @@ namespace youtube_dl_viewer.Jobs
         public string Result = null;
         public (string json, Dictionary<string, JObject> obj)? FullResult = null;
         
+        private (int, int) _progress = (0, 1);
+        public override (int, int) Progress => _progress;
+
         public DataCollectJob(AbsJobManager man, int index) : base(man, "self::"+index)
         {
             Index = index;
         }
 
-        public override string Name => $"DataCollect::{Index}::'{((Index>=0 && Index <= Program.Args.DataDirs.Count)?Program.Args.DataDirs[Index]:"ERR")}'";
+        public override string Name => $"DataCollect::{Index}::'{((Index>=0 && Index <= Program.Args.DataDirs.Count) ? Program.DataDirToString(Program.Args.DataDirs[Index]) : "ERR")}'";
 
         public override void Abort()
         {
@@ -45,6 +48,8 @@ namespace youtube_dl_viewer.Jobs
                 FullResult = (jsonstr, jsonobj);
             }
             
+            _progress = (1, 1);
+
             ChangeState(JobState.Finished);
             
             while (ProxyCount != 0) // Wait for proxies
@@ -60,7 +65,7 @@ namespace youtube_dl_viewer.Jobs
             FullResult = null;
         }
         
-        public static (string jsonstr, Dictionary<string, JObject> jsonobj) CreateData(int index)
+        public (string jsonstr, Dictionary<string, JObject> jsonobj) CreateData(int index)
         {
             var datafiles = Directory.EnumerateFiles(Program.Args.DataDirs[index]).OrderBy(p => p.ToLower()).ToList();
             var processedFiles = new List<string>();
@@ -76,9 +81,16 @@ namespace youtube_dl_viewer.Jobs
             var cacheFiles = (Program.Args.CacheDir == null)
                 ? new HashSet<string>()
                 : Directory.EnumerateFiles(Program.Args.CacheDir).Select(Path.GetFileName).ToHashSet();
-            
+
+            var filecount = filesInfo.Count;
+
+            int progr = 0;
             foreach (var pathJson in filesInfo)
             {
+                _progress = (progr, filecount+1);
+
+                progr++;
+                
                 JObject jinfo;
                 try
                 {
@@ -232,6 +244,13 @@ namespace youtube_dl_viewer.Jobs
             var jsonobj = resultVideos.ToDictionary(rv => rv["meta"]?.Value<string>("uid"), rv => (JObject) rv);
             
             return (jsonstr, jsonobj);
+        }
+
+        public override JObject AsJson(string managerName, string queue)
+        {
+            var obj = base.AsJson(managerName, queue);
+            obj.Add(new JProperty("Index", Index));
+            return obj;
         }
     }
 }

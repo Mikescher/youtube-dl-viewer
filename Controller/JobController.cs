@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Jobs;
@@ -15,10 +16,16 @@ namespace youtube_dl_viewer.Controller
         {
             var r = new JObject
             (
-                new JProperty("generate-previews", JobRegistry.PreviewGenJobs.ListAsJson()),
-                new JProperty("convert-webm", JobRegistry.ConvertJobs.ListAsJson())
+                new JProperty("Meta", new JObject
+                (
+                    new JProperty("CountActive", JobRegistry.Managers.Sum(p => p.CountActive)),
+                    new JProperty("CountQueued", JobRegistry.Managers.Sum(p => p.CountQueued))
+                )),
+                new JProperty("Managers", new JArray(JobRegistry.Managers.Select(p => p.ObjectAsJson()))),
+                new JProperty("Jobs", new JArray(JobRegistry.Managers.SelectMany(p => p.ListJobsAsJson())))
             );
-
+            
+            context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
             await context.Response.WriteAsync(r.ToString(Formatting.Indented));
         }
 

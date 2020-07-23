@@ -10,6 +10,10 @@
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
+      <Content Update="Pages\Jobs.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -42,8 +46,9 @@
 
     <ItemGroup>
         <EmbeddedResource Include="staticfiles\favicon.ico" />
-        
+
         <EmbeddedResource Include="staticfiles\script.js" />
+        <EmbeddedResource Include="staticfiles\script_jobs.js" />
 
         <EmbeddedResource Include="staticfiles\style.css" />
         <EmbeddedResource Include="staticfiles\style_animation.css" />
@@ -55,6 +60,8 @@
         <EmbeddedResource Include="staticfiles\style_grid.css" />
         <EmbeddedResource Include="staticfiles\style_tabular.css" />
         <EmbeddedResource Include="staticfiles\style_compact.css" />
+
+        <EmbeddedResource Include="staticfiles\style_jobs.css" />
         
         <EmbeddedResource Include="staticfiles\thumb_empty.svg" />
     </ItemGroup>

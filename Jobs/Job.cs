@@ -28,6 +28,21 @@ namespace youtube_dl_viewer.Jobs
 
         public volatile bool AbortRequest = false;
         public volatile JobState State = JobState.Waiting;
+
+        public DateTime? StartTime = null;
+        public DateTime? EndTime = null;
+        
+        public abstract (int, int) Progress { get; } 
+
+        public TimeSpan Time
+        {
+            get
+            {
+                if (StartTime == null) return TimeSpan.Zero;
+                if (EndTime == null) return DateTime.Now - StartTime.Value;
+                return EndTime.Value - StartTime.Value;
+            }
+        }
         
         protected object SuperLock => _manager.LockObject;
         
@@ -53,7 +68,7 @@ namespace youtube_dl_viewer.Jobs
             
             try
             {
-                var sw = Stopwatch.StartNew();
+                StartTime = DateTime.Now;
 
                 ChangeState(JobState.Running);
                 Run();
@@ -61,11 +76,14 @@ namespace youtube_dl_viewer.Jobs
                 if (State == JobState.Finished) throw new Exception("Job still running after Method Exit");
                 if (State == JobState.Waiting)  throw new Exception("Job still running after Method Exit");
 
-                Console.Out.WriteLine($"Job [{Name}] finished after {(sw.Elapsed):g}");
+                EndTime = DateTime.Now;
+                
+                Console.Out.WriteLine($"Job [{Name}] finished after {(EndTime - StartTime):g}");
             }
             catch (Exception e)
             {
                 ChangeState(JobState.Failed);
+                EndTime = DateTime.Now;
                 Console.Error.WriteLine("Error in Job:");
                 Console.Error.WriteLine(e);
             }
@@ -132,22 +150,30 @@ namespace youtube_dl_viewer.Jobs
         
         protected abstract void Run();
 
-        public virtual JObject AsJson()
+        public virtual JObject AsJson(string managerName, string queue)
         {
+            var (progressVal, progressMax) = Progress;
+
             return new JObject
             (
+                new JProperty("ManagerName", managerName),
+                new JProperty("QueueName", queue),
                 new JProperty("Name", Name),
                 new JProperty("ProxyCount", ProxyCount),
-                new JProperty("State", State),
+                new JProperty("State", State.ToString()),
                 new JProperty("AbortRequest", AbortRequest),
                 new JProperty("Source", Source),
+                new JProperty("StartTime", StartTime),
+                new JProperty("EndTime", EndTime),
+                new JProperty("Time", $"{((int)Time.TotalMinutes)}".PadLeft(2, '0') + ":" + $"{Time.Seconds}".PadLeft(2, '0')),
+                new JProperty("Progress", (progressMax == 0) ? 0 : progressVal / (progressMax * 1d)),
                 new JProperty("Thread", new JObject
                 (
                     new JProperty("IsNull", Thread == null),
-                    new JProperty("Priority", Thread?.Priority),
+                    new JProperty("Priority", (Thread?.IsAlive == true) ? Thread?.Priority : null),
                     new JProperty("IsAlive", Thread?.IsAlive),
-                    new JProperty("IsBackground", Thread?.IsBackground),
-                    new JProperty("State", Thread?.ThreadState)
+                    new JProperty("IsBackground", (Thread?.IsAlive == true) ? Thread?.IsBackground : null),
+                    new JProperty("State", (Thread?.IsAlive == true) ? Thread?.ThreadState : null)
                 ))
             );
         }

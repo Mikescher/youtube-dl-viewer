@@ -7,12 +7,16 @@ namespace youtube_dl_viewer.Jobs
 {
     public class JobManager<T> : AbsJobManager where T : Job
     {
-        private readonly Stack<T> _queuedJobs = new Stack<T>();
-        private readonly List<T>  _activeJobs = new List<T>();
+        private readonly Stack<T> _queuedJobs   = new Stack<T>();
+        private readonly List<T>  _activeJobs   = new List<T>();
+        private readonly List<T>  _finishedJobs = new List<T>();
 
+        public override int CountActive { get { lock (LockObject) { return _activeJobs.Count; } } }
+        public override int CountQueued { get { lock (LockObject) { return _queuedJobs.Count; } } }
+        public override int CountFinished { get { lock (LockObject) { return _finishedJobs.Count; } } }
         public string RunningCountStr => (MaxParallelism == int.MaxValue) ? _activeJobs.Count.ToString() : $"{_activeJobs.Count}/{MaxParallelism}";
         
-        public JobManager(int maxParallelism) : base(maxParallelism)
+        public JobManager(string name, int maxParallelism) : base(maxParallelism, name)
         {
         }
         
@@ -90,6 +94,9 @@ namespace youtube_dl_viewer.Jobs
                 
                 Console.Out.WriteLine($"Unregister Job [{job.Name}] ({_queuedJobs.Count} jobs in queue) ({RunningCountStr} jobs running)");
 
+                _finishedJobs.Add(job);
+                while (_finishedJobs.Count > MAX_FINISHED_SIZE) _finishedJobs.RemoveAt(0);
+                
                 while (_activeJobs.Count < MaxParallelism && _queuedJobs.Any())
                 {
                     var qjob = _queuedJobs.Pop();
@@ -105,16 +112,29 @@ namespace youtube_dl_viewer.Jobs
             UnregisterJob((T)job);
         }
 
-        public JObject ListAsJson()
+        public override JObject ObjectAsJson()
         {
             lock (LockObject)
             {
                 return new JObject
                 (
-                    new JProperty("maxParallelism", MaxParallelism),
-                    new JProperty("active", new JArray(_activeJobs.Select(p => p.AsJson()))),
-                    new JProperty("queued", new JArray(_queuedJobs.Select(p => p.AsJson())))
+                    new JProperty("Name", Name),
+                    new JProperty("MaxParallelism", MaxParallelism),
+                    new JProperty("CountActive", _activeJobs.Count),
+                    new JProperty("CountQueued", _queuedJobs.Count),
+                    new JProperty("CountFinished", _finishedJobs.Count)
                 );
+            }
+        }
+
+        public override IEnumerable<JObject> ListJobsAsJson()
+        {
+            lock (LockObject)
+            {
+                return _activeJobs.Select(p => p.AsJson(Name, "Active"))
+                    .Concat(_queuedJobs.Select(p => p.AsJson(Name, "Queued")))
+                    .Concat(_finishedJobs.Select(p => p.AsJson(Name, "Finished")))
+                    .ToList();
             }
             
         }

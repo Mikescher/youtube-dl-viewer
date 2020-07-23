@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -214,6 +214,18 @@ namespace youtube_dl_viewer
 
                 return proxy.Job.FullResult.Value;
             }
+        }
+
+        public static string DataDirToString(string dd)
+        {
+            if (Args.DataDirs.Count == 1) return Path.GetFileName(dd);
+
+            for (var i = 1; i < dd.Length-1; i++)
+            {
+                if (!Args.DataDirs.All(p => p.StartsWith(dd.Substring(0, i)))) return dd.Substring(i - 1);
+            }
+            
+            return Path.GetFileName(dd);
         }
     }
 }
