@@ -24,8 +24,6 @@ namespace youtube_dl_viewer.Jobs
         public readonly string Destination;
         public readonly string TempDir;
 
-        public bool GenFinished = false;
-
         private readonly int? _queryImageIndex;
         
         public byte[] ImageData  = null;
@@ -39,12 +37,7 @@ namespace youtube_dl_viewer.Jobs
             Directory.CreateDirectory(TempDir);
         }
 
-        public override string Name => $"GenPreview::{Path.GetFileName(Source)}";
-
-        public override void Abort()
-        {
-            Console.Error.WriteLine($"Cannot abort Job [{Name}]");
-        }
+        public override string Name => $"GenPreview::'{Path.GetFileName(Source)}'";
 
         protected override void Run()
         {
@@ -54,9 +47,12 @@ namespace youtube_dl_viewer.Jobs
                 
                 var (ecode1, outputProbe) = RunCommand(Program.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
                 
+                if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+
                 if (ecode1 != 0)
                 {
                     Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffprobe)");
+                    ChangeState(JobState.Failed);
                     return;
                 }
 
@@ -83,9 +79,12 @@ namespace youtube_dl_viewer.Jobs
 
                     Task.WaitAll(taskList.Cast<Task>().ToArray());
 
+                    if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+
                     if (taskList.Any(t => t.Result.Item1 != 0))
                     {
                         Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                        ChangeState(JobState.Failed);
                         return;
                     }
                 }
@@ -96,9 +95,12 @@ namespace youtube_dl_viewer.Jobs
                     {
                         var (ecode2, _) = RunCommand(Program.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
 
+                        if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+
                         if (ecode2 != 0)
                         {
                             Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                            ChangeState(JobState.Failed);
                             return;
                         }
                         currpos += framedistance;
@@ -109,9 +111,12 @@ namespace youtube_dl_viewer.Jobs
                 {
                     var (ecode2, _) = RunCommand(Program.FFMPEGExec, $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
 
+                    if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+
                     if (ecode2 != 0)
                     {
                         Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                        ChangeState(JobState.Failed);
                         return;
                     }
                 }
@@ -127,6 +132,7 @@ namespace youtube_dl_viewer.Jobs
                 if (prevCount == 0)
                 {
                     Console.Error.WriteLine($"Job [{Name}] failed (no images created)");
+                    ChangeState(JobState.Failed);
                     return;
                 }
 
@@ -150,6 +156,8 @@ namespace youtube_dl_viewer.Jobs
                         var pos = ms.Position;
                         var bin = File.ReadAllBytes(Path.Combine(TempDir, (i+1) + ".jpg"));
 
+                        if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+
                         if (_queryImageIndex == i) ImageData = bin;
                     
                         ms.Seek(1 + i * (8 + 4), SeekOrigin.Begin);
@@ -170,26 +178,25 @@ namespace youtube_dl_viewer.Jobs
                     }
                 }
                 
-                GenFinished = true;
-                Unregister();
-
+                ChangeState(JobState.Finished);
+                
                 if (_queryImageIndex != null)
                 {
-                    for(;;) // Wait for disengaged proxies
+                    while (ProxyCount != 0) // Wait for proxies
                     {
-                        lock (SuperLock)
-                        {
-                            if (Proxies.Count != 0) break;
-                        }
+                        if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+                        
                         Thread.Sleep(100);
                     }
                 }
                 
+                ChangeState(JobState.Success);
+
                 
             }
             finally
             {
-                this.GenFinished = true;
+                if (State == JobState.Running) ChangeState(JobState.Failed); // just to be sure
 
                 for (var i = 0;; i++)
                 {
@@ -210,6 +217,8 @@ namespace youtube_dl_viewer.Jobs
                         break;
                     }
                 }
+
+                ImageData = null; // Memory cleanup
             }
         }
 
@@ -304,7 +313,6 @@ namespace youtube_dl_viewer.Jobs
             var obj = base.AsJson();
             obj.Add(new JProperty("Destination", Destination));
             obj.Add(new JProperty("TempDir", TempDir));
-            obj.Add(new JProperty("GenFinished", GenFinished));
             obj.Add(new JProperty("QueryImageIndex", _queryImageIndex));
             obj.Add(new JProperty("ImageCount", _queryImageIndex));
             return obj;

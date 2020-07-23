@@ -10,17 +10,21 @@ namespace youtube_dl_viewer.Jobs
         private readonly Stack<T> _queuedJobs = new Stack<T>();
         private readonly List<T>  _activeJobs = new List<T>();
 
+        public string RunningCountStr => (MaxParallelism == int.MaxValue) ? _activeJobs.Count.ToString() : $"{_activeJobs.Count}/{MaxParallelism}";
+        
         public JobManager(int maxParallelism) : base(maxParallelism)
         {
         }
         
-        public JobProxy<T> StartOrQueue(string src, Func<AbsJobManager, T> ctr, bool attach = true)
+        public JobProxy<T> StartOrQueue(Func<JobManager<T>, T> ctr, bool attach = true)
         {
+            var newjob = ctr(this);
+            
             lock (LockObject)
             {
                 foreach (var cjob in _activeJobs)
                 {
-                    if (cjob.Source == src)
+                    if (cjob.Source == newjob.Source)
                     {
                         if (!attach) return null;
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
@@ -29,7 +33,7 @@ namespace youtube_dl_viewer.Jobs
                 }
                 foreach (var cjob in _queuedJobs)
                 {
-                    if (cjob.Source == src)
+                    if (cjob.Source == newjob.Source)
                     {
                         if (!attach) return null;
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
@@ -37,22 +41,44 @@ namespace youtube_dl_viewer.Jobs
                     }
                 }
 
-                var job = ctr(this);
-
                 if (_activeJobs.Count < MaxParallelism)
                 {
-                    Console.Out.WriteLine($"Start new Job [{job.Name}] (direct)");
-                    _activeJobs.Add(job);
-                    job.Start();
-                    return attach ? JobProxy<T>.Create(job) : null;
+                    Console.Out.WriteLine($"Start new Job [{newjob.Name}] (direct)");
+                    _activeJobs.Add(newjob);
+                    newjob.Start();
+                    return attach ? JobProxy<T>.Create(newjob) : null;
                 }
                 else
                 {
-                    Console.Out.WriteLine($"Enqueue new Job [{job.Name}] ({_queuedJobs.Count} jobs in queue) ({_activeJobs.Count}/{MaxParallelism} jobs running)");
-                    _queuedJobs.Push(job);
-                    return attach ? JobProxy<T>.Create(job) : null;
+                    Console.Out.WriteLine($"Enqueue new Job [{newjob.Name}] ({_queuedJobs.Count} jobs in queue) ({RunningCountStr} jobs running)");
+                    _queuedJobs.Push(newjob);
+                    return attach ? JobProxy<T>.Create(newjob) : null;
                 }
             }
+        }
+
+        public JobProxy<T> GetProxyOrNullLockless(Func<JobManager<T>, T> ctr)
+        {
+            var newjob = ctr(this);
+            
+            foreach (var cjob in _activeJobs)
+            {
+                if (cjob.Source == newjob.Source)
+                {
+                    Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
+                    return JobProxy<T>.Create(cjob);
+                }
+            }
+            foreach (var cjob in _queuedJobs)
+            {
+                if (cjob.Source == newjob.Source)
+                {
+                    Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
+                    return JobProxy<T>.Create(cjob);
+                }
+            }
+
+            return null;
         }
 
         private void UnregisterJob(T job)
@@ -62,7 +88,7 @@ namespace youtube_dl_viewer.Jobs
                 var ok = _activeJobs.Remove(job);
                 if (!ok) return;
                 
-                Console.Out.WriteLine($"Unregister Job [{job.Name}] ({_queuedJobs.Count} jobs in queue) ({_activeJobs.Count}/{MaxParallelism} jobs running)");
+                Console.Out.WriteLine($"Unregister Job [{job.Name}] ({_queuedJobs.Count} jobs in queue) ({RunningCountStr} jobs running)");
 
                 while (_activeJobs.Count < MaxParallelism && _queuedJobs.Any())
                 {

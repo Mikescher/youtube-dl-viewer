@@ -7,10 +7,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
-using youtube_dl_viewer.Controller;
 using youtube_dl_viewer.Jobs;
 
 namespace youtube_dl_viewer
@@ -28,7 +29,7 @@ namespace youtube_dl_viewer
         public static ThumbnailExtractionMode ThumbnailExtraction = ThumbnailExtractionMode.Sequential;
 
         public static List<string> DataDirs = new List<string>();
-        public static Dictionary<int, (string json, Dictionary<string, JObject> obj)> Data = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
+        public static readonly Dictionary<int, (string json, Dictionary<string, JObject> obj)> DataCache = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
         
         public static int MaxParallelConvertJobs    = 3;
         public static int MaxParallelGenPreviewJobs = 2;
@@ -216,9 +217,22 @@ namespace youtube_dl_viewer
 
             for (var i = 0; i < DataDirs.Count; i++)
             {
-                Console.Out.WriteLine($"> Start enumerating video data [{i}]: {DataDirs[i]}");
-                DataController.CreateData(i);
-                Console.Out.WriteLine($"> Video data enumerated: {Data[i].obj.Count} entries found");
+                Console.Out.WriteLine($"> Start enumerating video data [{i}]: {DataDirs[i]} (background)");
+                var idx = i;
+                DataCache[idx] = (null, null);
+                using (var proxy = JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx)))
+                {
+                    for (;;)
+                    {
+                        if (proxy.Killed) throw new Exception("Initial collect job failed (proxy killed)");
+                        if (proxy.Job.State == JobState.Aborted) throw new Exception("Initial collect job failed (job aborted)");
+                        if (proxy.Job.State == JobState.Failed) throw new Exception("Initial collect job failed (job failed)");
+                        
+                        if (proxy.Job.State == JobState.Waiting) { Thread.Sleep(10); continue; }
+
+                        break;
+                    }
+                }
                 Console.Out.WriteLine();
             }
 
@@ -440,6 +454,36 @@ namespace youtube_dl_viewer
                 socket.Close();
             }
             return port;
+        }
+
+        public static async Task<(string json, Dictionary<string, JObject> obj)> GetData(int idx)
+        {
+            (string json, Dictionary<string, JObject> obj) data;
+            
+            lock (DataCache) { data = DataCache[idx]; }
+            
+            if (data.json != null || data.obj != null) return data;
+
+            JobProxy<DataCollectJob> proxy;
+            lock (JobRegistry.DataCollectJobs.LockObject)
+            {
+                lock (DataCache) { data = DataCache[idx]; }
+                if (data.json != null || data.obj != null) return data;
+                
+                proxy = JobRegistry.DataCollectJobs.GetProxyOrNullLockless((man) => new DataCollectJob(man, idx));;
+                if (proxy == null) throw new Exception($"Data for index {idx} not found");
+            }
+            
+            using (proxy)
+            {
+                while (proxy.JobRunningOrWaiting) await Task.Delay(50);
+
+                if (proxy.Killed) throw new Exception("Job was killed prematurely");
+                
+                if (proxy.Job.FullResult == null) throw new Exception("Job returned no data");
+
+                return proxy.Job.FullResult.Value;
+            }
         }
     }
 }

@@ -28,7 +28,7 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             
@@ -47,7 +47,7 @@ namespace youtube_dl_viewer.Controller
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
-                JobRegistry.PreviewGenJobs.StartOrQueue(pathVideo, (man) => new PreviewGenJob(man, pathVideo, pathCache, null), false); // runs as background job
+                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null), false); // runs as background job
             }
             
             var data = await File.ReadAllBytesAsync(pathThumbnail);
@@ -69,7 +69,7 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
 
@@ -84,7 +84,7 @@ namespace youtube_dl_viewer.Controller
             var id  = (string)context.Request.RouteValues["id"];
             var img = int.Parse((string)context.Request.RouteValues["img"]);
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
 
@@ -101,9 +101,9 @@ namespace youtube_dl_viewer.Controller
 
             if (pathCache == null)
             {
-                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, null, imageIndex)))
+                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, null, imageIndex)))
                 {
-                    while (!proxy.Killed && !proxy.Job.GenFinished) await Task.Delay(50);
+                    while (proxy.JobRunningOrWaiting) await Task.Delay(50);
 
                     if (proxy.Killed)                            { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                     
@@ -120,9 +120,9 @@ namespace youtube_dl_viewer.Controller
             
             if (!File.Exists(pathCache))
             {
-                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue(videopath, (man) => new PreviewGenJob(man, videopath, pathCache, null)))
+                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, pathCache, null)))
                 {
-                    while (!proxy.Killed && !proxy.Job.GenFinished) await Task.Delay(50);
+                    while (proxy.JobRunningOrWaiting) await Task.Delay(50);
                 }
             }
             

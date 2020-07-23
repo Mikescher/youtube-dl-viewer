@@ -7,7 +7,8 @@ namespace youtube_dl_viewer.Jobs
         public T Job;
 
         public bool Killed => Job == null;
-        
+        public bool JobRunningOrWaiting => !Killed && (Job.State == JobState.Waiting || Job.State == JobState.Running);
+
         private JobProxy(T job)
         {
             Job = job;

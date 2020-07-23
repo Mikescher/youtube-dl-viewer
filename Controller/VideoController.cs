@@ -26,7 +26,7 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
@@ -69,7 +69,7 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
@@ -82,7 +82,7 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
@@ -107,17 +107,13 @@ namespace youtube_dl_viewer.Controller
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
-            using var proxy = JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, pathCache)); 
+            using var proxy = JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache)); 
 
-            while (!proxy.Killed && !proxy.Job.Started) await Task.Delay(100);
+            while (proxy.JobRunningOrWaiting && !File.Exists(proxy.Job.Temp)) await Task.Delay(0);
             
-            while (!proxy.Killed && !File.Exists(proxy.Job.Temp))
-            {
-                if (!proxy.Job.Running) return;
-                await Task.Delay(0);
-            }
-            
-            if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
+            if (proxy.Killed)                        { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
+            if (proxy.Job.State == JobState.Aborted) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was aborted"); return; }
+            if (proxy.Job.State == JobState.Failed)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job failed"); return; }
                 
             await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             try
@@ -127,8 +123,10 @@ namespace youtube_dl_viewer.Controller
                 {
                     if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                     
-                    var convertFin = proxy.Job.ConvertFinished;
+                    if (proxy.Job.State == JobState.Aborted) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was aborted"); return; }
+                    if (proxy.Job.State == JobState.Failed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job failed"); return; }
                     
+                    var finished = proxy.Job.State == JobState.Finished || proxy.Job.State == JobState.Success;
                     var read = await fs.ReadAsync(buffer);
 
                     if (read > 0)
@@ -140,7 +138,7 @@ namespace youtube_dl_viewer.Controller
                     }
                     else
                     {
-                        if (convertFin) return;
+                        if (finished) return;
                     }
                 }
             }
@@ -156,16 +154,14 @@ namespace youtube_dl_viewer.Controller
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
-            using var proxy = JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, null)); 
+            using var proxy = JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, null)); 
 
-            while (!proxy.Killed && !File.Exists(proxy.Job.Temp))
-            {
-                if (!proxy.Job.Running) return;
-                await Task.Delay(0);
-            }
+            while (proxy.JobRunningOrWaiting && !File.Exists(proxy.Job.Temp)) await Task.Delay(0);
             
-            if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
-                
+            if (proxy.Killed)                        { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
+            if (proxy.Job.State == JobState.Aborted) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was aborted"); return; }
+            if (proxy.Job.State == JobState.Failed)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job failed"); return; }
+
             await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             try
@@ -175,8 +171,10 @@ namespace youtube_dl_viewer.Controller
                 {
                     if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                     
-                    var convertFin = proxy.Job.ConvertFinished;
+                    if (proxy.Job.State == JobState.Aborted) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was aborted"); return; }
+                    if (proxy.Job.State == JobState.Failed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job failed"); return; }
                     
+                    var finished = proxy.Job.State == JobState.Finished || proxy.Job.State == JobState.Success;
                     var read = await fs.ReadAsync(buffer);
 
                     if (read > 0)
@@ -192,7 +190,7 @@ namespace youtube_dl_viewer.Controller
                     }
                     else
                     {
-                        if (convertFin) return;
+                        if (finished) return;
                     }
                 }
             }

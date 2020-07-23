@@ -33,11 +33,11 @@ namespace youtube_dl_viewer.Controller
             List<(string json, Dictionary<string, JObject> obj)> selection1;
             if (selector1.ToLower() == "all" || selector1.ToLower() == "*")
             {
-                selection1 = Program.Data.Values.ToList();
+                selection1 = (await Task.WhenAll(Program.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
             }
             else
             {
-                selection1 = new[]{ Program.Data[int.Parse(selector1)] }.ToList();
+                selection1 = new[]{ (await Program.GetData(int.Parse(selector1))) }.ToList();
             }
             
             List<JObject> selection2;
@@ -61,7 +61,7 @@ namespace youtube_dl_viewer.Controller
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
-                JobRegistry.PreviewGenJobs.StartOrQueue(pathVideo, (man) => new PreviewGenJob(man, pathVideo, pathCache, null), false);
+                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");
@@ -78,11 +78,11 @@ namespace youtube_dl_viewer.Controller
             List<(string json, Dictionary<string, JObject> obj)> selection1;
             if (selector1.ToLower() == "all" || selector1.ToLower() == "*")
             {
-                selection1 = Program.Data.Values.ToList();
+                selection1 = (await Task.WhenAll(Program.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
             }
             else
             {
-                selection1 = new[]{ Program.Data[int.Parse(selector1)] }.ToList();
+                selection1 = new[]{ (await Program.GetData(int.Parse(selector1))) }.ToList();
             }
             
             List<JObject> selection2;
@@ -106,10 +106,30 @@ namespace youtube_dl_viewer.Controller
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
-                JobRegistry.ConvertJobs.StartOrQueue(pathVideo, (man) => new ConvertJob(man, pathVideo, pathCache), false);
+                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");
+        }
+
+        public static async Task ManuallyForceCollectData(HttpContext context)
+        {
+            var idx = (string)context.Request.RouteValues["idx"];
+
+            if (idx.ToLower() == "all" || idx.ToLower() == "*")
+            {
+                for (var i = 0; i < Program.DataDirs.Count; i++)
+                {
+                    var ddidx = i;
+                    JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, ddidx), false);
+                    await context.Response.WriteAsync($"Started/Attached {Program.DataDirs.Count} new jobs");
+                }
+            }
+            else
+            {;
+                JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, int.Parse(idx)), false);
+                await context.Response.WriteAsync($"Started/Attached 1 new jobs");
+            }
         }
     }
 }

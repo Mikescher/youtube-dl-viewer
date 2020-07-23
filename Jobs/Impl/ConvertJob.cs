@@ -12,28 +12,13 @@ namespace youtube_dl_viewer.Jobs
         public readonly string Destination;
         public readonly string Temp;
 
-        public bool ConvertFinished = false;
-        public bool Aborted = false;
-        
         public ConvertJob(AbsJobManager man, string src, string dst) : base(man, src)
         {
             Destination = dst;
             Temp = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B") + ".webm");
         }
 
-        public override string Name => $"Convert::{Path.GetFileName(Source)}";
-
-        public override void Abort()
-        {
-            Console.Out.WriteLine($"Abort Job [{Name}] forcefully");
-            
-            Aborted = true;
-            Unregister();
-            Running = false;
-            ConvertFinished = true;
-
-            KillProxies();
-        }
+        public override string Name => $"Convert::'{Path.GetFileName(Source)}'";
 
         protected override void Run()
         {
@@ -79,73 +64,74 @@ namespace youtube_dl_viewer.Jobs
 
                 while (!File.Exists(Temp))
                 {
-                    if (Aborted) return;
+                    if (AbortRequest) return;
                     if (proc.HasExited && !File.Exists(Temp))
                     {
-                        this.ConvertFinished = true;
+                        ChangeState(JobState.Failed);
                         return;
                     }
                     Thread.Sleep(0);
                 }
             
-                for (;;)
+                for (;;) // Wait for ffmpeg
                 {
-                    if (Aborted) return;
+                    if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
-                    if (proc.HasExited)
-                    {
-                        if (!ConvertFinished && Program.FFMPEGDebugDir != null)
-                        {
-                            File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[convert].log"), $"> {Program.FFMPEGExec} {cmd}\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
-                        }
-                        ConvertFinished = true;
-                    }
-                    
-                    if (proc.HasExited && Proxies.Count == 0)
-                    {
-                        if (proc.ExitCode != 0)
-                        {
-                            Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code)");
-                            
-                            this.ConvertFinished = true;
-                            return;
-                        }
-
-                        lock (SuperLock)
-                        {
-                            if (Proxies.Count != 0) continue;
-
-                            if (Destination != null)
-                            {
-                                for (var i = 0; i < 15; i++) // 15 retries
-                                {
-                                    if (Aborted) return;
-                                    
-                                    try
-                                    {
-                                        File.Move(Temp, Destination);
-                                        if (File.Exists(Destination) && new FileInfo(Destination).Length == 0) File.Delete(Destination);
-                                        break;
-                                    }
-                                    catch (IOException)
-                                    {
-                                        Console.Error.WriteLine("Move of converted file to cache failed ... retry in 2 secs");
-                                        Thread.Sleep(2 * 1000);
-                                    }
-                                }
-                            }
-
-                            this.ConvertFinished = true;
-                            return;
-                        }
-                    }
+                    if (proc.HasExited) break;
                     
                     Thread.Sleep(100);
+                }
+                
+                if (Program.FFMPEGDebugDir != null)
+                {
+                    File.WriteAllText(Path.Combine(Program.FFMPEGDebugDir, $"{start:yyyy-MM-dd_HH-mm-ss.fffffff}_[convert].log"), $"> {Program.FFMPEGExec} {cmd}\nExitCode:{proc.ExitCode}\nStart:{start:yyyy-MM-dd HH:mm:ss}\nEnd:{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n{builderOut}");
+                }
+                
+                if (proc.ExitCode != 0)
+                {
+                    Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code)");
+                    ChangeState(JobState.Failed);
+                }
+                else
+                {
+                    ChangeState(JobState.Finished);
+                    
+                    while (ProxyCount != 0) // Wait for proxies
+                    {
+                        if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+                        
+                        Thread.Sleep(100);
+                    }
+                    
+                    lock (SuperLock)
+                    {
+                        if (Destination != null)
+                        {
+                            for (var i = 0; i < 15; i++) // 15 retries
+                            {
+                                if (AbortRequest) { ChangeState(JobState.Aborted); return; }
+                                    
+                                try
+                                {
+                                    File.Move(Temp, Destination);
+                                    if (File.Exists(Destination) && new FileInfo(Destination).Length == 0) File.Delete(Destination);
+                                    break;
+                                }
+                                catch (IOException)
+                                {
+                                    Console.Error.WriteLine("Move of converted file to cache failed ... retry in 2 secs");
+                                    Thread.Sleep(2 * 1000);
+                                }
+                            }
+                        }
+                    }
+                    
+                    ChangeState(JobState.Success);
                 }
             }
             finally
             {
-                this.ConvertFinished = true;
+                if (State == JobState.Running) ChangeState(JobState.Failed); // just to be sure
 
                 if (proc != null && !proc.HasExited)
                 {
@@ -180,8 +166,6 @@ namespace youtube_dl_viewer.Jobs
             var obj = base.AsJson();
             obj.Add(new JProperty("Destination", Destination));
             obj.Add(new JProperty("Temp", Temp));
-            obj.Add(new JProperty("ConvertFinished", ConvertFinished));
-            obj.Add(new JProperty("Aborted", Aborted));
             return obj;
         }
     }
