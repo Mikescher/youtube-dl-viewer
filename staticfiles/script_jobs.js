@@ -68,6 +68,7 @@ async function refresh()
 
     text += ("Active: " + data.Meta.CountActive).padEnd(linelen - 30, ' ') + "<span id=\"btnForceGenPreviews\" class=\"btn\">[Force generate all previews]</span>" + "\n";
     text += ("Queued: " + data.Meta.CountQueued).padEnd(linelen - 29, ' ') + "<span id=\"btnForceTranscode\" class=\"btn\">[Force transcode all videos]</span>" + "\n";
+    text += ("").padEnd(linelen - 21, ' ')                                 + "<span id=\"btnClearFinished\" class=\"btn\">[Clear finished jobs]</span>" + "\n";
     text += "\n";
 
     const progressLen = linelen - (14+50+10+10+8+7);
@@ -100,6 +101,11 @@ function updateEvents()
     $('#btnForceTranscode').addEventListener('click', async e =>
     {
         await $ajax('GET', '/jobmanager/start/generateTranscode/*/*')
+    });
+
+    $('#btnClearFinished').addEventListener('click', async e =>
+    {
+        await $ajax('GET', '/jobmanager/clearFinished')
     });
 
     for(const btn of $all('.btnAbort'))

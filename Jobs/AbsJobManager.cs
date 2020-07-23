@@ -30,5 +30,7 @@ namespace youtube_dl_viewer.Jobs
         public abstract IEnumerable<JObject> ListJobsAsJson();
 
         public abstract bool AbortJob(string jobid);
+
+        public abstract void ClearFinishedJobs();
     }
 }

@@ -145,11 +145,16 @@ namespace youtube_dl_viewer.Jobs
             lock (LockObject)
             {
                 foreach (var job in _queuedJobs)   if (job.ID == jobid) { job.PreAbort(); return true; }
-                foreach (var job in _activeJobs)   if (job.ID == jobid) { job.Abort(); return true; }
-                foreach (var job in _finishedJobs) if (job.ID == jobid) return true;
+                foreach (var job in _activeJobs)   if (job.ID == jobid) { job.Abort();    return true; }
+                foreach (var job in _finishedJobs) if (job.ID == jobid) {                 return true; }
             }
 
             return false;
+        }
+        
+        public override void ClearFinishedJobs()
+        {
+            lock (LockObject) { _finishedJobs.Clear(); }
         }
     }
 }

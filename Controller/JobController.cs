@@ -168,5 +168,15 @@ namespace youtube_dl_viewer.Controller
             await context.Response.WriteAsync($"Job not found");
             return;
         }
+
+        public static async Task ClearFinishedJobs(HttpContext context)
+        {
+            foreach (var man in JobRegistry.Managers)
+            {
+                man.ClearFinishedJobs();
+            }
+            
+            await context.Response.WriteAsync("OK");
+        }
     }
 }
