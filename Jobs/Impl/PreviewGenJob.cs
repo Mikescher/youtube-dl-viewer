@@ -102,7 +102,7 @@ namespace youtube_dl_viewer.Jobs
                     {
                         var (ecode2, _) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
                         
-                        _progress = (i+1, (int)Math.Ceiling(videolen / framedistance) + 2);
+                        _progress = (i+1, (int)Math.Floor(videolen / framedistance) + 2);
                         
                         if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 

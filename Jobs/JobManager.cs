@@ -7,7 +7,7 @@ namespace youtube_dl_viewer.Jobs
 {
     public class JobManager<T> : AbsJobManager where T : Job
     {
-        private readonly Stack<T> _queuedJobs   = new Stack<T>();
+        private readonly List<T>  _queuedJobs   = new List<T>();
         private readonly List<T>  _activeJobs   = new List<T>();
         private readonly List<T>  _finishedJobs = new List<T>();
 
@@ -55,7 +55,7 @@ namespace youtube_dl_viewer.Jobs
                 else
                 {
                     Console.Out.WriteLine($"Enqueue new Job [{newjob.Name}] ({_queuedJobs.Count} jobs in queue) ({RunningCountStr} jobs running)");
-                    _queuedJobs.Push(newjob);
+                    _queuedJobs.Add(newjob);
                     return attach ? JobProxy<T>.Create(newjob) : null;
                 }
             }
@@ -99,7 +99,8 @@ namespace youtube_dl_viewer.Jobs
                 
                 while (_activeJobs.Count < MaxParallelism && _queuedJobs.Any())
                 {
-                    var qjob = _queuedJobs.Pop();
+                    var qjob = _queuedJobs[0];
+                    _queuedJobs.RemoveAt(0);
                     Console.Out.WriteLine($"Start new Job [{qjob.Name}] (from queue) ({qjob.ProxyCount} attached proxies) ({_queuedJobs.Count} jobs in queue) ({_activeJobs.Count+1}/{MaxParallelism} jobs running)");
                     qjob.Start();
                     _activeJobs.Add(qjob);
@@ -137,6 +138,18 @@ namespace youtube_dl_viewer.Jobs
                     .ToList();
             }
             
+        }
+
+        public override bool AbortJob(string jobid)
+        {
+            lock (LockObject)
+            {
+                foreach (var job in _queuedJobs)   if (job.ID == jobid) { job.PreAbort(); return true; }
+                foreach (var job in _activeJobs)   if (job.ID == jobid) { job.Abort(); return true; }
+                foreach (var job in _finishedJobs) if (job.ID == jobid) return true;
+            }
+
+            return false;
         }
     }
 }

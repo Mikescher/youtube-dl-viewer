@@ -1,27 +1,27 @@
-html,body 
+html,body
 {
   margin:0;
   padding:0;
   height:100%;
-  
+
   font-family: Consolas, monospace;
   background-color: #000;
 }
 
-#root 
+#root
 {
   padding: 1rem;
   color: #DDD;
-  
+
   white-space: pre;
-  
+
   overflow: hidden;
 }
 
 #font_test
 {
   font-family: Consolas, monospace;
-  
+
   position: absolute;
   visibility: hidden;
   height: auto;
@@ -29,13 +29,65 @@ html,body
   white-space: nowrap;
 }
 
-.btn 
+.btn
 {
   color: #48F;
   cursor: pointer;
 }
-.btn:hover 
+.btn:hover
 {
   text-decoration: underline;
 }
 
+.maxlen
+{
+  display: inline-flex;
+  overflow: hidden;
+  text-overflow: '...';
+}
+
+.header {
+  color: #B0B;
+}
+
+.job.state_Waiting, .job.queue_Queued {
+  color: #888;
+}
+
+.job.state_Aborted .colProgress,
+.job.state_Failed .colProgress {
+  color: #C00;
+}
+
+.statecol.state_Waiting {
+
+}
+.statecol.state_Running {
+  color: #F80;
+}
+.statecol.state_Finished {
+  color: #080;
+}
+.statecol.state_Success {
+  color: #0F0;
+}
+.statecol.state_Aborted {
+  color: #F86;
+}
+.statecol.state_Failed {
+  color: #F00;
+}
+
+.btnAbort {
+  color: #B00;
+  cursor: pointer;
+}
+.btnAbort:hover { text-decoration: underline; }
+
+.job.abort_true .btnAbort {
+  color: #F80;
+}
+
+.job.queue_Finished .btnAbort {
+  visibility: hidden;
+}

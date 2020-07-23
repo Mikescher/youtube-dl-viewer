@@ -19,6 +19,8 @@ namespace youtube_dl_viewer.Jobs
     
     public abstract class Job
     {
+        public readonly string ID;
+        
         public readonly string Source;
         
         protected readonly List<IJobProxy> Proxies = new List<IJobProxy>();
@@ -50,8 +52,9 @@ namespace youtube_dl_viewer.Jobs
 
         private readonly AbsJobManager _manager;
         
-        protected Job(AbsJobManager man,string source)
+        protected Job(AbsJobManager man, string source)
         {
+            ID = Guid.NewGuid().ToString("B").ToUpper();
             Source = source;
             _manager = man;
         }
@@ -147,15 +150,25 @@ namespace youtube_dl_viewer.Jobs
                 Proxies.Remove(proxy);
             }
         }
+
+        public void PreAbort()
+        {
+            AbortRequest = true;
+            ChangeState(JobState.Aborted);
+            Unregister();
+            KillProxies();
+        }
         
         protected abstract void Run();
 
         public virtual JObject AsJson(string managerName, string queue)
         {
             var (progressVal, progressMax) = Progress;
-
+            var progress = (progressMax == 0) ? 0 : progressVal / (progressMax * 1d);
+            
             return new JObject
             (
+                new JProperty("ID", ID),
                 new JProperty("ManagerName", managerName),
                 new JProperty("QueueName", queue),
                 new JProperty("Name", Name),
@@ -166,7 +179,7 @@ namespace youtube_dl_viewer.Jobs
                 new JProperty("StartTime", StartTime),
                 new JProperty("EndTime", EndTime),
                 new JProperty("Time", $"{((int)Time.TotalMinutes)}".PadLeft(2, '0') + ":" + $"{Time.Seconds}".PadLeft(2, '0')),
-                new JProperty("Progress", (progressMax == 0) ? 0 : progressVal / (progressMax * 1d)),
+                new JProperty("Progress", progress),
                 new JProperty("Thread", new JObject
                 (
                     new JProperty("IsNull", Thread == null),

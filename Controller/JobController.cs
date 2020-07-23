@@ -14,6 +14,18 @@ namespace youtube_dl_viewer.Controller
     {
         public static async Task List(HttpContext context)
         {
+            var jobs = JobRegistry.Managers
+                .SelectMany(p => p.ListJobsAsJson())
+                .OrderBy(p =>
+                {
+                    if (p["QueueName"].Value<string>() == "Active")   return 0;
+                    if (p["QueueName"].Value<string>() == "Queued")   return 1;
+                    if (p["QueueName"].Value<string>() == "Finished") return 2;
+                    return 3;
+                })
+                .ThenByDescending(p => p["StartTime"].Value<string>())
+                .ToList();
+            
             var r = new JObject
             (
                 new JProperty("Meta", new JObject
@@ -22,7 +34,7 @@ namespace youtube_dl_viewer.Controller
                     new JProperty("CountQueued", JobRegistry.Managers.Sum(p => p.CountQueued))
                 )),
                 new JProperty("Managers", new JArray(JobRegistry.Managers.Select(p => p.ObjectAsJson()))),
-                new JProperty("Jobs", new JArray(JobRegistry.Managers.SelectMany(p => p.ListJobsAsJson())))
+                new JProperty("Jobs", new JArray(jobs))
             );
             
             context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
@@ -137,6 +149,24 @@ namespace youtube_dl_viewer.Controller
                 JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, int.Parse(idx)), false);
                 await context.Response.WriteAsync($"Started/Attached 1 new jobs");
             }
+        }
+
+        public static async Task AbortJob(HttpContext context)
+        {
+            var jobid = (string)context.Request.RouteValues["jobid"];
+
+            foreach (var man in JobRegistry.Managers)
+            {
+                if (man.AbortJob(jobid))
+                {
+                    await context.Response.WriteAsync($"Job aborted");
+                    return;
+                }
+            }
+            
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsync($"Job not found");
+            return;
         }
     }
 }

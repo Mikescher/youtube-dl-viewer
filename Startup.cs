@@ -45,6 +45,7 @@ namespace youtube_dl_viewer
                 endpoints.MapGet("/jobmanager/start/generatePreviews/{selector1}/{selector2}",  JobController.ManuallyForcePreviewJobs);
                 endpoints.MapGet("/jobmanager/start/generateTranscode/{selector1}/{selector2}", JobController.ManuallyForceTranscodeJobs);
                 endpoints.MapGet("/jobmanager/start/collectData/{idx}",                         JobController.ManuallyForceCollectData);
+                endpoints.MapGet("/jobmanager/abort/{jobid}",                                   JobController.AbortJob);
 
                 endpoints.MapRazorPages();
             });

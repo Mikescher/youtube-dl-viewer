@@ -126,6 +126,7 @@ header .btn {
     background-color: #666;
     color: #EEE;
     cursor: pointer;
+    text-decoration: none;
 }
 
 header .btnpad {

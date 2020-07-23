@@ -118,6 +118,7 @@ namespace youtube_dl_viewer.Jobs
                 else
                 {
                     ChangeState(JobState.Finished);
+                    _progress = (1, 1);
                     
                     while (ProxyCount != 0) // Wait for proxies
                     {
@@ -193,7 +194,7 @@ namespace youtube_dl_viewer.Jobs
                 {
                     var time = TimeSpan.Parse(match.Groups["time"].Value);
 
-                    _progress = ((int) Math.Ceiling((time.TotalSeconds / videolen) * 1000), 1000);
+                    _progress = ((int) Math.Floor((time.TotalSeconds / videolen) * 1000), 1000);
                 }
             }
         }
