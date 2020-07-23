@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Jobs
@@ -296,6 +297,17 @@ namespace youtube_dl_viewer.Jobs
             }
 
             return (proc1.ExitCode, builderOut.ToString());
+        }
+
+        public override JObject AsJson()
+        {
+            var obj = base.AsJson();
+            obj.Add(new JProperty("Destination", Destination));
+            obj.Add(new JProperty("TempDir", TempDir));
+            obj.Add(new JProperty("GenFinished", GenFinished));
+            obj.Add(new JProperty("QueryImageIndex", _queryImageIndex));
+            obj.Add(new JProperty("ImageCount", _queryImageIndex));
+            return obj;
         }
     }
 }

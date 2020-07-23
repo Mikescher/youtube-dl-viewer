@@ -26,10 +26,10 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
-            if (pathVideo == null) { context.Response.StatusCode = 404; return; }
+            if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
             
             Stream iStream = null;
 
@@ -69,10 +69,10 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
-            if (pathVideo == null) { context.Response.StatusCode = 404; return; }
+            if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
             await GetSeekableFile(context, pathVideo);
         }
@@ -82,10 +82,10 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
-            if (pathVideo == null) { context.Response.StatusCode = 404; return; }
+            if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
             var pathCache = GetStreamCachePath(pathVideo);
             
@@ -103,7 +103,7 @@ namespace youtube_dl_viewer.Controller
 
         private static async Task GetVideoStreamWithCache(HttpContext context, string pathVideo, string pathCache)
         {
-            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; return; }
+            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
@@ -117,7 +117,7 @@ namespace youtube_dl_viewer.Controller
                 await Task.Delay(0);
             }
             
-            if (proxy.Killed) { context.Response.StatusCode = 500; return; }
+            if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                 
             await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             try
@@ -125,7 +125,7 @@ namespace youtube_dl_viewer.Controller
                 var buffer = new byte[4096];
                 for (;;)
                 {
-                    if (proxy.Killed) { context.Response.StatusCode = 500; return; }
+                    if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                     
                     var convertFin = proxy.Job.ConvertFinished;
                     
@@ -152,7 +152,7 @@ namespace youtube_dl_viewer.Controller
 
         private static async Task GetVideoStreamWithoutCache(HttpContext context, string pathVideo)
         {
-            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; return; }
+            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
@@ -164,7 +164,7 @@ namespace youtube_dl_viewer.Controller
                 await Task.Delay(0);
             }
             
-            if (proxy.Killed) { context.Response.StatusCode = 500; return; }
+            if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                 
             await using var fs = new FileStream(proxy.Job.Temp, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
@@ -173,7 +173,7 @@ namespace youtube_dl_viewer.Controller
                 var buffer = new byte[4096];
                 for (;;)
                 {
-                    if (proxy.Killed) { context.Response.StatusCode = 500; return; }
+                    if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                     
                     var convertFin = proxy.Job.ConvertFinished;
                     

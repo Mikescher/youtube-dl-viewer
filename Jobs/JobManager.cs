@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace youtube_dl_viewer.Jobs
 {
@@ -76,6 +77,20 @@ namespace youtube_dl_viewer.Jobs
         public override void Unregister(Job job)
         {
             UnregisterJob((T)job);
+        }
+
+        public JObject ListAsJson()
+        {
+            lock (LockObject)
+            {
+                return new JObject
+                (
+                    new JProperty("maxParallelism", MaxParallelism),
+                    new JProperty("active", new JArray(_activeJobs.Select(p => p.AsJson()))),
+                    new JProperty("queued", new JArray(_queuedJobs.Select(p => p.AsJson())))
+                );
+            }
+            
         }
     }
 }

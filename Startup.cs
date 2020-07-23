@@ -40,6 +40,10 @@ namespace youtube_dl_viewer
                 endpoints.MapGet("/data/{idx:int}/video/{id}/seek",   VideoController.GetVideoSeek);
                 endpoints.MapGet("/data/{idx:int}/video/{id}/file",   VideoController.GetVideoFile);
                 endpoints.MapGet("/data/{idx:int}/video/{id}/stream", VideoController.GetVideoStream);
+                
+                endpoints.MapGet("/jobmanager/list",                                      JobController.List);
+                endpoints.MapGet("/jobmanager/generatePreviews/{selector1}/{selector2}",  JobController.ManuallyForcePreviewJobs);
+                endpoints.MapGet("/jobmanager/generateTranscode/{selector1}/{selector2}", JobController.ManuallyForceTranscodeJobs);
 
                 endpoints.MapRazorPages();
             });

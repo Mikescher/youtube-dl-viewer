@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace youtube_dl_viewer.Jobs
 {
@@ -100,5 +101,25 @@ namespace youtube_dl_viewer.Jobs
         }
         
         protected abstract void Run();
+
+        public virtual JObject AsJson()
+        {
+            return new JObject
+            (
+                new JProperty("name", Name),
+                new JProperty("proxies", ProxyCount),
+                new JProperty("running", Running),
+                new JProperty("started", Started),
+                new JProperty("Source", Source),
+                new JProperty("Thread", new JObject
+                (
+                    new JProperty("IsNull", Thread == null),
+                    new JProperty("Priority", Thread?.Priority),
+                    new JProperty("IsAlive", Thread?.IsAlive),
+                    new JProperty("IsBackground", Thread?.IsBackground),
+                    new JProperty("State", Thread?.ThreadState)
+                ))
+            );
+        }
     }
 }

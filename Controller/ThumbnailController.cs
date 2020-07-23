@@ -28,14 +28,14 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
             
             var pathThumbnail = obj["meta"]?.Value<string>("path_thumbnail");
             if (pathThumbnail == null)
             {
-                if (pathVideo == null) { context.Response.StatusCode = 404; return; }
+                if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
                 await GetPreviewImage(context, pathVideo, 1);
                 return;
@@ -69,7 +69,7 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
 
@@ -78,13 +78,13 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task GetPreview(HttpContext context)
         {
-            if (Program.CacheDir == null) { context.Response.StatusCode = 400; return; }
+            if (Program.CacheDir == null) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No cache directory specified"); return; }
             
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
             var img = int.Parse((string)context.Request.RouteValues["img"]);
 
-            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; return; }
+            if (!Program.Data[idx].obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
 
@@ -93,7 +93,7 @@ namespace youtube_dl_viewer.Controller
         
         private static async Task GetPreviewImage(HttpContext context, string videopath, int imageIndex)
         {
-            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; return; }
+            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             
             context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
 
@@ -105,10 +105,10 @@ namespace youtube_dl_viewer.Controller
                 {
                     while (!proxy.Killed && !proxy.Job.GenFinished) await Task.Delay(50);
 
-                    if (proxy.Killed)                            { context.Response.StatusCode = 500; return; }
+                    if (proxy.Killed)                            { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                     
-                    if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; return; }
-                    if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; return; }
+                    if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no image data (1)"); return; }
+                    if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no image data (2)"); return; }
 
                     context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageCount.Value.ToString());
                     context.Response.Headers.Add("PathCache", "null");
@@ -126,7 +126,7 @@ namespace youtube_dl_viewer.Controller
                 }
             }
             
-            if (!File.Exists(pathCache)) { context.Response.StatusCode = 500; return; }
+            if (!File.Exists(pathCache)) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job did not output cache file"); return; }
 
             long dataoffset = int.MinValue;
             int  datalength = int.MinValue;
@@ -139,7 +139,7 @@ namespace youtube_dl_viewer.Controller
                 {
                     prevcount = br.ReadByte();
             
-                    if (prevcount <= imageIndex) { context.Response.StatusCode = 500; return; }
+                    if (prevcount <= imageIndex) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Index not found in preview gallery"); return; }
 
                     for (var i = 0; i < imageIndex+1; i++)
                     {
