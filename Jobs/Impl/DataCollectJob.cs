@@ -43,6 +43,7 @@ namespace youtube_dl_viewer.Jobs
             
             lock (Program.DataCache)
             {
+                Program.DataRefreshTimestamps[Index] = DateTime.Now;
                 Program.DataCache[Index] = (jsonstr, jsonobj);
                 Result = jsonstr;
                 FullResult = (jsonstr, jsonobj);

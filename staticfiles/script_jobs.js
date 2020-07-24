@@ -44,7 +44,7 @@ window.onload = async function()
 {
     for(;;)
     {
-        await refresh();
+        try { await refresh(); } catch (e) { }
         await sleepAsync(100);
     }
 };
@@ -77,7 +77,7 @@ async function refresh()
     {
         const col1 = (job.ManagerName).padEnd(14, ' ');
         const col2 = "<span class=\"maxlen\" style=\"max-width: 48ch\">" + escapeHtml(job.Name.padEnd(50, ' ')) + "</span>" + "  ";
-        const col3 = ("" + job.ProxyCount).padEnd(10, ' ');
+        const col3 = (("" + job.ProxyCount).padStart(2, ' ') + " / " + ("" + job.ProxyRequests).padStart(2, ' ')).padEnd(10, ' ');
         const col4 = "<span class=\"statecol state_"+job.State+"\">" + (job.State).padEnd(10, ' ')+"</span>";
         const col5 = "[<span class=\"colProgress\">" + ("#").padEnd(Math.floor((progressLen-4) * job.Progress), '#').padEnd(progressLen-4, ' ') + "</span>]" + "  ";
         const col6 = ("" + job.Time).padEnd(8, ' ');

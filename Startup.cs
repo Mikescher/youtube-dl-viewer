@@ -23,6 +23,8 @@ namespace youtube_dl_viewer
 #endif
 
             app.UseRouting();
+            
+            app.UseMiddleware<CronMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

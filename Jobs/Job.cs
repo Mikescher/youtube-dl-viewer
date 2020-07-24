@@ -22,9 +22,10 @@ namespace youtube_dl_viewer.Jobs
         public readonly string ID;
         
         public readonly string Source;
-        
-        protected readonly List<IJobProxy> Proxies = new List<IJobProxy>();
-        protected volatile Thread Thread;
+
+        private readonly List<IJobProxy> Proxies = new List<IJobProxy>();
+        private int ProxyRequests = 1;
+        private volatile Thread Thread;
 
         public int ProxyCount { get { lock (SuperLock) { return Proxies.Count; } } }
 
@@ -107,6 +108,11 @@ namespace youtube_dl_viewer.Jobs
             
             State = newstate;
         }
+
+        public void IncrementProxyRequests()
+        {
+            lock (this) { ProxyRequests++; }
+        }
         
         protected void KillProxies()
         {
@@ -173,6 +179,7 @@ namespace youtube_dl_viewer.Jobs
                 new JProperty("QueueName", queue),
                 new JProperty("Name", Name),
                 new JProperty("ProxyCount", ProxyCount),
+                new JProperty("ProxyRequests", ProxyRequests),
                 new JProperty("State", State.ToString()),
                 new JProperty("AbortRequest", AbortRequest),
                 new JProperty("Source", Source),

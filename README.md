@@ -231,6 +231,10 @@ Here are some common and useful arguments:
    Options for the preview frames extraction
  - `--webm-convert-params=<value>`, `--no-ffmpeg`:  
    Options for the webm live transcode
+ - `--autorefresh-interval=<seconds>`:  
+   Automatically trigger a refresh (reload data from filesytem) if the last refresh is longer than <t> seconds ago.  
+   Only tests the condition on web requests, if the webapp is not used the interval can be longer.  
+   The default value is to never refresh (can still be triggered via the manual refresh button)
  - `--version`:  
    Output program version
  - `--help`:  

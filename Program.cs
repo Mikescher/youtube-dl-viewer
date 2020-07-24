@@ -21,7 +21,9 @@ namespace youtube_dl_viewer
         private static string _currentDir = null;
         public static string CurrentDir => _currentDir ??= Environment.CurrentDirectory;
 
-        public static string Version => "0.15";
+        public static Dictionary<int, DateTime> DataRefreshTimestamps = new Dictionary<int, DateTime>();
+
+        public static string Version => "0.16";
 
         public static readonly Dictionary<int, (string json, Dictionary<string, JObject> obj)> DataCache = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
 

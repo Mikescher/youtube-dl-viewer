@@ -30,6 +30,7 @@ namespace youtube_dl_viewer.Jobs
                 {
                     if (cjob.Source == newjob.Source)
                     {
+                        cjob.IncrementProxyRequests();
                         if (!attach) return null;
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
                         return JobProxy<T>.Create(cjob);
@@ -39,6 +40,7 @@ namespace youtube_dl_viewer.Jobs
                 {
                     if (cjob.Source == newjob.Source)
                     {
+                        cjob.IncrementProxyRequests();
                         if (!attach) return null;
                         Console.Out.WriteLine($"Attach new proxy to Job [{cjob.Name}] ({cjob.ProxyCount + 1} attached proxies)");
                         return JobProxy<T>.Create(cjob);

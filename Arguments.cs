@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Jobs;
 
 namespace youtube_dl_viewer
@@ -88,6 +87,8 @@ namespace youtube_dl_viewer
         public string FFMPEGExec  = "ffmpeg";
         public string FFPROBEExec = "ffprobe";
 
+        public int AutoRefreshInterval = -1;
+        
         public void Parse(IEnumerable<string> args)
         {
             foreach (var arg in args)
@@ -149,6 +150,7 @@ namespace youtube_dl_viewer
                 if (key == "ffmpeg-debug-dir")     FFMPEGDebugDir            = value;
                 if (key == "exec-ffmpeg")          FFMPEGExec                = value;
                 if (key == "exec-ffprobe")         FFPROBEExec               = value;
+                if (key == "autorefresh-interval") AutoRefreshInterval       = int.Parse(value);
             }
             
             if (!DataDirs.Any()) DataDirs = new List<string>{ Environment.CurrentDirectory };
@@ -212,6 +214,10 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # [5] VLC Protocol Link (stream)"); // https://github.com/stefansundin/vlc-protocol
             Console.Out.WriteLine("                               # [6] VLC Protocol Link (local)");  // https://github.com/stefansundin/vlc-protocol
             Console.Out.WriteLine("                               #");
+            Console.Out.WriteLine("  --autorefresh-interval=<t> Automatically trigger a refresh (reload data from filesytem)");
+            Console.Out.WriteLine("                               if the last refresh is longer than <t> seconds ago.");
+            Console.Out.WriteLine("                               Only triggers on web requests, if the webapp is not used the");
+            Console.Out.WriteLine("                               interval can be longer");
             Console.Out.WriteLine("  --max-parallel-convert=<v> Maximum amount of parallel ffmpeg calls to");
             Console.Out.WriteLine("                               transcode video files to (stream-able) webm");
             Console.Out.WriteLine("                               Default := " + MaxParallelConvertJobs);
