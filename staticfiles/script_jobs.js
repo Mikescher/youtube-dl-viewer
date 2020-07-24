@@ -66,9 +66,9 @@ async function refresh()
 
     let text = "";
 
-    text += ("Active: " + data.Meta.CountActive).padEnd(linelen - 30, ' ') + "<span id=\"btnForceGenPreviews\" class=\"btn\">[Force generate all previews]</span>" + "\n";
-    text += ("Queued: " + data.Meta.CountQueued).padEnd(linelen - 29, ' ') + "<span id=\"btnForceTranscode\" class=\"btn\">[Force transcode all videos]</span>" + "\n";
-    text += ("").padEnd(linelen - 21, ' ')                                 + "<span id=\"btnClearFinished\" class=\"btn\">[Clear finished jobs]</span>" + "\n";
+    text += ("Active: " + data.Meta.CountActive).padEnd(linelen - 30, ' ') + " <span id=\"btnForceGenPreviews\" class=\"btn\">[Force generate all previews]</span>" + "\n";
+    text += ("Queued: " + data.Meta.CountQueued).padEnd(linelen - 29, ' ') + " <span id=\"btnForceTranscode\" class=\"btn\">[Force transcode all videos]</span>" + "\n";
+    text += ("").padEnd(linelen - 22, ' ')                                 + " <span id=\"btnClearFinished\" class=\"btn\">[Clear finished jobs]</span>" + "\n";
     text += "\n";
 
     const progressLen = linelen - (14+50+10+10+8+7);
@@ -79,7 +79,7 @@ async function refresh()
         const col2 = "<span class=\"maxlen\" style=\"max-width: 48ch\">" + escapeHtml(job.Name.padEnd(50, ' ')) + "</span>" + "  ";
         const col3 = (("" + job.ProxyCount).padStart(2, ' ') + " / " + ("" + job.ProxyRequests).padStart(2, ' ')).padEnd(10, ' ');
         const col4 = "<span class=\"statecol state_"+job.State+"\">" + (job.State).padEnd(10, ' ')+"</span>";
-        const col5 = "[<span class=\"colProgress\">" + ("#").padEnd(Math.floor((progressLen-4) * job.Progress), '#').padEnd(progressLen-4, ' ') + "</span>]" + "  ";
+        const col5 = "[<span class=\"colProgress\">" + ("").padEnd(Math.floor((progressLen-4) * job.Progress), '#').padEnd(progressLen-4, ' ') + "</span>]" + "  ";
         const col6 = ("" + job.Time).padEnd(8, ' ');
         const col7 = "<span class=\"btnAbort\" data-jobid=\""+job.ID+"\">[Abort]</span>";
 
