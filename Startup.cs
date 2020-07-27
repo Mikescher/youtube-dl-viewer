@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using youtube_dl_viewer.Controller;
@@ -51,7 +53,15 @@ namespace youtube_dl_viewer
                 endpoints.MapGet("/jobmanager/clearFinished",                                   JobController.ClearFinishedJobs);
 
                 endpoints.MapRazorPages();
+
+                endpoints.MapFallback(RouteFallback);
             });
+        }
+
+        private async Task RouteFallback(HttpContext context)
+        {
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsync("Not found");
         }
     }
 }

@@ -23,12 +23,12 @@ namespace youtube_dl_viewer.Controller
         {
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             
-            using (var proxy = JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx)))
+            using (var proxy = JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx, true)))
             {
                 while (proxy.JobRunningOrWaiting) await Task.Delay(50);
 
                 if (proxy.Killed)              { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
-                if (proxy.Job.Result == null)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no data"); return; }
+                if (proxy.Job.Result == null)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no data");       return; }
 
                 await context.Response.WriteAsync(proxy.Job.Result);
             }

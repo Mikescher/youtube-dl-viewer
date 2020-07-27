@@ -13,6 +13,7 @@ namespace youtube_dl_viewer.Jobs
     public class DataCollectJob : Job
     {
         public readonly int Index;
+        public readonly bool ClearOld;
         
         public string Result = null;
         public (string json, Dictionary<string, JObject> obj)? FullResult = null;
@@ -20,9 +21,10 @@ namespace youtube_dl_viewer.Jobs
         private (int, int) _progress = (0, 1);
         public override (int, int) Progress => _progress;
 
-        public DataCollectJob(AbsJobManager man, int index) : base(man, "self::"+index)
+        public DataCollectJob(AbsJobManager man, int index, bool clearOld) : base(man, "self::"+index)
         {
-            Index = index;
+            Index    = index;
+            ClearOld = clearOld;
         }
 
         public override string Name => $"DataCollect::{Index}::'{((Index>=0 && Index <= Program.Args.DataDirs.Count) ? Program.DataDirToString(Program.Args.DataDirs[Index]) : "ERR")}'";
@@ -34,9 +36,9 @@ namespace youtube_dl_viewer.Jobs
 
         protected override void Run()
         {
-            lock (Program.DataCache)
+            if (ClearOld)
             {
-                Program.DataCache[Index] = (null, null);
+                lock (Program.DataCache) Program.DataCache[Index] = (null, null);
             }
             
             var (jsonstr, jsonobj) = CreateData(Index);
@@ -138,6 +140,7 @@ namespace youtube_dl_viewer.Jobs
                     new JProperty("meta", new JObject
                     (
                         new JProperty("uid", id),
+                        new JProperty("datadirindex", index),
                         
                         new JProperty("directory", dir),
                         

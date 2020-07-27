@@ -23,6 +23,9 @@ namespace youtube_dl_viewer.Jobs
     {
         public readonly string Destination;
         public readonly string TempDir;
+        
+        public readonly int    DataDirIndex;
+        public readonly string VideoUID;
 
         private readonly int? _queryImageIndex;
         
@@ -32,11 +35,13 @@ namespace youtube_dl_viewer.Jobs
         private (int, int) _progress = (0, Program.Args.MaxPreviewImageCount+1);
         public override (int, int) Progress => _progress;
         
-        public PreviewGenJob(AbsJobManager man, string src, string dst, int? imgIdx) : base(man, src)
+        public PreviewGenJob(AbsJobManager man, string src, string dst, int? imgIdx, int ddindex, string viduid) : base(man, src)
         {
-            Destination = dst;
+            Destination      = dst;
+            DataDirIndex     = ddindex;
+            VideoUID         = viduid;
             _queryImageIndex = imgIdx;
-            TempDir = Path.Combine(Path.GetTempPath(), "yt_dl_p_" + Guid.NewGuid().ToString("B"));
+            TempDir          = Path.Combine(Path.GetTempPath(), "yt_dl_p_" + Guid.NewGuid().ToString("B"));
             Directory.CreateDirectory(TempDir);
         }
 
@@ -181,11 +186,17 @@ namespace youtube_dl_viewer.Jobs
 
                         ms.Write(bin);
                     }
-                    
-                    using (var fs = new FileStream(Destination, FileMode.Create, FileAccess.Write)) 
+
+                    if (Destination != null)
                     {
-                        ms.Seek(0, SeekOrigin.Begin);
-                        ms.CopyTo(fs);
+                        using (var fs = new FileStream(Destination, FileMode.Create, FileAccess.Write)) 
+                        {
+                            ms.Seek(0, SeekOrigin.Begin);
+                            ms.CopyTo(fs);
+                        }
+
+                        Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cached_previews"}, true);
+                        Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "previewscache_file"}, Destination);
                     }
                 }
                 

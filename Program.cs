@@ -13,7 +13,7 @@ using youtube_dl_viewer.Jobs;
 
 namespace youtube_dl_viewer
 {
-    public class Program
+    public static class Program
     {
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
@@ -21,10 +21,14 @@ namespace youtube_dl_viewer
         private static string _currentDir = null;
         public static string CurrentDir => _currentDir ??= Environment.CurrentDirectory;
 
-        public static Dictionary<int, DateTime> DataRefreshTimestamps = new Dictionary<int, DateTime>();
+        public static readonly Dictionary<int, DateTime> DataRefreshTimestamps = new Dictionary<int, DateTime>();
 
-        public static string Version => "0.16";
+        public static string Version => "0.17";
 
+        // DataCache  :=   Dictionary<  DataDirIndex => (json, obj)  >
+        // json       :=   full json for dir, aka:  { "videos": [ ... ], "missing": [ ... ] }
+        // obj        :=   Dictionary<  VideoUID => video_json  >
+        // video_json :=   json Object, aka:  { meta: { ... }, data: { ... } }
         public static readonly Dictionary<int, (string json, Dictionary<string, JObject> obj)> DataCache = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
 
         public static bool Initialized = false;
@@ -46,7 +50,7 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine($"> Start enumerating video data [{i}]: {Args.DataDirs[i]} (background)");
                 var idx = i;
                 lock (DataCache) { DataCache[idx] = (null, null); }
-                JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx), false);
+                JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx, true), false);
                 Console.Out.WriteLine();
             }
 
@@ -202,7 +206,7 @@ namespace youtube_dl_viewer
                 lock (DataCache) { data = DataCache[idx]; }
                 if (data.json != null || data.obj != null) return data;
                 
-                proxy = JobRegistry.DataCollectJobs.GetProxyOrNullLockless((man) => new DataCollectJob(man, idx));;
+                proxy = JobRegistry.DataCollectJobs.GetProxyOrNullLockless((man) => new DataCollectJob(man, idx, true));;
                 if (proxy == null) throw new Exception($"Data for index {idx} not found");
             }
             
@@ -228,6 +232,32 @@ namespace youtube_dl_viewer
             }
             
             return Path.GetFileName(dd);
+        }
+
+        public static List<JObject> GetAllCachedData()
+        {
+            // returns video-json objects
+            // aka
+            // { meta: { ... }, data: { ... } }
+            lock (DataCache)
+            {
+                return DataCache.Select(p => p.Value.obj).Where(p => p != null).SelectMany(p => p.Values).ToList();
+            }
+        }
+
+        public static bool PatchDataCache(int dataDirIndex, string videoUID, string[] field, object value)
+        {
+            lock (DataCache)
+            {
+                if (!DataCache.ContainsKey(dataDirIndex)) return false;
+                if (DataCache[dataDirIndex].json == null) return false;
+                if (DataCache[dataDirIndex].obj == null)  return false;
+
+                if (!DataCache[dataDirIndex].obj.ContainsKey(videoUID)) return false;
+                
+                ((JValue)field.Aggregate((JToken)DataCache[dataDirIndex].obj[videoUID], (current, fe) => current[fe])).Value = value;
+                return true;
+            }
         }
     }
 }

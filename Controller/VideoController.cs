@@ -96,18 +96,18 @@ namespace youtube_dl_viewer.Controller
             }
             
             if (pathCache != null) 
-                await GetVideoStreamWithCache(context, pathVideo, pathCache);
+                await GetVideoStreamWithCache(context, pathVideo, pathCache, idx, id);
             else                     
-                await GetVideoStreamWithoutCache(context, pathVideo);
+                await GetVideoStreamWithoutCache(context, pathVideo, idx, id);
         }
 
-        private static async Task GetVideoStreamWithCache(HttpContext context, string pathVideo, string pathCache)
+        private static async Task GetVideoStreamWithCache(HttpContext context, string pathVideo, string pathCache, int datadirindex, string videouid)
         {
             if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
-            using var proxy = JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache)); 
+            using var proxy = JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache, datadirindex, videouid)); 
 
             while (proxy.JobRunningOrWaiting && !File.Exists(proxy.Job.Temp)) await Task.Delay(0);
             
@@ -148,13 +148,13 @@ namespace youtube_dl_viewer.Controller
             }
         }
 
-        private static async Task GetVideoStreamWithoutCache(HttpContext context, string pathVideo)
+        private static async Task GetVideoStreamWithoutCache(HttpContext context, string pathVideo, int datadirindex, string videouid)
         {
             if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             
             context.Response.Headers.Add(HeaderNames.ContentType, "video/webm");
             
-            using var proxy = JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, null)); 
+            using var proxy = JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, null, datadirindex, videouid)); 
 
             while (proxy.JobRunningOrWaiting && !File.Exists(proxy.Job.Temp)) await Task.Delay(0);
             

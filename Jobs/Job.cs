@@ -55,7 +55,7 @@ namespace youtube_dl_viewer.Jobs
         
         protected Job(AbsJobManager man, string source)
         {
-            ID = Guid.NewGuid().ToString("B").ToUpper();
+            ID = Guid.NewGuid().ToString("N").ToUpper();
             Source = source;
             _manager = man;
         }

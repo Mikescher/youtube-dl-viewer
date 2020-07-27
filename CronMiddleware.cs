@@ -42,7 +42,7 @@ namespace youtube_dl_viewer
                 var ddidx = i;
                 
                 await Console.Out.WriteLineAsync($"Start data refresh of [{ddidx}] by cron interval ({interval:g})");
-                JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, ddidx), false);
+                JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, ddidx, false), false);
             }
         }
     }

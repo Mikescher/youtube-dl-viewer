@@ -32,5 +32,7 @@ namespace youtube_dl_viewer.Jobs
         public abstract bool AbortJob(string jobid);
 
         public abstract void ClearFinishedJobs();
+        
+        public abstract int AbortAllJobs();
     }
 }

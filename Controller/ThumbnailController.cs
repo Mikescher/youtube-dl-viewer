@@ -37,7 +37,7 @@ namespace youtube_dl_viewer.Controller
             {
                 if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
-                await GetPreviewImage(context, pathVideo, 1);
+                await GetPreviewImage(context, pathVideo, idx, id, 1);
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace youtube_dl_viewer.Controller
             {
                 // ensure that for all videos the previews are pre-generated
                 // so we don't have to start ffmpeg when we first hover
-                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null), false); // runs as background job
+                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, idx, id), false); // runs as background job
             }
             
             var data = await File.ReadAllBytesAsync(pathThumbnail);
@@ -73,7 +73,7 @@ namespace youtube_dl_viewer.Controller
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
 
-            await GetPreviewImage(context, pathVideo, 1);
+            await GetPreviewImage(context, pathVideo, idx, id, 1);
         }
 
         public static async Task GetPreview(HttpContext context)
@@ -88,10 +88,10 @@ namespace youtube_dl_viewer.Controller
 
             var pathVideo = obj["meta"]?.Value<string>("path_video");
 
-            await GetPreviewImage(context, pathVideo, img);
+            await GetPreviewImage(context, pathVideo, idx, id, img);
         }
         
-        private static async Task GetPreviewImage(HttpContext context, string videopath, int imageIndex)
+        private static async Task GetPreviewImage(HttpContext context, string videopath, int datadirindex, string videouid, int imageIndex)
         {
             if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             
@@ -101,7 +101,7 @@ namespace youtube_dl_viewer.Controller
 
             if (pathCache == null)
             {
-                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, null, imageIndex)))
+                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, null, imageIndex, datadirindex, videouid)))
                 {
                     while (proxy.JobRunningOrWaiting) await Task.Delay(50);
 
@@ -120,7 +120,7 @@ namespace youtube_dl_viewer.Controller
             
             if (!File.Exists(pathCache))
             {
-                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, pathCache, null)))
+                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, pathCache, null, datadirindex, videouid)))
                 {
                     while (proxy.JobRunningOrWaiting) await Task.Delay(50);
                 }

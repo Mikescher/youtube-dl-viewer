@@ -15,13 +15,18 @@ namespace youtube_dl_viewer.Jobs
         public readonly string Destination;
         public readonly string Temp;
         
+        public readonly int    DataDirIndex;
+        public readonly string VideoUID;
+        
         private (int, int) _progress = (0, 1);
         public override (int, int) Progress => _progress;
 
-        public ConvertJob(AbsJobManager man, string src, string dst) : base(man, src)
+        public ConvertJob(AbsJobManager man, string src, string dst, int ddindex, string viduid) : base(man, src)
         {
-            Destination = dst;
-            Temp = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B") + ".webm");
+            Destination  = dst;
+            DataDirIndex = ddindex;
+            VideoUID     = viduid;
+            Temp         = Path.Combine(Path.GetTempPath(), "yt_dl_v_" + Guid.NewGuid().ToString("B") + ".webm");
         }
         
         public override string Name => $"Convert::'{Path.GetFileName(Source)}'";
@@ -118,8 +123,9 @@ namespace youtube_dl_viewer.Jobs
                 else
                 {
                     ChangeState(JobState.Finished);
-                    _progress = (1, 1);
                     
+                    _progress = (1, 1);
+
                     while (ProxyCount != 0) // Wait for proxies
                     {
                         if (AbortRequest) { ChangeState(JobState.Aborted); return; }
@@ -139,6 +145,10 @@ namespace youtube_dl_viewer.Jobs
                                 {
                                     File.Move(Temp, Destination);
                                     if (File.Exists(Destination) && new FileInfo(Destination).Length == 0) File.Delete(Destination);
+                    
+                                    Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cached"}, true);
+                                    Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cache_file"}, Destination);
+                                    
                                     break;
                                 }
                                 catch (IOException)

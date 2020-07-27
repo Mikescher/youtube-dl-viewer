@@ -25,11 +25,26 @@ namespace youtube_dl_viewer.Controller
                 })
                 .ThenByDescending(p => p["StartTime"].Value<string>())
                 .ToList();
+
+            var vidcache = Program.GetAllCachedData();
             
             var r = new JObject
             (
                 new JProperty("Meta", new JObject
                 (
+                    new JProperty("Jobs", new JObject
+                    (
+                        new JProperty("CountActive", JobRegistry.Managers.Sum(p => p.CountActive)),
+                        new JProperty("CountQueued", JobRegistry.Managers.Sum(p => p.CountQueued))
+                    )),
+                    
+                    new JProperty("Videos", new JObject
+                    (
+                        new JProperty("CountCachedPreviews", vidcache.Count(p => p["meta"]["cached_previews"].Value<bool>())),
+                        new JProperty("CountCachedVideos",   vidcache.Count(p => p["meta"]["cached"].Value<bool>())),
+                        new JProperty("CountTotal",          vidcache.Count)
+                    )),
+                    
                     new JProperty("CountActive", JobRegistry.Managers.Sum(p => p.CountActive)),
                     new JProperty("CountQueued", JobRegistry.Managers.Sum(p => p.CountQueued))
                 )),
@@ -80,7 +95,7 @@ namespace youtube_dl_viewer.Controller
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
-                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null), false);
+                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, obj["meta"].Value<int>("datadirindex"), obj["meta"].Value<string>("uid")), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");
@@ -125,7 +140,7 @@ namespace youtube_dl_viewer.Controller
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
-                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache), false);
+                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache, obj["meta"].Value<int>("datadirindex"), obj["meta"].Value<string>("uid")), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");
@@ -140,13 +155,13 @@ namespace youtube_dl_viewer.Controller
                 for (var i = 0; i < Program.Args.DataDirs.Count; i++)
                 {
                     var ddidx = i;
-                    JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, ddidx), false);
+                    JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, ddidx, true), false);
                     await context.Response.WriteAsync($"Started/Attached {Program.Args.DataDirs.Count} new jobs");
                 }
             }
             else
             {;
-                JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, int.Parse(idx)), false);
+                JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, int.Parse(idx), true), false);
                 await context.Response.WriteAsync($"Started/Attached 1 new jobs");
             }
         }
@@ -155,17 +170,27 @@ namespace youtube_dl_viewer.Controller
         {
             var jobid = (string)context.Request.RouteValues["jobid"];
 
-            foreach (var man in JobRegistry.Managers)
+            if (jobid == "all" || jobid == "*")
             {
-                if (man.AbortJob(jobid))
+                var count = 0;
+                foreach (var man in JobRegistry.Managers) count += man.AbortAllJobs();
+                await context.Response.WriteAsync($"OK, {count} jobs aborted");
+            }
+            else
+            {
+                foreach (var man in JobRegistry.Managers)
                 {
-                    await context.Response.WriteAsync($"Job aborted");
-                    return;
+                    if (man.AbortJob(jobid))
+                    {
+                        await context.Response.WriteAsync($"Job aborted");
+                        return;
+                    }
                 }
+            
+                context.Response.StatusCode = 404;
+                await context.Response.WriteAsync($"Job not found");
             }
             
-            context.Response.StatusCode = 404;
-            await context.Response.WriteAsync($"Job not found");
             return;
         }
 

@@ -92,7 +92,17 @@ namespace youtube_dl_viewer.Jobs
             lock (LockObject)
             {
                 var ok = _activeJobs.Remove(job);
-                if (!ok) return;
+                if (!ok)
+                {
+                    var okQueued = _queuedJobs.Remove(job);
+                    if (okQueued)
+                    {
+                        Console.Out.WriteLine($"Removed Job [{job.Name}] from queue ({_queuedJobs.Count} jobs in queue) ({RunningCountStr} jobs running)");
+                        _finishedJobs.Add(job);
+                        while (_finishedJobs.Count > MAX_FINISHED_SIZE) _finishedJobs.RemoveAt(0);
+                    }
+                    return;
+                }
                 
                 Console.Out.WriteLine($"Unregister Job [{job.Name}] ({_queuedJobs.Count} jobs in queue) ({RunningCountStr} jobs running)");
 
@@ -157,6 +167,17 @@ namespace youtube_dl_viewer.Jobs
         public override void ClearFinishedJobs()
         {
             lock (LockObject) { _finishedJobs.Clear(); }
+        }
+
+        public override int AbortAllJobs()
+        {
+            int c = 0;
+            lock (LockObject)
+            {
+                foreach (var job in _queuedJobs.ToList()) { job.PreAbort(); c++; }
+                foreach (var job in _activeJobs.ToList()) { job.Abort();    c++; }
+            }
+            return c;
         }
     }
 }

@@ -18,6 +18,16 @@ html,body
   overflow: hidden;
 }
 
+html.unfresh {
+  background-color: #666;
+}
+
+html.unfresh #root > * {
+  opacity: 0.25;
+}
+
+.meta { display: contents; }
+
 #font_test
 {
   font-family: Consolas, monospace;
@@ -38,6 +48,10 @@ html,body
 {
   text-decoration: underline;
 }
+
+.btn-danger { color: #B00; }
+.btn-warn   { color: #F80; }
+.btn-action { color: #48F; }
 
 .maxlen
 {
@@ -76,16 +90,6 @@ html,body
 }
 .statecol.state_Failed {
   color: #F00;
-}
-
-.btnAbort {
-  color: #B00;
-  cursor: pointer;
-}
-.btnAbort:hover { text-decoration: underline; }
-
-.job.abort_true .btnAbort {
-  color: #F80;
 }
 
 .job.queue_Finished .btnAbort {
