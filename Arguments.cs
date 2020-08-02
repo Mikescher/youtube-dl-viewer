@@ -13,7 +13,7 @@ namespace youtube_dl_viewer
 
         public List<string> DataDirs = new List<string>();
 
-        public int MaxParallelConvertJobs    = 3;
+        public int MaxParallelConvertJobs    = 1;
         public int MaxParallelGenPreviewJobs = 2;
 
         public int PreviewImageWidth = 480;
@@ -55,6 +55,7 @@ namespace youtube_dl_viewer
          * [4] Sorting: Views
          * [5] Sorting: Rating
          * [6] Sorting: Uploader
+         * [7] Sorting: Random
          */
         public int OptOrderMode = 0;
 
@@ -192,6 +193,7 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # [4] Views");
             Console.Out.WriteLine("                               # [5] Rating");
             Console.Out.WriteLine("                               # [6] Uploader");
+            Console.Out.WriteLine("                               # [7scr] Random");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --width=<value>            The display list width");
             Console.Out.WriteLine("                               # [0] Small");

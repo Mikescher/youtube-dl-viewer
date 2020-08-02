@@ -68,13 +68,18 @@ namespace youtube_dl_viewer
             if (Args.AutoOpenBrowser)
             {
                 Console.Out.WriteLine("[#] Launching Webbrowser");
-                
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    Process.Start(new ProcessStartInfo($"http://localhost:{Args.Port}/") { UseShellExecute = true });
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    Process.Start("xdg-open", $"http://localhost:{Args.Port}/");
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    Process.Start("open", $"http://localhost:{Args.Port}/");
+
+                Task.Run(async () =>
+                {
+                    await Task.Delay(1 * 1000); // Wait until local webserver ist started
+                    
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        Process.Start(new ProcessStartInfo($"http://localhost:{Args.Port}/") { UseShellExecute = true });
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        Process.Start("xdg-open", $"http://localhost:{Args.Port}/");
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                        Process.Start("open", $"http://localhost:{Args.Port}/");
+                });
                 
                 Console.Out.WriteLine();
             }

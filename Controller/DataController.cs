@@ -30,6 +30,7 @@ namespace youtube_dl_viewer.Controller
                 if (proxy.Killed)              { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
                 if (proxy.Job.Result == null)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no data");       return; }
 
+                context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
                 await context.Response.WriteAsync(proxy.Job.Result);
             }
         }

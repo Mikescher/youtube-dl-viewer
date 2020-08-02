@@ -1,4 +1,9 @@
-﻿const DATA =
+﻿
+/*
+    [ youtube-dl-viewer <jobview> ]
+*/
+
+const DATA =
 {
     last_json: '',
 
