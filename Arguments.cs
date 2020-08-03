@@ -31,51 +31,11 @@ namespace youtube_dl_viewer
         public int MaxPreviewImageCount = 32;
         public int MinPreviewImageCount = 8;
         
-        /*
-         * [0] ListStyle: Grid
-         * [1] ListStyle: Compact
-         * [2] ListStyle: Tabular
-         * [3] ListStyle: Detailed
-         */
-        public int OptDisplayMode = 0;
-
-        /*
-         * [0] Width: Small
-         * [1] Width: Medium
-         * [2] Width: Wide
-         * [3] Width: Full
-         */
-        public int OptWidthMode = 1;
-
-        /*
-         * [0] Sorting: Date [descending]
-         * [1] Sorting: Date [ascending]
-         * [2] Sorting: Title
-         * [3] Sorting: Category
-         * [4] Sorting: Views
-         * [5] Sorting: Rating
-         * [6] Sorting: Uploader
-         * [7] Sorting: Random
-         */
-        public int OptOrderMode = 0;
-
-        /*
-         * [0] Thumbnails: Off
-         * [1] Thumbnails: On (intelligent)
-         * [2] Thumbnails: On (sequential)
-         * [3] Thumbnails: On (parallel)
-         */
+        public int OptDisplayMode   = 0;
+        public int OptWidthMode     = 1;
+        public int OptOrderMode     = 0;
         public int OptThumbnailMode = 1;
-
-        /*
-         * [0] Playback: Disabled
-         * [1] Playback: Seekable raw file
-         * [2] Playback: Raw file
-         * [3] Playback: Transcoded Webm stream
-         * [4] Playback: Download file
-         * [5] Playback: VLC Protocol Link
-         */
-        public int OptVideoMode = 4;
+        public int OptVideoMode     = 4;
 
         public bool OptHelp = false;
 
@@ -89,6 +49,8 @@ namespace youtube_dl_viewer
         public string FFPROBEExec = "ffprobe";
 
         public int AutoRefreshInterval = -1;
+
+        public bool TrimDataJSON = false;
         
         public void Parse(IEnumerable<string> args)
         {
@@ -118,9 +80,15 @@ namespace youtube_dl_viewer
                     continue;
                 }
                 
-                if (arg.ToLower() == "--no-auto-previews ")
+                if (arg.ToLower() == "--no-auto-previews")
                 {
                     AutoPreviewGen = false;
+                    continue;
+                }
+                
+                if (arg.ToLower() == "--trim-info-json")
+                {
+                    TrimDataJSON = true;
                     continue;
                 }
                 
@@ -258,9 +226,11 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("  --open-browser             Automatically open browser after webserver");
             Console.Out.WriteLine("                               is started (only works on desktop)");
             Console.Out.WriteLine("  --ffmpeg-debug-dir=<dir>   Directory where all ffmpeg ouput is written to (for debugging)");
+            Console.Out.WriteLine("  --trim-info-json           Reduce the size of the /json ajax request by only returning");
+            Console.Out.WriteLine("                               values from the *.info.json file that are actually used");
             Console.Out.WriteLine();
         }
-        
+
         private int FindFreePort()
         {
             int port;

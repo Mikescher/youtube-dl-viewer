@@ -182,9 +182,9 @@ function initData(data)
 
     if (sortmode === 0) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * -1);
     if (sortmode === 1) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * +1);
-    if (sortmode === 2) videos = videos.sort((a,b) => sortcompareMeta(a,b,'title'));
+    if (sortmode === 2) videos = videos.sort((a,b) => sortcompareData(a,b,'title'));
     if (sortmode === 3) videos = videos.sort((a,b) => sortcompare(a,b,'categories'));
-    if (sortmode === 4) videos = videos.sort((a,b) => sortcompare(a,b,'views'));
+    if (sortmode === 4) videos = videos.sort((a,b) => sortcompare(a,b,'view_count'));
     if (sortmode === 5) videos = videos.sort((a,b) => sortcompareDiv(a,b,'like_count','dislike_count') * -1);
     if (sortmode === 6) videos = videos.sort((a,b) => sortcompare(a,b,'uploader'));
     if (sortmode === 7) videos = shuffle(videos, new Math.seedrandom(DATA.shuffle_seed));
@@ -205,7 +205,8 @@ function initData(data)
     for (const vid of videos)
     {
         const meta = vid['meta'];
-        const info = vid['data']['info'];
+        const data = vid['data'];
+        const info = data['info'];
 
         info.__proto__ = json_proto;
 
@@ -235,7 +236,7 @@ function initData(data)
             html += '</div>';
         }
         
-        html += '<div class="title">' + escapeHtml(meta['title']) + '</div>';
+        html += '<div class="title">' + escapeHtml(data['title']) + '</div>';
 
         if (info.hasNonNull('uploader'))
         {
@@ -252,7 +253,6 @@ function initData(data)
             html += '<div class="info info-duration"><i class="fas fa-clock"></i></div>';
             html += '<div class="duration">' + escapeHtml(formatSeconds(info["duration"])) + '</div>';
         }
-
 
         if (info.hasArrayWithValues('categories')) 
         {
@@ -303,8 +303,7 @@ function initData(data)
 
         if (info.hasNonNull('upload_date')) html += '<div class="upload_date">' + escapeHtml(formatDate(info["upload_date"])) + '</div>';
 
-        if (vid['data']['description'] !== null) html += '<div class="description">' + escapeHtml(vid['data']['description']) + '</div>';
-        else if (info.hasNonNull('description')) html += '<div class="description">' + escapeHtml(info['description']) + '</div>';
+        if (data['description'] !== null) html += '<div class="description">' + escapeHtml(data['description']) + '</div>';
 
         html += '<div class="btn-expand"><i class="fas fa-angle-down"></i></div>';
         html += '<div class="btn-collapse"><i class="fas fa-angle-up"></i></div>';
@@ -338,10 +337,10 @@ function sortcompare(a, b, key)
     return sortcompareValues(va, vb);
 }
 
-function sortcompareMeta(a, b, key)
+function sortcompareData(a, b, key)
 {
-    const va = a.data.meta[key];
-    const vb = b.data.meta[key];
+    const va = a.data[key];
+    const vb = b.data[key];
 
     return sortcompareValues(va, vb);
 }

@@ -213,10 +213,25 @@ Load all currently visible thumbnails in parallel
 4. **On (intelligent)**  
 Load the currently visible thumbnails in parallel *and* pre-load non-visible thumbnails sequentially in the background
 
+#### - Extended --path specifications
+
+By specifying one (or more) `--path` arguments you can set the directori(es) where the program looks for video files.  
+But instead of a simple directory-path you can also supply a json object in the `--path` argument for more fine-tuning, eg: `--path="{path:'/home/me/videos', name:'My Videos'}"`.
+
+Every path json object *must* have a `path` property, and can have the following optional peroperties:
+ - `name`: The display string, used eg in the top-left dropwdown menu. (default = use value of `path`)
+ - `use_filename_as_title`: Use the filename as the video title instead of value in the info.json file (default = **false**)
+ - `recursion`: The maximum recursion depth when searching for videos (default = 0, aka "do not recurse into subfolders")
+ - `filter`: The filter for the files (default = "*", aka every file). Supported video extensions are filtered in a secondary step.
+
+> **[!] Note**  
+> Under windows (and linux if there are any) do not forget to escape your backslashes:  
+> `--path="{path:'C:\\Users\\Me\\Videos', name:'My Videos'}`
+
 
 ## Commandline manual
 
-You can run `youtube-dl-viewer --help` to get a list of all available commandline Args.  
+You can run `youtube-dl-viewer --help` to get a list of all available commandline arguments.  
 Here are some common and useful arguments:
 
  - `--port=<value>`:  

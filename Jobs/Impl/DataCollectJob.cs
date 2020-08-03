@@ -141,6 +141,10 @@ namespace youtube_dl_viewer.Jobs
                 var vtitle = ddir.UseFilenameAsTitle 
                     ? Path.GetFileNameWithoutExtension(pathVideo)
                     : jinfo.Value<string>("fulltitle") ?? jinfo.Value<string>("title") ?? Path.GetFileName(pathVideo);
+
+                var descr = (pathDesc != null) ? File.ReadAllText(pathDesc) : jinfo.Value<string>("description");
+
+                if (Program.Args.TrimDataJSON) jinfo = TrimJSON(jinfo);
                 
                 resultVideos.Add(new JObject
                 (
@@ -149,7 +153,6 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("uid", id),
                         new JProperty("datadirindex", index),
                         
-                        new JProperty("title", vtitle),
                         
                         new JProperty("directory", dir),
                         
@@ -169,8 +172,9 @@ namespace youtube_dl_viewer.Jobs
                     )),
                     new JProperty("data", new JObject
                     (
-                        new JProperty("info", jinfo),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
+                        new JProperty("title", vtitle),
+                        new JProperty("description", descr),
+                        new JProperty("info", jinfo)
                     ))
                 ));
             }
@@ -214,8 +218,6 @@ namespace youtube_dl_viewer.Jobs
                         
                         new JProperty("directory", dir),
                         
-                        new JProperty("title", vtitle),
-                        
                         new JProperty("filename_base", filenameBase),
                         
                         new JProperty("path_json", (object)null),
@@ -232,8 +234,9 @@ namespace youtube_dl_viewer.Jobs
                     )),
                     new JProperty("data", new JObject
                     (
-                        new JProperty("info", new JObject()),
-                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
+                        new JProperty("title", vtitle),
+                        new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
+                        new JProperty("info", new JObject())
                     ))
                 ));
             }
@@ -258,6 +261,31 @@ namespace youtube_dl_viewer.Jobs
             var jsonobj = resultVideos.ToDictionary(rv => rv["meta"]?.Value<string>("uid"), rv => (JObject) rv);
             
             return (jsonstr, jsonobj);
+        }
+
+        private JObject TrimJSON(JObject jinfo)
+        {
+            foreach (var key in jinfo.Properties().Select(p => p.Name).ToList())
+            {
+                if (key == "upload_date")   continue;
+                if (key == "title")         continue;
+                if (key == "categories")    continue;
+                if (key == "like_count")    continue;
+                if (key == "dislike_count") continue;
+                if (key == "uploader")      continue;
+                if (key == "channel_url")   continue;
+                if (key == "uploader_url")  continue;
+                if (key == "duration")      continue;
+                if (key == "tags")          continue;
+                if (key == "webpage_url")   continue;
+                if (key == "view_count")    continue;
+                if (key == "extractor")     continue;
+                if (key == "width")         continue;
+                if (key == "height")        continue;
+                
+                jinfo.Remove(key);
+            }
+            return jinfo;
         }
 
         private List<string> EnumerateMatchingFiles(DataDirSpec dds)
