@@ -24,6 +24,17 @@ header {
     font-family:"Roboto","Courier",sans-serif;
 }
 
+#font_test_header
+{
+    font-family:"Roboto","Courier",sans-serif;
+    
+    position: absolute;
+    visibility: hidden;
+    height: auto;
+    width: auto;
+    white-space: nowrap;
+}
+
 footer {
     position: absolute;
     bottom: 0;
@@ -81,6 +92,7 @@ header .logo .apppath {
     font-style: italic;
     font-family: "Courier New",monospace;
     opacity: 0.5;
+    box-sizing: border-box;
 }
 
 header .logo .apppath.single i {
@@ -88,6 +100,8 @@ header .logo .apppath.single i {
 }
 
 header .logo .apppath.multiple {
+    float: left;
+    
     border: 1px solid #000;
     background: #FFF;
     font-style: normal;
@@ -101,6 +115,10 @@ header .logo .apppath.multiple {
     align-items: center;
 
     user-select: none;
+}
+
+header .logo .apppath.multiple span {
+    flex-grow: 1;
 }
 
 header .logo .apppath.multiple i {
@@ -202,6 +220,8 @@ main {
     background: #FFF;
     border: 1px solid #000;
     border-bottom: none;
+
+    box-sizing: border-box;
 
     margin-top: -1px;
 

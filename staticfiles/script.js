@@ -127,8 +127,22 @@ window.onload = async function()
     updateDisplaywidthClass(false);
     updateVideomodeClass();
 
-    $('.apppath span').innerHTML = escapeHtml(JSON.parse($attr('.apppath', 'data-dirs'))[DATA.dataidx]);
+    $('.apppath span').innerHTML = escapeHtml(JSON.parse($attr('.apppath', 'data-dirs-name'))[DATA.dataidx]);
 
+    {
+        let len_dropdown = 0;
+        for (const n of JSON.parse($attr('.apppath', 'data-dirs-name')))
+        {
+            $('#font_test_header').innerText = n;
+            const w = $('#font_test_header').clientWidth;
+            len_dropdown = Math.max(len_dropdown, w);
+        }
+        len_dropdown = (len_dropdown + 1+4+4+1 + 10 + 14);
+        $('#apppath_dropdown').style.width = len_dropdown + "px";
+        $('.apppath').style.width = len_dropdown + "px";
+        $('.apppath').style.float = "inherit";
+    }
+    
     await loadDataFromServer(true);
 };
 
