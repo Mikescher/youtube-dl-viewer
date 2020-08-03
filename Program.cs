@@ -227,18 +227,6 @@ namespace youtube_dl_viewer
             }
         }
 
-        public static string DataDirToString(string dd)
-        {
-            if (Args.DataDirs.Count == 1) return Path.GetFileName(dd);
-
-            for (var i = 1; i < dd.Length-1; i++)
-            {
-                if (!Args.DataDirs.All(p => p.StartsWith(dd.Substring(0, i)))) return dd.Substring(i - 1);
-            }
-            
-            return Path.GetFileName(dd);
-        }
-
         public static List<JObject> GetAllCachedData()
         {
             // returns video-json objects

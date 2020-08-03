@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,7 +28,7 @@ namespace youtube_dl_viewer.Jobs
             ClearOld = clearOld;
         }
 
-        public override string Name => $"DataCollect::{Index}::'{((Index>=0 && Index <= Program.Args.DataDirs.Count) ? Program.DataDirToString(Program.Args.DataDirs[Index]) : "ERR")}'";
+        public override string Name => $"DataCollect::{Index}::'{((Index>=0 && Index <= Program.Args.DataDirs.Count) ? Program.Args.DataDirs[Index].Name : "ERR")}'";
 
         public override void Abort()
         {
@@ -70,7 +71,9 @@ namespace youtube_dl_viewer.Jobs
         
         public (string jsonstr, Dictionary<string, JObject> jsonobj) CreateData(int index)
         {
-            var datafiles = Directory.EnumerateFiles(Program.Args.DataDirs[index]).OrderBy(p => p.ToLower()).ToList();
+            var ddir = Program.Args.DataDirs[index];
+            
+            var datafiles = EnumerateMatchingFiles(ddir).OrderBy(p => p.ToLower()).ToList();
             var processedFiles = new List<string>();
 
             var filesSubs = datafiles.Where(p => p.EndsWith(".vtt")).ToList();
@@ -134,6 +137,10 @@ namespace youtube_dl_viewer.Jobs
                 if (pathThumb != null) processedFiles.Add(pathThumb);
                 processedFiles.Add(pathVideo);
                 processedFiles.AddRange(pathSubs);
+
+                var vtitle = ddir.UseFilenameAsTitle 
+                    ? Path.GetFileNameWithoutExtension(pathVideo)
+                    : jinfo.Value<string>("fulltitle") ?? jinfo.Value<string>("title") ?? Path.GetFileName(pathVideo);
                 
                 resultVideos.Add(new JObject
                 (
@@ -141,6 +148,8 @@ namespace youtube_dl_viewer.Jobs
                     (
                         new JProperty("uid", id),
                         new JProperty("datadirindex", index),
+                        
+                        new JProperty("title", vtitle),
                         
                         new JProperty("directory", dir),
                         
@@ -194,6 +203,8 @@ namespace youtube_dl_viewer.Jobs
                 if (pathThumb != null) processedFiles.Add(pathThumb);
                 processedFiles.Add(pathVideo);
                 processedFiles.AddRange(pathSubs);
+
+                var vtitle = ddir.UseFilenameAsTitle ? Path.GetFileNameWithoutExtension(pathVideo) : Path.GetFileName(pathVideo);
                 
                 resultVideos.Add(new JObject
                 (
@@ -202,6 +213,8 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("uid", id),
                         
                         new JProperty("directory", dir),
+                        
+                        new JProperty("title", vtitle),
                         
                         new JProperty("filename_base", filenameBase),
                         
@@ -219,10 +232,7 @@ namespace youtube_dl_viewer.Jobs
                     )),
                     new JProperty("data", new JObject
                     (
-                        new JProperty("info", new JObject
-                        (
-                            new JProperty("title", Path.GetFileNameWithoutExtension(pathVideo))
-                        )),
+                        new JProperty("info", new JObject()),
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null)
                     ))
                 ));
@@ -250,6 +260,16 @@ namespace youtube_dl_viewer.Jobs
             return (jsonstr, jsonobj);
         }
 
+        private List<string> EnumerateMatchingFiles(DataDirSpec dds)
+        { 
+            var mask = new Regex("^" + Regex.Escape(dds.FilenameFilter).Replace("\\*", ".*").Replace("\\?", ".") + "$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+            return DirectoryExtension
+                .EnumerateDirectoryRecursive(dds.Path, dds.RecursionDepth)
+                .Where(p => mask.IsMatch(Path.GetFileName(p)))
+                .ToList();
+        }
+        
         public override JObject AsJson(string managerName, string queue)
         {
             var obj = base.AsJson(managerName, queue);

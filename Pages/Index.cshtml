@@ -33,14 +33,14 @@
     <header>
         <div class="logo">
             <div class="apptitle">youtube-dl Viewer <span class="version">@Program.Version</span></div>
-            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single")" data-dirs="@(JsonConvert.SerializeObject(@Program.Args.DataDirs))" data-initial="0">
-                <span>@Program.Args.DataDirs.First()</span>
+            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single")" data-dirs-path="@(JsonConvert.SerializeObject(@Program.Args.DataDirs.Select(p => p.Path).ToList()))" data-dirs-name="@(JsonConvert.SerializeObject(@Program.Args.DataDirs.Select(p => p.Name).ToList()))" data-initial="0">
+                <span>@Program.Args.DataDirs.First().Name</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div id="apppath_dropdown" class="dropdown hidden">
                 @for (var i = 0; i < Program.Args.DataDirs.Count; i++)
                 {
-                    <div class="row" data-path="@Program.Args.DataDirs[i]" data-idx="@i">@Program.Args.DataDirs[i]</div>
+                    <div class="row" data-path="@Program.Args.DataDirs[i].Path" data-name="@Program.Args.DataDirs[i].Name" data-idx="@i">@Program.Args.DataDirs[i].Name</div>
                 }
             </div>
         </div>
@@ -105,6 +105,8 @@
     <div id="dropdown_background" class="hidden">&nbsp;</div>
 
 </div>
+
+<div id="font_test_header">X</div>
 
 <div id="toast"></div>
 

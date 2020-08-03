@@ -182,7 +182,7 @@ function initData(data)
 
     if (sortmode === 0) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * -1);
     if (sortmode === 1) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * +1);
-    if (sortmode === 2) videos = videos.sort((a,b) => sortcompare(a,b,'title'));
+    if (sortmode === 2) videos = videos.sort((a,b) => sortcompareMeta(a,b,'title'));
     if (sortmode === 3) videos = videos.sort((a,b) => sortcompare(a,b,'categories'));
     if (sortmode === 4) videos = videos.sort((a,b) => sortcompare(a,b,'views'));
     if (sortmode === 5) videos = videos.sort((a,b) => sortcompareDiv(a,b,'like_count','dislike_count') * -1);
@@ -235,8 +235,7 @@ function initData(data)
             html += '</div>';
         }
         
-        if (info.hasNonNull('fulltitle')) html += '<div class="title">' + escapeHtml(info['fulltitle']) + '</div>';
-        else if (info.hasNonNull('title')) html += '<div class="title">' + escapeHtml(info['title']) + '</div>';
+        html += '<div class="title">' + escapeHtml(meta['title']) + '</div>';
 
         if (info.hasNonNull('uploader'))
         {
@@ -335,6 +334,14 @@ function sortcompare(a, b, key)
 {
     const va = a.data.info[key];
     const vb = b.data.info[key];
+
+    return sortcompareValues(va, vb);
+}
+
+function sortcompareMeta(a, b, key)
+{
+    const va = a.data.meta[key];
+    const vb = b.data.meta[key];
 
     return sortcompareValues(va, vb);
 }
@@ -681,7 +688,7 @@ function initButtons()
                 hidePathDropDown();
                 if (DATA.dataidx !== parseInt(row.getAttribute('data-idx')))
                 {
-                    $('.apppath span').innerHTML = escapeHtml(row.getAttribute('data-path'));
+                    $('.apppath span').innerHTML = escapeHtml(row.getAttribute('data-name'));
                     DATA.dataidx = parseInt(row.getAttribute('data-idx'));
                     updateLocationHash();
                     loadDataFromServer(false);

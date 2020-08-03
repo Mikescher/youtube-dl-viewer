@@ -11,7 +11,7 @@ namespace youtube_dl_viewer
     {
         public ThumbnailExtractionMode ThumbnailExtraction = ThumbnailExtractionMode.Sequential;
 
-        public List<string> DataDirs = new List<string>();
+        public List<DataDirSpec> DataDirs = new List<DataDirSpec>();
 
         public int MaxParallelConvertJobs    = 1;
         public int MaxParallelGenPreviewJobs = 2;
@@ -138,7 +138,7 @@ namespace youtube_dl_viewer
                 if (key == "width")                OptWidthMode              = int.Parse(value);
                 if (key == "thumbnailmode")        OptThumbnailMode          = int.Parse(value);
                 if (key == "videomode")            OptVideoMode              = int.Parse(value);
-                if (key == "path")                 DataDirs.Add(value);
+                if (key == "path")                 DataDirs.Add(DataDirSpec.Parse(value));
                 if (key == "port")                 Port                      = int.Parse(value);
                 if (key == "cache")                CacheDir                  = value;
                 if (key == "max-parallel-convert") MaxParallelConvertJobs    = int.Parse(value);
@@ -154,7 +154,7 @@ namespace youtube_dl_viewer
                 if (key == "autorefresh-interval") AutoRefreshInterval       = int.Parse(value);
             }
             
-            if (!DataDirs.Any()) DataDirs = new List<string>{ Environment.CurrentDirectory };
+            if (!DataDirs.Any()) DataDirs = new List<DataDirSpec>{ DataDirSpec.FromPath(Environment.CurrentDirectory) };
 
             if (Port == -1) Port = FindFreePort();
         }
@@ -177,6 +177,8 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("  --path=<value>             Path to the video data");
             Console.Out.WriteLine("                               # (default = current_dir)");
             Console.Out.WriteLine("                               # can be specified multiple times");
+            Console.Out.WriteLine("                               # can either contain a simple directory");
+            Console.Out.WriteLine("                               # or a complex json object (see README)");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --display=<value>          The display mode");
             Console.Out.WriteLine("                               # [0] Disabled");

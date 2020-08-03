@@ -7,7 +7,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "commandLineArgs": "--display=0 --order=0 --width=1 --thumbnailmode=1 --videomode=3 --autorefresh-interval=60 --cache=\"F:\\Stash\\youtube-dl-viewer-cache\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube\\Anime\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube\\Talks\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube\\Demos\" --path=\"F:\\Home\\Cloud\\Videos\\Youtube\\Favorites\" --port=5000 --ffmpeg-debug-dir=\"F:\\Stash\\youtube-dl-viewer-out\""
+      "commandLineArgs": "--display=0 --order=0 --width=1 --thumbnailmode=1 --videomode=3 --autorefresh-interval=60 --cache=\"F:\\Stash\\youtube-dl-viewer-cache\" --path=\"{path:'F:\\\\Home\\\\Cloud\\\\Videos\\\\Youtube\\\\Anime',     name:'Anime' }\" --path=\"{path:'F:\\\\Home\\\\Cloud\\\\Videos\\\\Youtube\\\\Talks',     name:'Talks' }\" --path=\"{path:'F:\\\\Home\\\\Cloud\\\\Videos\\\\Youtube\\\\Demos',     name:'Demos' }\" --path=\"{path:'F:\\\\Home\\\\Cloud\\\\Videos\\\\Youtube\\\\VBT',       name:'VBT', use_filename_as_title:true }\" --path=\"{path:'F:\\\\Home\\\\Cloud\\\\Videos\\\\Youtube\\\\Favorites', name:'Favorites' }\" --port=5000 --ffmpeg-debug-dir=\"F:\\Stash\\youtube-dl-viewer-out\""
+      
     }
   }
 }

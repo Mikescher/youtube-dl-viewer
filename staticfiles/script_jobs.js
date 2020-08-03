@@ -64,7 +64,7 @@ window.onload = async function()
 
 async function refresh()
 {
-    const linelen = Math.max(110, Math.floor(document.querySelector('#root').clientWidth / document.querySelector('#font_test').clientWidth));
+    const linelen = Math.max(110, Math.floor($('#root').clientWidth / $('#font_test').clientWidth));
     const progressLen = linelen - (14+50+10+10+8+7);
 
     const response = await $ajax('GET', '/jobmanager/list');
