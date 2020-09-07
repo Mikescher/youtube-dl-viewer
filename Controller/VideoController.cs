@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using youtube_dl_viewer.Jobs;
@@ -40,8 +42,8 @@ namespace youtube_dl_viewer.Controller
                 // Total bytes to read:
                 var dataToRead = iStream.Length;
 
-                context.Response.Headers.Add(HeaderNames.ContentLength, dataToRead.ToString());
-                context.Response.Headers.Add(HeaderNames.ContentDisposition, "attachment;filename=\"" + Path.GetFileName(pathVideo)+"\"");
+                context.Response.Headers.Add(HeaderNames.ContentLength, WebUtility.UrlEncode(dataToRead.ToString()));
+                context.Response.Headers.Add(HeaderNames.ContentDisposition, "attachment;filename=\"" + WebUtility.UrlEncode(Path.GetFileName(pathVideo))+"\"");
                 
                 var buffer = new byte[4096];
                 for(;;) 
@@ -224,7 +226,7 @@ namespace youtube_dl_viewer.Controller
             
                 if (!string.IsNullOrEmpty(context.Request.Headers[HeaderNames.Range])) 
                 {
-                    var range = context.Request.Headers[HeaderNames.Range].ToString().Split(new[] { '=', '-' });
+                    var range = context.Request.Headers[HeaderNames.Range].ToString().Split('=', '-');
                     var startbyte = int.Parse(range[1]);
                     iStream.Seek(startbyte, SeekOrigin.Begin);
 

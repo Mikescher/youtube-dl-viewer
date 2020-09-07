@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using youtube_dl_viewer.Jobs;
@@ -52,8 +54,8 @@ namespace youtube_dl_viewer.Controller
             
             var data = await File.ReadAllBytesAsync(pathThumbnail);
             
-            context.Response.Headers.Add(HeaderNames.ContentLength, data.Length.ToString());
-            context.Response.Headers.Add(HeaderNames.ContentDisposition, "attachment;filename=" + Path.GetFileName(pathThumbnail));
+            context.Response.Headers.Add(HeaderNames.ContentLength, WebUtility.UrlEncode(data.Length.ToString()));
+            context.Response.Headers.Add(HeaderNames.ContentDisposition, "attachment;filename=\"" + WebUtility.UrlEncode(Path.GetFileName(pathThumbnail))+"\"");
 
             if (Path.GetExtension(pathThumbnail).Equals(".png",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/png");
             if (Path.GetExtension(pathThumbnail).Equals(".svg",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/svg+xml");
@@ -110,9 +112,9 @@ namespace youtube_dl_viewer.Controller
                     if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no image data (1)"); return; }
                     if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no image data (2)"); return; }
 
-                    context.Response.Headers.Add("PreviewImageCount", proxy.Job.ImageCount.Value.ToString());
-                    context.Response.Headers.Add("PathCache", "null");
-                    context.Response.Headers.Add("PathVideo", videopath);
+                    context.Response.Headers.Add("PreviewImageCount", WebUtility.UrlEncode(proxy.Job.ImageCount.Value.ToString()));
+                    context.Response.Headers.Add("PathCache", WebUtility.UrlEncode("null"));
+                    context.Response.Headers.Add("PathVideo", WebUtility.UrlEncode(videopath));
                     await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData);
                     return;
                 }
@@ -154,9 +156,9 @@ namespace youtube_dl_viewer.Controller
                 fs.Read(databin, 0, datalength);
             }
             
-            context.Response.Headers.Add("PreviewImageCount", prevcount.ToString());
-            context.Response.Headers.Add("PathCache", pathCache);
-            context.Response.Headers.Add("PathVideo", videopath);
+            context.Response.Headers.Add("PreviewImageCount", WebUtility.UrlEncode(prevcount.ToString()));
+            context.Response.Headers.Add("PathCache", WebUtility.UrlEncode(pathCache));
+            context.Response.Headers.Add("PathVideo", WebUtility.UrlEncode(videopath));
             await context.Response.BodyWriter.WriteAsync(databin);
         }
     }

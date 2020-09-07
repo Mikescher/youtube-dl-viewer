@@ -23,7 +23,7 @@ namespace youtube_dl_viewer
 
         public static readonly Dictionary<int, DateTime> DataRefreshTimestamps = new Dictionary<int, DateTime>();
 
-        public static string Version => "0.18";
+        public static string Version => "0.19";
 
         // DataCache  :=   Dictionary<  DataDirIndex => (json, obj)  >
         // json       :=   full json for dir, aka:  { "videos": [ ... ], "missing": [ ... ] }
