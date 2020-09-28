@@ -220,7 +220,7 @@ Load the currently visible thumbnails in parallel *and* pre-load non-visible thu
 By specifying one (or more) `--path` arguments you can set the directori(es) where the program looks for video files.  
 But instead of a simple directory-path you can also supply a json object in the `--path` argument for more fine-tuning, eg: `--path="{path:'/home/me/videos', name:'My Videos'}"`.
 
-Every path json object *must* have a `path` property, and can have the following optional peroperties:
+Every path json object *must* have a `path` property, and can have the following optional properties:
  - `name`: The display string, used eg in the top-left dropwdown menu. (default = use value of `path`)
  - `use_filename_as_title`: Use the filename as the video title instead of value in the info.json file (default = **false**)
  - `recursion`: The maximum recursion depth when searching for videos (default = 0, aka "do not recurse into subfolders")
@@ -230,6 +230,10 @@ Every path json object *must* have a `path` property, and can have the following
                 If some files are not found in the file they are appended at the end (This can useful in combination with the background autorefresh feature).  
                 (!) You *can* simply use the youtube-dl archive file here, but be aware that ytdl-viewer can edit the file and youtube-dl does not guarantee any order in the file.   
  - `htmltitle`: Specify a custom title for the webpage when this path is selected
+ - `display`: Override the default display value (from `--display=<v>`) for this path
+ - `width`: Override the default display value (from `--width=<v>`) for this path
+ - `order`: Override the default order (from `--order=<v>`) for this path
+ - `videomode`: Override the default playback mode (from `--videomode=<v>`) for this path
 
 > **[!] Note**  
 > Under windows (and linux if there are any) do not forget to escape your backslashes:  

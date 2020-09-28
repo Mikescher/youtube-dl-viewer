@@ -326,7 +326,12 @@ namespace youtube_dl_viewer.Jobs
                     new JProperty("has_ext_order", orderIndizes != null),
                     new JProperty("count_total", filesInfo.Count + filesVideo.Count),
                     new JProperty("count_info", filesInfo.Count),
-                    new JProperty("count_raw", filesVideo.Count)
+                    new JProperty("count_raw", filesVideo.Count),
+                    
+                    new JProperty("display_override",   ddir.DisplayOverride),
+                    new JProperty("width_override",     ddir.WidthOverride),
+                    new JProperty("order_override",     ddir.OrderOverride),
+                    new JProperty("videomode_override", ddir.VideomodeOverride)
                 )),
                 new JProperty("videos", resultVideos),
                 new JProperty("missing", new JArray(datafiles.Except(processedFiles).ToArray<object>()))

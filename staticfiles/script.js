@@ -158,23 +158,90 @@ async function loadDataFromServer(initial)
 
         const json = JSON.parse(DATA.data);
         
-        let currentOrder = parseInt($attr('.btn-order', 'data-mode'));
-        if (!json.meta.has_ext_order)
+        // OVERRIDE ORDER
         {
-            if (currentOrder === 7 || currentOrder === 8)
+            let order_updated = false;
+            let currentOrder = parseInt($attr('.btn-order', 'data-mode'));
+            if (json.meta.order_override !== null && json.meta.order_override !== currentOrder)
             {
-                currentOrder = parseInt($attr('.btn-order', 'data-initial'));
+                currentOrder = json.meta.order_override;
                 $('.btn-order').setAttribute('data-mode', currentOrder.toString());
+                order_updated = true;
+            }
+
+            if (!json.meta.has_ext_order)
+            {
+                order_updated = true;
 
                 if (currentOrder === 7 || currentOrder === 8)
                 {
-                    currentOrder = 0;
+                    currentOrder = parseInt($attr('.btn-order', 'data-initial'));
                     $('.btn-order').setAttribute('data-mode', currentOrder.toString());
-                }
 
+                    if (currentOrder === 7 || currentOrder === 8)
+                    {
+                        currentOrder = 0;
+                        $('.btn-order').setAttribute('data-mode', currentOrder.toString());
+                    }
+                }
+            }
+            if (order_updated)
+            {
                 const options = JSON.parse($attr('.btn-order', 'data-options'));
                 showToast(options[currentOrder]);
                 updateLocationHash();
+            }
+        }
+        
+        // OVERRIDE DISPLAY
+        {
+            let currentDisplay = parseInt($attr('.btn-display', 'data-mode'));
+            if (json.meta.display_override !== null && json.meta.display_override !== currentDisplay)
+            {
+                currentDisplay = json.meta.display_override;
+                $('.btn-display').setAttribute('data-mode', currentDisplay.toString());
+
+                const options = JSON.parse($attr('.btn-display', 'data-options'));
+                showToast(options[currentDisplay]);
+                updateLocationHash();
+
+                updateDisplaymodeClass(true);
+
+                loadThumbnails();
+            }
+        }
+
+        // OVERRIDE WIDTH
+        {
+            let currentWidth = parseInt($attr('.btn-width', 'data-mode'));
+            if (json.meta.width_override !== null && json.meta.width_override !== currentWidth)
+            {
+                currentWidth = json.meta.width_override;
+                $('.btn-width').setAttribute('data-mode', currentWidth.toString());
+
+                const options = JSON.parse($attr('.btn-width', 'data-options'));
+                showToast(options[currentWidth]);
+                updateLocationHash();
+
+                updateDisplaywidthClass(true);
+
+                loadThumbnails();
+            }
+        }
+
+        // OVERRIDE PLAYBACK
+        {
+            let currentVideomode = parseInt($attr('.btn-videomode', 'data-mode'));
+            if (json.meta.videomode_override !== null && json.meta.videomode_override !== currentVideomode)
+            {
+                currentVideomode = json.meta.videomode_override;
+                $('.btn-videomode').setAttribute('data-mode', currentVideomode.toString());
+
+                const options = JSON.parse($attr('.btn-videomode', 'data-options'));
+                showToast(options[currentVideomode]);
+                updateLocationHash();
+                
+                updateVideomodeClass();
             }
         }
         

@@ -13,7 +13,12 @@ namespace youtube_dl_viewer
         public readonly int RecursionDepth;
         public readonly string FilenameFilter;
         public readonly string OrderFilename;
-        public readonly string HTMLTitle; 
+        public readonly string HTMLTitle;
+        
+        public readonly int? DisplayOverride;
+        public readonly int? WidthOverride;
+        public readonly int? OrderOverride;
+        public readonly int? VideomodeOverride;
 
         public string FullOrderFilename
         {
@@ -24,7 +29,9 @@ namespace youtube_dl_viewer
             }
         }
 
-        public DataDirSpec(string path, string name, bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, string htmltitle)
+        public DataDirSpec(string path, string name, 
+            bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, string htmltitle,
+            int? display_override, int? width_override, int? order_override, int? videomode_override)
         {
             Path               = path;
             Name               = name;
@@ -33,6 +40,11 @@ namespace youtube_dl_viewer
             FilenameFilter     = filenameFilter;
             OrderFilename      = orderFilename;
             HTMLTitle          = htmltitle;
+            
+            DisplayOverride    = display_override;
+            WidthOverride      = width_override;
+            OrderOverride      = order_override;
+            VideomodeOverride  = videomode_override;
         }
 
         public static DataDirSpec Parse(string spec)
@@ -53,16 +65,21 @@ namespace youtube_dl_viewer
             var filter = json.Value<string>("filter") ?? "*";
 
             var order = json.GetValue("ext_order")?.Value<string>();
+            
+            var ovr_display   = json.GetValue("display")?.Value<int>();
+            var ovr_width     = json.GetValue("width")?.Value<int>();
+            var ovr_order     = json.GetValue("order")?.Value<int>();
+            var ovr_videomode = json.GetValue("videomode")?.Value<int>();
 
             var htmltitle = json.GetValue("htmltitle")?.Value<string>();
             if (htmltitle != null) htmltitle = htmltitle.Replace("{version}", Program.Version);
             
-            return new DataDirSpec(path, name, useFilename, recDepth, filter, order, htmltitle);
+            return new DataDirSpec(path, name, useFilename, recDepth, filter, order, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode);
         }
 
         public static DataDirSpec FromPath(string dir)
         {
-            return new DataDirSpec(dir, dir, false, 0, "*", null, null);
+            return new DataDirSpec(dir, dir, false, 0, "*", null, null, null, null, null, null);
         }
     }
 }
