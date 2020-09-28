@@ -187,6 +187,7 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # [4] Download file");
             Console.Out.WriteLine("                               # [5] VLC Protocol Link (stream)"); // https://github.com/stefansundin/vlc-protocol
             Console.Out.WriteLine("                               # [6] VLC Protocol Link (local)");  // https://github.com/stefansundin/vlc-protocol
+            Console.Out.WriteLine("                               # [7] Open original Webpage");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --autorefresh-interval=<t> Automatically trigger a refresh (reload data from filesytem)");
             Console.Out.WriteLine("                               if the last refresh is longer than <t> seconds ago.");

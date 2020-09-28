@@ -125,6 +125,8 @@ youtube-dl-viewer supports playing the videos by clicking on them, there are mul
  - **VLC protocol link (local):**  
   This is mostly the same as **VLC protocol link (stream)** but it adds the local file path to your VLC playlist and not the video URL.  
   This is preferable if youtube-dl-viewer is running on your machine, because then the VLC Player doesn't have to yo through web requests to get the file and can simply read it from your hard drive, but of course this only works if VLC can access the original video file path (eg if its not running on a server)
+ - **Open original Webpage**
+  Open the original URL from where the video came in a new tab (normally its youtube).
 
 ## Advanced Usage
 
