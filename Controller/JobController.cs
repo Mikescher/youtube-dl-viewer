@@ -42,7 +42,10 @@ namespace youtube_dl_viewer.Controller
                     (
                         new JProperty("CountCachedPreviews", vidcache.Count(p => p["meta"]["cached_previews"].Value<bool>())),
                         new JProperty("CountCachedVideos",   vidcache.Count(p => p["meta"]["cached"].Value<bool>())),
-                        new JProperty("CountTotal",          vidcache.Count)
+                        new JProperty("CountTotal",          vidcache.Count),
+                        
+                        new JProperty("FilesizeCachedPreviews", vidcache.Sum(p => p["meta"]["cached_preview_fsize"].Value<long>())),
+                        new JProperty("FilesizeCachedVideos",   vidcache.Sum(p => p["meta"]["cached_video_fsize"].Value<long>()))
                     )),
                     
                     new JProperty("CountActive", JobRegistry.Managers.Sum(p => p.CountActive)),

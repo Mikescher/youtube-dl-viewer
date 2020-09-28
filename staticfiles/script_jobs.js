@@ -89,8 +89,8 @@ async function refresh()
 
     text_head += ("Active Jobs: " + data.Meta.Jobs.CountActive).padEnd(linelen - 34, ' ') + " <span id=\"btnForceGenPreviews\" class=\"btn btn-action\">[Force generate missing previews]</span>" + "\n";
     text_head += ("Queued Jobs: " + data.Meta.Jobs.CountQueued).padEnd(linelen - 33, ' ') + " <span id=\"btnForceTranscode\" class=\"btn btn-action\">[Force transcode missing videos]</span>"    + "\n";
-    text_head += ("Cached Previews:                " + (""+data.Meta.Videos.CountCachedPreviews).padStart(3, " ") + " / " + data.Meta.Videos.CountTotal).padEnd(linelen - 22, ' ') + " <span id=\"btnClearFinished\" class=\"btn btn-action\">[Clear finished jobs]</span>" + "\n";
-    text_head += ("Cached Videos (webm transcode): " + (""+data.Meta.Videos.CountCachedVideos  ).padStart(3, " ") + " / " + data.Meta.Videos.CountTotal).padEnd(linelen - 17, ' ') + " <span id=\"btnAbortAll\" class=\"btn btn-danger\">[Abort all jobs]</span>"           + "\n";
+    text_head += (("Cached Previews:                " + (""+data.Meta.Videos.CountCachedPreviews).padStart(3, " ") + " / " + data.Meta.Videos.CountTotal).padEnd(44, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedPreviews).padStart(8, ' ') + " )").padEnd(linelen - 22, ' ') + " <span id=\"btnClearFinished\" class=\"btn btn-action\">[Clear finished jobs]</span>" + "\n";
+    text_head += (("Cached Videos (webm transcode): " + (""+data.Meta.Videos.CountCachedVideos  ).padStart(3, " ") + " / " + data.Meta.Videos.CountTotal).padEnd(44, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedVideos).padStart(8, ' ')   + " )").padEnd(linelen - 17, ' ') + " <span id=\"btnAbortAll\" class=\"btn btn-danger\">[Abort all jobs]</span>"           + "\n";
     text_head += "\n";
     text_head += "<span class=\"header\">" + ("Type").padEnd(14, ' ') + ("Name").padEnd(50, ' ') + ("Proxies").padEnd(10, ' ') + ("State").padEnd(10, ' ') + ("Progress").padEnd(progressLen, ' ') + ("Time").padEnd(8, ' ') + ("Actions").padEnd(7, ' ') + "</span>" + "\n";
 
@@ -170,5 +170,11 @@ function updateEvents_Head()
     });
 }
 
-
+function formatBytes(bytes)
+{
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes == 0) return '0 Byte';
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
 

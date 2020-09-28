@@ -147,6 +147,7 @@ namespace youtube_dl_viewer.Jobs
                                     if (File.Exists(Destination) && new FileInfo(Destination).Length == 0) File.Delete(Destination);
                     
                                     Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cached"}, true);
+                                    Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cached_video_fsize"}, new FileInfo(Destination).Length);
                                     Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cache_file"}, Destination);
                                     
                                     break;

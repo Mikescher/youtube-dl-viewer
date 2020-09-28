@@ -196,6 +196,7 @@ namespace youtube_dl_viewer.Jobs
                         }
 
                         Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cached_previews"}, true);
+                        Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "cached_preview_fsize"}, new FileInfo(Destination).Length);
                         Program.PatchDataCache(DataDirIndex, VideoUID, new[]{"meta", "previewscache_file"}, Destination);
                     }
                 }

@@ -197,8 +197,12 @@ namespace youtube_dl_viewer.Jobs
                         
                         new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
                         new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
+                        new JProperty("cached_video_fsize", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo))) ? new FileInfo(VideoController.GetStreamCachePath(pathVideo)).Length : 0),
+
+                        
                         new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
                         new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo)))),
+                        new JProperty("cached_preview_fsize", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))) ? new FileInfo(ThumbnailController.GetPreviewCachePath(pathVideo)).Length : 0),
                         
                         new JProperty("ext_order_index", order_index)
                     )),
@@ -281,8 +285,11 @@ namespace youtube_dl_viewer.Jobs
                         
                         new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
                         new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
+                        new JProperty("cached_video_fsize", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo))) ? new FileInfo(VideoController.GetStreamCachePath(pathVideo)).Length : 0),
+
                         new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
                         new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo)))),
+                        new JProperty("cached_preview_fsize", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))) ? new FileInfo(ThumbnailController.GetPreviewCachePath(pathVideo)).Length : 0),
                         
                         new JProperty("ext_order_index", order_index)
                     )),
