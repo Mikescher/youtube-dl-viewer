@@ -163,7 +163,9 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # [4] Views");
             Console.Out.WriteLine("                               # [5] Rating");
             Console.Out.WriteLine("                               # [6] Uploader");
-            Console.Out.WriteLine("                               # [7scr] Random");
+            Console.Out.WriteLine("                               # [7] External [descending] (if available)");
+            Console.Out.WriteLine("                               # [8] External [ascending] (if available)");
+            Console.Out.WriteLine("                               # [9] Random");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --width=<value>            The display list width");
             Console.Out.WriteLine("                               # [0] Small");

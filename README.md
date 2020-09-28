@@ -223,10 +223,14 @@ Every path json object *must* have a `path` property, and can have the following
  - `use_filename_as_title`: Use the filename as the video title instead of value in the info.json file (default = **false**)
  - `recursion`: The maximum recursion depth when searching for videos (default = 0, aka "do not recurse into subfolders")
  - `filter`: The filter for the files (default = "*", aka every file). Supported video extensions are filtered in a secondary step.
+ - `ext_order`: Path to a file with a user-defined order (the format is the same as the youtube-dl archive files).  
+                One line per video and the line order specifies the video order.  
+                If some files are not found in the file they are appended at the end (This can useful in combination with the background autorefresh feature).  
+                (!) You *can* simply use the youtube-dl archive file here, but be aware that ytdl-viewer can edit the file and youtube-dl does not guarantee any order in the file.   
 
 > **[!] Note**  
 > Under windows (and linux if there are any) do not forget to escape your backslashes:  
-> `--path="{path:'C:\\Users\\Me\\Videos', name:'My Videos'}`
+> `--path="{path:'C:\\Users\\Me\\Videos', name:'My Videos', ext_order: 'order.archive.txt'}`
 
 
 ## Commandline manual

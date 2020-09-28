@@ -187,7 +187,9 @@ function initData(data)
     if (sortmode === 4) videos = videos.sort((a,b) => sortcompare(a,b,'view_count'));
     if (sortmode === 5) videos = videos.sort((a,b) => sortcompareDiv(a,b,'like_count','dislike_count') * -1);
     if (sortmode === 6) videos = videos.sort((a,b) => sortcompare(a,b,'uploader'));
-    if (sortmode === 7) videos = shuffle(videos, new Math.seedrandom(DATA.shuffle_seed));
+    if (sortmode === 7) videos = videos.sort((a,b) => sortcompareMeta(a,b,'ext_order_index') * -1);
+    if (sortmode === 8) videos = videos.sort((a,b) => sortcompareMeta(a,b,'ext_order_index') * +1);
+    if (sortmode === 9) videos = shuffle(videos, new Math.seedrandom(DATA.shuffle_seed));
 
 
     let html = '';
@@ -341,6 +343,14 @@ function sortcompareData(a, b, key)
 {
     const va = a.data[key];
     const vb = b.data[key];
+
+    return sortcompareValues(va, vb);
+}
+
+function sortcompareMeta(a, b, key)
+{
+    const va = a.meta[key];
+    const vb = b.meta[key];
 
     return sortcompareValues(va, vb);
 }
@@ -600,10 +610,13 @@ function initButtons()
     {
         const current = parseInt($attr('.btn-order', 'data-mode'));
         const options = JSON.parse($attr('.btn-order', 'data-options'));
+
+        let disabled = [];
+        if (!JSON.parse(DATA.data).meta.has_ext_order) { disabled.push(7); disabled.push(8); }
         
-        showOptionDropDown('order', current, options, [], v => 
+        showOptionDropDown('order', current, options, disabled, v => 
         {
-            if (v === 7) DATA.shuffle_seed = Math.random().toString().replace(/[.,]/g, '').substr(1);
+            if (v === 9) DATA.shuffle_seed = Math.random().toString().replace(/[.,]/g, '').substr(1);
             
             $('.btn-order').setAttribute('data-mode', v.toString());
             showToast(options[v]);

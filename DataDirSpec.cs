@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace youtube_dl_viewer
@@ -10,14 +12,25 @@ namespace youtube_dl_viewer
         public readonly bool UseFilenameAsTitle;
         public readonly int RecursionDepth;
         public readonly string FilenameFilter;
+        public readonly string OrderFilename;
 
-        public DataDirSpec(string path, string name, bool useFilenameAsTitle, int recursionDepth, string filenameFilter)
+        public string FullOrderFilename
+        {
+            get
+            {
+                if (OrderFilename == null) return null;
+                return System.IO.Path.Combine(Path, OrderFilename);
+            }
+        }
+
+        public DataDirSpec(string path, string name, bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename)
         {
             Path               = path;
             Name               = name;
             UseFilenameAsTitle = useFilenameAsTitle;
             RecursionDepth     = recursionDepth;
             FilenameFilter     = filenameFilter;
+            OrderFilename      = orderFilename;
         }
 
         public static DataDirSpec Parse(string spec)
@@ -36,13 +49,15 @@ namespace youtube_dl_viewer
             var recDepth = json.GetValue("recursion")?.Value<int>() ?? 0;
             
             var filter = json.Value<string>("filter") ?? "*";
+
+            var order = json.GetValue("ext_order")?.Value<string>();
             
-            return new DataDirSpec(path, name, useFilename, recDepth, filter);
+            return new DataDirSpec(path, name, useFilename, recDepth, filter, order);
         }
 
         public static DataDirSpec FromPath(string dir)
         {
-            return new DataDirSpec(dir, dir, false, 0, "*");
+            return new DataDirSpec(dir, dir, false, 0, "*", null);
         }
     }
 }

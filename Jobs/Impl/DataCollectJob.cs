@@ -88,6 +88,18 @@ namespace youtube_dl_viewer.Jobs
                 ? new HashSet<string>()
                 : Directory.EnumerateFiles(Program.Args.CacheDir).Select(Path.GetFileName).ToHashSet();
 
+            var orderFileNeedsUpdate = false;
+            Dictionary<string, int> orderIndizes = null;
+            if (ddir.OrderFilename != null)
+            {
+                if (!File.Exists(ddir.FullOrderFilename)) throw new Exception($"Order file not found: '{ddir.FullOrderFilename}'");
+                orderIndizes = File
+                    .ReadLines(ddir.FullOrderFilename)
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Select((v,i)=>(v,i))
+                    .ToDictionary(p=>p.v, p=>p.i);
+            }
+
             var filecount = filesInfo.Count;
 
             int progr = 0;
@@ -144,6 +156,24 @@ namespace youtube_dl_viewer.Jobs
 
                 var descr = (pathDesc != null) ? File.ReadAllText(pathDesc) : jinfo.Value<string>("description");
 
+                int? order_index = null;
+                if (orderIndizes != null)
+                {
+                    var key = jinfo.Value<string>("extractor") + " " + id;
+                    if (orderIndizes.ContainsKey(key))
+                    {
+                        order_index = orderIndizes[key];
+                    }
+                    else
+                    {
+                        order_index = orderIndizes.Count;
+                        orderIndizes.Add(key, order_index.Value);
+                        
+                        orderFileNeedsUpdate = true;
+                        Console.Out.WriteLine($"Updated Orderfile '{ddir.OrderFilename}': Added [{key}] at {order_index}");
+                    }
+                }
+                
                 if (Program.Args.TrimDataJSON) jinfo = TrimJSON(jinfo);
                 
                 resultVideos.Add(new JObject
@@ -168,7 +198,9 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
                         new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
                         new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
-                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))))
+                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo)))),
+                        
+                        new JProperty("ext_order_index", order_index)
                     )),
                     new JProperty("data", new JObject
                     (
@@ -179,7 +211,8 @@ namespace youtube_dl_viewer.Jobs
                 ));
             }
 
-            foreach (var pathVideo in datafiles.Except(processedFiles).Where(p => Program.ExtVideo.Any(q => string.Equals("." + q, Path.GetExtension(p), StringComparison.CurrentCultureIgnoreCase))))
+            var filesVideo = datafiles.Except(processedFiles).Where(p => Program.ExtVideo.Any(q => string.Equals("." + q, Path.GetExtension(p), StringComparison.CurrentCultureIgnoreCase))).ToList();
+            foreach (var pathVideo in filesVideo)
             {
                 var id = pathVideo.Sha256();
                 if (id == null || idlist.Contains(id)) idsAreUnique = false;
@@ -210,6 +243,25 @@ namespace youtube_dl_viewer.Jobs
 
                 var vtitle = ddir.UseFilenameAsTitle ? Path.GetFileNameWithoutExtension(pathVideo) : Path.GetFileName(pathVideo);
                 
+
+                int? order_index = null;
+                if (orderIndizes != null)
+                {
+                    var key = "file" + " " + id;
+                    if (orderIndizes.ContainsKey(key))
+                    {
+                        order_index = orderIndizes[key];
+                    }
+                    else
+                    {
+                        order_index = orderIndizes.Count;
+                        orderIndizes.Add(key, order_index.Value);
+                        
+                        orderFileNeedsUpdate = true;
+                        Console.Out.WriteLine($"Updated Orderfile '{ddir.OrderFilename}': Added [{key}] at {order_index}");
+                    }
+                }
+                
                 resultVideos.Add(new JObject
                 (
                     new JProperty("meta", new JObject
@@ -230,7 +282,9 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("cache_file", VideoController.GetStreamCachePath(pathVideo)),
                         new JProperty("cached", cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
                         new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
-                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))))
+                        new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo)))),
+                        
+                        new JProperty("ext_order_index", order_index)
                     )),
                     new JProperty("data", new JObject
                     (
@@ -251,8 +305,21 @@ namespace youtube_dl_viewer.Jobs
                 }
             }
 
+            if (orderFileNeedsUpdate)
+            {
+                File.WriteAllLines(ddir.FullOrderFilename, orderIndizes.Select(p => p).OrderBy(p => p.Value).Select(p => p.Key));
+                Console.Out.WriteLine($"new Orderfile written to '{ddir.FullOrderFilename}'");
+            }
+
             var result = new JObject
             (
+                new JProperty("meta", new JObject
+                (
+                    new JProperty("has_ext_order", orderIndizes != null),
+                    new JProperty("count_total", filesInfo.Count + filesVideo.Count),
+                    new JProperty("count_info", filesInfo.Count),
+                    new JProperty("count_raw", filesVideo.Count)
+                )),
                 new JProperty("videos", resultVideos),
                 new JProperty("missing", new JArray(datafiles.Except(processedFiles).ToArray<object>()))
             );
