@@ -155,7 +155,30 @@ async function loadDataFromServer(initial)
     if (response.success && response.status >= 200 && response.status < 400)
     {
         DATA.data = response.body;
-        initData(JSON.parse(DATA.data));
+
+        const json = JSON.parse(DATA.data);
+        
+        let currentOrder = parseInt($attr('.btn-order', 'data-mode'));
+        if (!json.meta.has_ext_order)
+        {
+            if (currentOrder === 7 || currentOrder === 8)
+            {
+                currentOrder = parseInt($attr('.btn-order', 'data-initial'));
+                $('.btn-order').setAttribute('data-mode', currentOrder.toString());
+
+                if (currentOrder === 7 || currentOrder === 8)
+                {
+                    currentOrder = 0;
+                    $('.btn-order').setAttribute('data-mode', currentOrder.toString());
+                }
+
+                const options = JSON.parse($attr('.btn-order', 'data-options'));
+                showToast(options[currentOrder]);
+                updateLocationHash();
+            }
+        }
+        
+        initData(json);
         if (initial) initButtons();
         if (initial) initEvents();
     }
@@ -725,7 +748,7 @@ function updateLocationHash()
     if ($attr('.btn-order', 'data-mode') !== $attr('.btn-order', 'data-initial'))
         hash.push('order=' + $attr('.btn-order', 'data-mode'));
 
-    if ($attr('.btn-order', 'data-mode') === '7')
+    if ($attr('.btn-order', 'data-mode') === '9')
         hash.push('seed=' + DATA.shuffle_seed);
     
     if ($attr('.btn-width', 'data-mode') !== $attr('.btn-width', 'data-initial'))
