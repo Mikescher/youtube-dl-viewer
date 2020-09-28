@@ -315,6 +315,7 @@ namespace youtube_dl_viewer.Jobs
             (
                 new JProperty("meta", new JObject
                 (
+                    new JProperty("htmltitle", ddir.HTMLTitle ?? Program.Args.HTMLTitle),
                     new JProperty("has_ext_order", orderIndizes != null),
                     new JProperty("count_total", filesInfo.Count + filesVideo.Count),
                     new JProperty("count_info", filesInfo.Count),

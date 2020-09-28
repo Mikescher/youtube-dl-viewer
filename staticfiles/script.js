@@ -330,6 +330,8 @@ function initData(data)
         tmb.addEventListener('mouseleave', () => { onMouseLeaveThumbnail(tmb); });
     }
 
+    $('title').textContent = data['meta']['htmltitle'];
+    
     // noinspection JSIgnoredPromiseFromCall
     loadThumbnails();
 }

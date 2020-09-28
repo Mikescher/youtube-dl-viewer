@@ -52,6 +52,8 @@ namespace youtube_dl_viewer
 
         public bool TrimDataJSON = false;
         
+        public string HTMLTitle = $"youtube-dl Viewer {Program.Version})";
+        
         public void Parse(IEnumerable<string> args)
         {
             foreach (var arg in args)
@@ -120,6 +122,7 @@ namespace youtube_dl_viewer
                 if (key == "exec-ffmpeg")          FFMPEGExec                = value;
                 if (key == "exec-ffprobe")         FFPROBEExec               = value;
                 if (key == "autorefresh-interval") AutoRefreshInterval       = int.Parse(value);
+                if (key == "htmltitle")            HTMLTitle                 = value;
             }
             
             if (!DataDirs.Any()) DataDirs = new List<DataDirSpec>{ DataDirSpec.FromPath(Environment.CurrentDirectory) };
@@ -231,6 +234,7 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("  --ffmpeg-debug-dir=<dir>   Directory where all ffmpeg ouput is written to (for debugging)");
             Console.Out.WriteLine("  --trim-info-json           Reduce the size of the /json ajax request by only returning");
             Console.Out.WriteLine("                               values from the *.info.json file that are actually used");
+            Console.Out.WriteLine("  --htmltitle                Change the webpage title");
             Console.Out.WriteLine();
         }
 
