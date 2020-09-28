@@ -751,13 +751,15 @@ function updateDisplaymodeClass(toast)
 
     main.classList.remove('lstyle_detailed');
     main.classList.remove('lstyle_grid');
+    main.classList.remove('lstyle_x2');
     main.classList.remove('lstyle_compact');
     main.classList.remove('lstyle_tabular');
 
-    if (mode === 0) { main.classList.add('lstyle_grid');     if (toast) showToast('ListStyle: Grid');     }
-    if (mode === 1) { main.classList.add('lstyle_compact');  if (toast) showToast('ListStyle: Compact');  }
-    if (mode === 2) { main.classList.add('lstyle_tabular');  if (toast) showToast('ListStyle: Tabular');  }
-    if (mode === 3) { main.classList.add('lstyle_detailed'); if (toast) showToast('ListStyle: Detailed'); }
+    if (mode === 0) { main.classList.add('lstyle_grid');              if (toast) showToast('ListStyle: Grid');      }
+    if (mode === 1) { main.classList.add('lstyle_compact');           if (toast) showToast('ListStyle: Compact');   }
+    if (mode === 2) { main.classList.add('lstyle_tabular');           if (toast) showToast('ListStyle: Tabular');   }
+    if (mode === 3) { main.classList.add('lstyle_detailed');          if (toast) showToast('ListStyle: Detailed');  }
+    if (mode === 4) { main.classList.add('lstyle_grid', 'lstyle_x2'); if (toast) showToast('ListStyle: Grid (x2)'); }
 }
 
 function updateDisplaywidthClass(toast)

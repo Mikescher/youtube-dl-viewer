@@ -152,11 +152,11 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # or a complex json object (see README)");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --display=<value>          The display mode");
-            Console.Out.WriteLine("                               # [0] Disabled");
-            Console.Out.WriteLine("                               # [1] Seekable raw file");
-            Console.Out.WriteLine("                               # [2] Raw file");
-            Console.Out.WriteLine("                               # [3] Transcoded Webm stream");
-            Console.Out.WriteLine("                               # [4] Download file");
+            Console.Out.WriteLine("                               # [0] Grid");
+            Console.Out.WriteLine("                               # [1] Compact");
+            Console.Out.WriteLine("                               # [2] Tabular");
+            Console.Out.WriteLine("                               # [3] Detailed");
+            Console.Out.WriteLine("                               # [4] Grid (x2)");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --order=<value>            The display order");
             Console.Out.WriteLine("                               # [0] Date [descending]");

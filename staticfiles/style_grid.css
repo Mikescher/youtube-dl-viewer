@@ -131,3 +131,18 @@
 
   z-index: 1;
 }
+
+/* ----------------------------------------------------------------------------- */
+
+#content.lstyle_grid.lstyle_x2 .video_entry .thumbnail {
+  width:  20rem;
+}
+
+#content.lstyle_grid.lstyle_x2 .video_entry .thumbnail .thumbnail_img {
+  width:  20rem;
+  height: 11.25rem;
+}
+
+#content.lstyle_grid.lstyle_x2 .video_entry .title {
+  max-width: 20rem;
+}

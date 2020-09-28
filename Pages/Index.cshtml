@@ -53,31 +53,72 @@
             <div class="btn btn-display"        
                  data-mode="@Program.Args.OptDisplayMode"  
                  data-initial="@Program.Args.OptDisplayMode"
-                 data-options="@(Json.Serialize(new[]{"ListStyle: Grid", "ListStyle: Compact", "ListStyle: Tabular", "ListStyle: Detailed"}).ToString())"
+                 data-options="@(Json.Serialize(new[]
+                               {
+                                   "ListStyle: Grid", 
+                                   "ListStyle: Compact", 
+                                   "ListStyle: Tabular", 
+                                   "ListStyle: Detailed",
+                                   "ListStyle: Grid (x2)", 
+                               }).ToString())"
                  ><i class="far fa-eye"></i></div>
             
             <div class="btn btn-order"          
                  data-mode="@Program.Args.OptOrderMode"  
                  data-initial="@Program.Args.OptOrderMode"  
-                 data-options="@(Json.Serialize(new[]{"Sorting: Date [descending]", "Sorting: Date [ascending]", "Sorting: Title", "Sorting: Category", "Sorting: Views", "Sorting: Rating", "Sorting: Uploader","Sorting: External [descending]", "Sorting: External [ascending]", "Sorting: Random" }).ToString())"
+                 data-options="@(Json.Serialize(new[]
+                               {
+                                   "Sorting: Date [descending]", 
+                                   "Sorting: Date [ascending]", 
+                                   "Sorting: Title",
+                                   "Sorting: Category", 
+                                   "Sorting: Views", 
+                                   "Sorting: Rating", 
+                                   "Sorting: Uploader",
+                                   "Sorting: External [descending]", 
+                                   "Sorting: External [ascending]", 
+                                   "Sorting: Random",
+                               }).ToString())"
                  ><i class="fas fa-sort"></i></div>
             
             <div class="btn btn-width"          
                  data-mode="@Program.Args.OptWidthMode"  
                  data-initial="@Program.Args.OptWidthMode"  
-                 data-options="@(Json.Serialize(new[]{"Width: Small", "Width: Medium", "Width: Wide", "Width: Full" }).ToString())"
+                 data-options="@(Json.Serialize(new[]
+                               {
+                                   "Width: Small", 
+                                   "Width: Medium", 
+                                   "Width: Wide", 
+                                   "Width: Full",
+                               }).ToString())"
                  ><i class="fas fa-text-width"></i></div>
             
             <div class="btn btn-loadthumbnails" 
                  data-mode="@Program.Args.OptThumbnailMode"  
                  data-initial="@Program.Args.OptThumbnailMode"  
-                 data-options="@(Json.Serialize(new[]{"Thumbnails: Off", "Thumbnails: On (intelligent)", "Thumbnails: On (sequential)", "Thumbnails: On (parallel)" }).ToString())"
+                 data-options="@(Json.Serialize(new[]
+                               {
+                                   "Thumbnails: Off", 
+                                   "Thumbnails: On (intelligent)", 
+                                   "Thumbnails: On (sequential)", 
+                                   "Thumbnails: On (parallel)",
+                               }).ToString())"
                  ><i class="fas fa-photo-video"></i></div>
             
             <div class="btn btn-videomode"      
                  data-mode="@Program.Args.OptVideoMode"
                  data-initial="@Program.Args.OptVideoMode"
-                 data-options="@(Json.Serialize(new[]{"Playback: Disabled", "Playback: Seekable raw file", "Playback: Raw file", "Playback: Transcoded Webm stream", "Playback: Download file", "Playback: VLC Protocol Link (stream)", "Playback: VLC Protocol Link (local)", "Playback: Open original Webpage" }).ToString())"
+                 data-options="@(Json.Serialize(new[]
+                               {
+                                   "Playback: Disabled", 
+                                   "Playback: Seekable raw file", 
+                                   "Playback: Raw file", 
+                                   "Playback: Transcoded Webm stream",
+                                   "Playback: Download file", 
+                                   "Playback: VLC Protocol Link (stream)", 
+                                   "Playback: VLC Protocol Link (local)", 
+                                   "Playback: Open original Webpage",
+                               }).ToString())"
                  ><i class="fas fa-broadcast-tower"></i></div>
             
             <div class="btnpad"></div>
