@@ -48,7 +48,8 @@ namespace youtube_dl_viewer
         public string FFMPEGExec  = "ffmpeg";
         public string FFPROBEExec = "ffprobe";
 
-        public int AutoRefreshInterval = -1;
+        public int AutoRefreshInterval = -1; // seconds
+        public int CronRefreshInterval = -1; // seconds
 
         public bool TrimDataJSON = false;
         
@@ -122,6 +123,7 @@ namespace youtube_dl_viewer
                 if (key == "exec-ffmpeg")          FFMPEGExec                = value;
                 if (key == "exec-ffprobe")         FFPROBEExec               = value;
                 if (key == "autorefresh-interval") AutoRefreshInterval       = int.Parse(value);
+                if (key == "cronrefresh-interval") CronRefreshInterval       = int.Parse(value);
                 if (key == "htmltitle")            HTMLTitle                 = value;
             }
             
@@ -196,6 +198,10 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               if the last refresh is longer than <t> seconds ago.");
             Console.Out.WriteLine("                               Only triggers on web requests, if the webapp is not used the");
             Console.Out.WriteLine("                               interval can be longer");
+            Console.Out.WriteLine("  --cronrefresh-interval=<t> Automatically trigger a refresh (reload data from filesytem)");
+            Console.Out.WriteLine("                               every <t> seconds.");
+            Console.Out.WriteLine("                               This one also triggers without any user interaction.");
+            Console.Out.WriteLine("                               Default := -1 (disabled)");
             Console.Out.WriteLine("  --max-parallel-convert=<v> Maximum amount of parallel ffmpeg calls to");
             Console.Out.WriteLine("                               transcode video files to (stream-able) webm");
             Console.Out.WriteLine("                               Default := " + MaxParallelConvertJobs);

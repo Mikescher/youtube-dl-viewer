@@ -33,7 +33,12 @@ namespace youtube_dl_viewer
         {
             if (Program.Args.AutoRefreshInterval <= 0) return;
             var interval = TimeSpan.FromSeconds(Program.Args.AutoRefreshInterval);
-            
+
+            await RunCron(interval);
+        }
+
+        public static async Task RunCron(TimeSpan interval)
+        {
             for (var i = 0; i < Program.Args.DataDirs.Count; i++)
             {
                 if (!Program.DataRefreshTimestamps.ContainsKey(i)) continue;

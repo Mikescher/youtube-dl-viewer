@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -23,7 +24,9 @@ namespace youtube_dl_viewer
 
         public static readonly Dictionary<int, DateTime> DataRefreshTimestamps = new Dictionary<int, DateTime>();
 
-        public static string Version => "0.19";
+        public static Timer CronTimer;
+        
+        public static string Version => "0.20";
 
         // DataCache  :=   Dictionary<  DataDirIndex => (json, obj)  >
         // json       :=   full json for dir, aka:  { "videos": [ ... ], "missing": [ ... ] }
@@ -84,6 +87,18 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine();
             }
 
+            if (Args.CronRefreshInterval > 0)
+            {
+                var ts_real = TimeSpan.FromSeconds(Args.CronRefreshInterval);
+                var ts_timr = TimeSpan.FromSeconds(Args.CronRefreshInterval + 45);
+                CronTimer = new Timer(async e =>
+                {
+                    await Console.Out.WriteLineAsync("Run autorefresh via cron timer");
+                    await Console.Out.WriteLineAsync();
+                    await CronMiddleware.RunCron(ts_real);
+                }, null, ts_timr, ts_timr);
+            }
+            
             Initialized = true;
             CreateHostBuilder(args).Build().Run();
         }
