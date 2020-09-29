@@ -53,7 +53,7 @@ namespace youtube_dl_viewer
 
         public bool TrimDataJSON = false;
         
-        public string HTMLTitle = $"youtube-dl Viewer {Program.Version})";
+        public string HTMLTitle = $"youtube-dl Viewer (v{Program.Version})";
         
         public void Parse(IEnumerable<string> args)
         {
