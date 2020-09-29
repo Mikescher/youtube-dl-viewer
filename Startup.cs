@@ -46,7 +46,7 @@ namespace youtube_dl_viewer
                     }
 
                     await Console.Error.WriteLineAsync();
-                    await Console.Error.WriteLineAsync($"[E] Exception thrown: ({err?.GetType()}): '{err?.Message}'");
+                    await Console.Error.WriteLineAsync($"[E] Exception thrown: ({err?.GetType()}): '{err?.Message}'\n{err?.StackTrace}");
                     await Console.Error.WriteLineAsync();
                 });
             });
