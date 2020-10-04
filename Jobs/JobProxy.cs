@@ -21,6 +21,8 @@ namespace youtube_dl_viewer.Jobs
 
         public void Dispose()
         {
+            if (Killed) return;
+            
             Job.UnregisterProxy(this);
             Job = null;
         }
