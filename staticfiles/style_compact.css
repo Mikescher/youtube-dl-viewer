@@ -12,17 +12,10 @@
   grid-template-rows:    auto;
   grid-template-columns: auto 1fr auto;
   
-  background: #FFF;
-  border: 1px solid #BBB;
-  
   cursor: pointer;
 }
 
-#content.lstyle_compact .video_entry:hover {
-  border: 1px solid #88F;
-  background: #CCF;
-  color: #00F;
-}
+#content.lstyle_compact .video_entry:hover { }
 
 #content.lstyle_compact .table_header { display: none; }
 

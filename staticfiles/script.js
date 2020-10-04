@@ -119,12 +119,14 @@ window.onload = async function()
         if (key === 'width')     $('.btn-width').setAttribute('data-mode', val);
         if (key === 'thumb')     $('.btn-loadthumbnails').setAttribute('data-mode', val);
         if (key === 'videomode') $('.btn-videomode').setAttribute('data-mode', val);
+        if (key === 'theme')     $('.btn-theme').setAttribute('data-mode', val);
         if (key === 'dir')       DATA.dataidx = parseInt(val);
         if (key === 'seed')      DATA.shuffle_seed = val;
     }
     
     updateDisplaymodeClass(false);
     updateDisplaywidthClass(false);
+    updateTheme(false);
     updateVideomodeClass();
 
     $('.apppath span').innerHTML = escapeHtml(JSON.parse($attr('.apppath', 'data-dirs-name'))[DATA.dataidx]);
@@ -188,7 +190,7 @@ async function loadDataFromServer(initial)
             if (order_updated)
             {
                 const options = JSON.parse($attr('.btn-order', 'data-options'));
-                showToast(options[currentOrder]);
+                if (!initial) showToast(options[currentOrder]);
                 updateLocationHash();
             }
         }
@@ -205,7 +207,7 @@ async function loadDataFromServer(initial)
                 showToast(options[currentDisplay]);
                 updateLocationHash();
 
-                updateDisplaymodeClass(true);
+                updateDisplaymodeClass(!initial);
 
                 loadThumbnails();
             }
@@ -223,7 +225,7 @@ async function loadDataFromServer(initial)
                 showToast(options[currentWidth]);
                 updateLocationHash();
 
-                updateDisplaywidthClass(true);
+                updateDisplaywidthClass(!initial);
 
                 loadThumbnails();
             }
@@ -242,6 +244,22 @@ async function loadDataFromServer(initial)
                 updateLocationHash();
                 
                 updateVideomodeClass();
+            }
+        }
+
+        // OVERRIDE PLAYBACK
+        {
+            let currentThememode = parseInt($attr('.btn-theme', 'data-mode'));
+            if (json.meta.theme_override !== null && json.meta.theme_override !== currentThememode)
+            {
+                currentThememode = json.meta.theme_override;
+                $('.btn-theme').setAttribute('data-mode', currentThememode.toString());
+
+                const options = JSON.parse($attr('.btn-theme', 'data-options'));
+                showToast(options[currentThememode]);
+                updateLocationHash();
+
+                updateTheme(!initial);
             }
         }
         
@@ -757,6 +775,21 @@ function initButtons()
         });
     });
 
+    $('.btn-theme').addEventListener('click', () =>
+    {
+        const current = parseInt($attr('.btn-theme', 'data-mode'));
+        const options = JSON.parse($attr('.btn-theme', 'data-options'));
+
+        showOptionDropDown('theme', current, options, [], v =>
+        {
+            $('.btn-theme').setAttribute('data-mode', v.toString());
+            showToast(options[v]);
+            updateLocationHash();
+
+            updateTheme(true);
+        });
+    });
+
     $('.btn-refresh').addEventListener('click', async () =>
     {
         showToast('Refreshing data');
@@ -827,6 +860,9 @@ function updateLocationHash()
     if ($attr('.btn-videomode', 'data-mode') !== $attr('.btn-videomode', 'data-initial'))
         hash.push('videomode=' + $attr('.btn-videomode', 'data-mode'));
 
+    if ($attr('.btn-theme', 'data-mode') !== $attr('.btn-theme', 'data-initial'))
+        hash.push('theme=' + $attr('.btn-theme', 'data-mode'));
+
     if (DATA.dataidx !== parseInt($attr('.apppath', 'data-initial')))
         hash.push('dir='   + DATA.dataidx);
     
@@ -867,6 +903,15 @@ function updateDisplaywidthClass(toast)
     if (mode === 1) { content.classList.add('lstyle_width_medium'); if (toast) showToast('Width: Medium');   }
     if (mode === 2) { content.classList.add('lstyle_width_wide');   if (toast) showToast('Width: Wide');  }
     if (mode === 3) { content.classList.add('lstyle_width_full');   if (toast) showToast('Width: Full'); }
+}
+
+function updateTheme(toast)
+{
+    const mode = $attr('.btn-theme', 'data-mode');
+
+    let new_theme = '/themes/'+mode;
+    
+    if ($attr('#theme_style_obj', 'href') !== new_theme) $('#theme_style_obj').setAttribute('href', new_theme);
 }
 
 function updateVideomodeClass()

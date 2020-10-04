@@ -11,16 +11,11 @@
   
   margin:  0.1rem 0.2rem;
   padding: 0.2rem;
-  background: #FFF;
-  border: 1px solid #BBB;
   
   cursor: pointer;
 }
 
-#content.lstyle_detailed .video_entry:hover {
-  border: 1px solid #66F;
-  background: #EEF;
-}
+#content.lstyle_detailed .video_entry:hover { }
 
 #content.lstyle_detailed .table_header { display: none; }
 
@@ -156,9 +151,7 @@
   
   align-self: end;
   justify-self: end;
-  
-  border: 1px solid #888;
-  
+    
   width: 18px;
   height: 18px;
   
@@ -167,14 +160,12 @@
   justify-content: center;
   
   cursor: pointer;
-  
-  background: #EEE;
 }
 #content.lstyle_detailed .video_entry .btn-collapse { display: none; }
 
 #content.lstyle_detailed .video_entry .btn-expand:hover,
 #content.lstyle_detailed .video_entry .btn-collapse:hover {
-  background: #CCF;  
+  /**/ 
 }
 
 #content.lstyle_detailed .icon_cached { display: none; }

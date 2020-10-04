@@ -6,11 +6,7 @@ html,body {
     height:100%;
 }
 
-body{
-    background-color:#eee;
-    color:#333;
-    font-family:"Helvetica","Arial",sans-serif;
-}
+body { }
 
 #root {
     min-height: 100%;
@@ -20,14 +16,10 @@ body{
     flex-direction: column;
 }
 
-header {
-    font-family:"Roboto","Courier",sans-serif;
-}
+header { }
 
 #font_test_header
 {
-    font-family:"Roboto","Courier",sans-serif;
-    
     position: absolute;
     visibility: hidden;
     height: auto;
@@ -41,7 +33,6 @@ footer {
     width: 100%;
     height: 60px;
     text-align: center;
-    color: #ccc;
     left: 0;
     right: 0;
     margin: 0 auto;
@@ -58,7 +49,7 @@ footer hr {
 }
 
 footer a {
-    color: #aaf;
+    color: #00F;
 }
 
 .hidden {
@@ -74,8 +65,6 @@ header {
     display: grid;
     grid-template-columns: auto 1fr auto;
 
-    background: #AAA;
-    border-bottom: 1px solid #888;
     padding: 0.5rem;
 }
 
@@ -89,8 +78,6 @@ header .logo .apptitle {
 }
 
 header .logo .apppath {
-    font-style: italic;
-    font-family: "Courier New",monospace;
     opacity: 0.5;
     box-sizing: border-box;
 }
@@ -141,8 +128,6 @@ header .btn {
     align-items: center;
     justify-content: center;
 
-    background-color: #666;
-    color: #EEE;
     cursor: pointer;
     text-decoration: none;
 }
@@ -175,14 +160,6 @@ main {
     width: 100%;
     max-width: 300px;
     margin: 0 16px;
-
-    background-color: #666;
-    border: 1px solid #222;
-    border-radius: 2px;
-    box-shadow: 0 0 12px -4px #000;
-
-    color: #fff;
-    font-size: 16px;
 
     padding: 6px;
     user-select: none;

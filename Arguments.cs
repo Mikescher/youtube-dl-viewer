@@ -12,6 +12,8 @@ namespace youtube_dl_viewer
         public ThumbnailExtractionMode ThumbnailExtraction = ThumbnailExtractionMode.Sequential;
 
         public List<DataDirSpec> DataDirs = new List<DataDirSpec>();
+        
+        public List<ThemeSpec> Themes = new List<ThemeSpec> { new ThemeSpec(0, "default", "theme_default.css", null) };
 
         public int MaxParallelConvertJobs    = 1;
         public int MaxParallelGenPreviewJobs = 2;
@@ -36,6 +38,9 @@ namespace youtube_dl_viewer
         public int OptOrderMode     = 0;
         public int OptThumbnailMode = 1;
         public int OptVideoMode     = 4;
+        
+        public string OptThemeMode  = "default";
+        public int OptThemeModeInt => (Themes.FirstOrDefault(p => p.Name == OptThemeMode))?.Index ?? 0;
 
         public bool OptHelp = false;
 
@@ -109,6 +114,7 @@ namespace youtube_dl_viewer
                 if (key == "width")                OptWidthMode              = int.Parse(value);
                 if (key == "thumbnailmode")        OptThumbnailMode          = int.Parse(value);
                 if (key == "videomode")            OptVideoMode              = int.Parse(value);
+                if (key == "theme")                OptThemeMode              = (value.EndsWith(".css") ? value.Substring(0, value.Length-4) : value);
                 if (key == "path")                 DataDirs.Add(DataDirSpec.Parse(value));
                 if (key == "port")                 Port                      = int.Parse(value);
                 if (key == "cache")                CacheDir                  = value;
@@ -125,6 +131,7 @@ namespace youtube_dl_viewer
                 if (key == "autorefresh-interval") AutoRefreshInterval       = int.Parse(value);
                 if (key == "cronrefresh-interval") CronRefreshInterval       = int.Parse(value);
                 if (key == "htmltitle")            HTMLTitle                 = value;
+                if (key == "usertheme")            Themes.Add(ThemeSpec.Parse(value, Themes.Count));
             }
             
             if (!DataDirs.Any()) DataDirs = new List<DataDirSpec>{ DataDirSpec.FromPath(Environment.CurrentDirectory) };
@@ -153,14 +160,14 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # can either contain a simple directory");
             Console.Out.WriteLine("                               # or a complex json object (see README)");
             Console.Out.WriteLine("                               #");
-            Console.Out.WriteLine("  --display=<value>          The display mode");
+            Console.Out.WriteLine("  --display=<value>          The intial display mode");
             Console.Out.WriteLine("                               # [0] Grid");
             Console.Out.WriteLine("                               # [1] Compact");
             Console.Out.WriteLine("                               # [2] Tabular");
             Console.Out.WriteLine("                               # [3] Detailed");
             Console.Out.WriteLine("                               # [4] Grid (x2)");
             Console.Out.WriteLine("                               #");
-            Console.Out.WriteLine("  --order=<value>            The display order");
+            Console.Out.WriteLine("  --order=<value>            The intial display order");
             Console.Out.WriteLine("                               # [0] Date [descending]");
             Console.Out.WriteLine("                               # [1] Date [ascending]");
             Console.Out.WriteLine("                               # [2] Title");
@@ -172,19 +179,19 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # [8] External [ascending] (if available)");
             Console.Out.WriteLine("                               # [9] Random");
             Console.Out.WriteLine("                               #");
-            Console.Out.WriteLine("  --width=<value>            The display list width");
+            Console.Out.WriteLine("  --width=<value>            The intial display list width");
             Console.Out.WriteLine("                               # [0] Small");
             Console.Out.WriteLine("                               # [1] Medium");
             Console.Out.WriteLine("                               # [2] Wide");
             Console.Out.WriteLine("                               # [3] Full");
             Console.Out.WriteLine("                               #");
-            Console.Out.WriteLine("  --thumbnailmode=<value>    The thumbnail loading mode");
+            Console.Out.WriteLine("  --thumbnailmode=<value>    The intial thumbnail loading mode");
             Console.Out.WriteLine("                               # [0] Off");
             Console.Out.WriteLine("                               # [1] On (intelligent)");
             Console.Out.WriteLine("                               # [2] On (sequential)");
             Console.Out.WriteLine("                               # [3] On (parallel)");
             Console.Out.WriteLine("                               #");
-            Console.Out.WriteLine("  --videomode=<value>        The video playback mode");
+            Console.Out.WriteLine("  --videomode=<value>        The intial video playback mode");
             Console.Out.WriteLine("                               # [0] Disabled");
             Console.Out.WriteLine("                               # [1] Seekable raw file");
             Console.Out.WriteLine("                               # [2] Raw file");
@@ -194,6 +201,14 @@ namespace youtube_dl_viewer
             Console.Out.WriteLine("                               # [6] VLC Protocol Link (local)");  // https://github.com/stefansundin/vlc-protocol
             Console.Out.WriteLine("                               # [7] Open original Webpage");
             Console.Out.WriteLine("                               #");
+            Console.Out.WriteLine("  --theme=<value>            The intial theme");
+            Console.Out.WriteLine("                               # Can either be:");
+            Console.Out.WriteLine("                               # [default] The default theme");
+            Console.Out.WriteLine("                               # or one of the user-defined themes from the --usertheme arguments");
+            Console.Out.WriteLine("                               #");
+            Console.Out.WriteLine("  --usertheme=<path>         Add additional user-supplied themes");
+            Console.Out.WriteLine("                               # <path> must be a path to an css file");
+            Console.Out.WriteLine("                               # You can add more than one user theme");
             Console.Out.WriteLine("  --autorefresh-interval=<t> Automatically trigger a refresh (reload data from filesytem)");
             Console.Out.WriteLine("                               if the last refresh is longer than <t> seconds ago.");
             Console.Out.WriteLine("                               Only triggers on web requests, if the webapp is not used the");

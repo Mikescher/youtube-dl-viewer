@@ -1,0 +1,158 @@
+﻿body
+{
+    background-color:#eee;
+    color:#333;
+    font-family:"Helvetica","Arial",sans-serif;
+}
+
+header, #font_test_header
+{
+    font-family:"Roboto","Courier",sans-serif;
+}
+
+footer
+{
+    color: #ccc;
+}
+
+footer a 
+{
+    color: #aaf;
+}
+header 
+{
+    background: #AAA;
+    border-bottom: 1px solid #888;
+}
+
+header .logo .apppath
+{
+    font-style: italic;
+    font-family: "Courier New",monospace;
+}
+
+header .btn
+{
+    border: 1px solid #000;
+    background-color: #666;
+    color: #EEE;
+}
+
+#toast
+{
+    background-color: #666;
+    border: 1px solid #222;
+    border-radius: 2px;
+    box-shadow: 0 0 12px -4px #000;
+
+    color: #fff;
+    font-size: 16px;
+}
+
+
+/* ################ LIST-STYLE: COMPACT ################ */
+
+#content.lstyle_compact .video_entry
+{
+    background: #FFF;
+    border: 1px solid #BBB;
+}
+
+#content.lstyle_compact .video_entry:hover
+{
+    border: 1px solid #88F;
+    background: #CCF;
+    color: #00F;
+}
+
+/* ################ LIST-STYLE: DETAILED ################ */
+
+#content.lstyle_detailed .video_entry
+{
+    background: #FFF;
+    border: 1px solid #BBB;
+}
+
+#content.lstyle_detailed .video_entry:hover
+{
+    border: 1px solid #66F;
+    background: #EEF;
+}
+#content.lstyle_detailed .video_entry .btn-expand,
+#content.lstyle_detailed .video_entry .btn-collapse
+{
+    border: 1px solid #888;
+    background: #EEE;
+}
+
+#content.lstyle_detailed .video_entry .btn-expand:hover,
+#content.lstyle_detailed .video_entry .btn-collapse:hover
+{
+    background: #CCF;
+}
+
+#content.lstyle_detailed .video_entry.expanded .description
+{
+    background-color: #F8F8F8;
+    border: 1px solid #BBB;
+}
+
+#content.lstyle_detailed .video_entry.expanded .taglist .tag
+{
+    color: #080;
+}
+
+/* ################ LIST-STYLE: GRID ################ */
+
+#content.lstyle_grid .video_entry
+{
+    background: #FFF;
+    border: 1px solid #BBB;
+}
+
+#content.lstyle_grid .video_entry:hover
+{
+    border: 1px solid #88F;
+    box-shadow: 0 0 12px -2px #44F;
+}
+
+#content.lstyle_grid .video_entry .title
+{
+    font-family:"Roboto","Courier",sans-serif;
+    font-weight: bold;
+}
+
+/* ################ LIST-STYLE: TABULAR ################ */
+
+#content.lstyle_tabular
+{
+    border: 1px solid #888;
+    background: #CCC;
+}
+#content.lstyle_tabular .video_entry  > *,
+#content.lstyle_tabular .table_header > *
+{
+    border-bottom: 1px solid #888;
+    background: #FFF;
+}
+
+#content.lstyle_tabular .video_entry:hover > *
+{
+    background-color: #CCF;
+}
+
+#content.lstyle_tabular .video_entry  > *,
+#content.lstyle_tabular .table_header > * {
+    border-right: 1px solid #888;
+}
+
+
+
+
+
+
+
+
+
+
+

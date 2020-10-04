@@ -208,9 +208,6 @@
   white-space: pre-wrap;
   max-height: 75vh;
   overflow-y: scroll;
-  
-  background-color: #F8F8F8;
-  border: 1px solid #BBB;
 }
 
 
@@ -225,7 +222,6 @@
 #content.lstyle_detailed .video_entry.expanded .taglist .tag:before { content: '#'; opacity: 0.33; font-weight: bold; }
 #content.lstyle_detailed .video_entry.expanded .taglist .tag {
   margin: 0 0.5rem;
-  color: #080;
 }
 
 

@@ -22,6 +22,15 @@
     <link rel="stylesheet" type="text/css" href="/style_grid.css">
     <link rel="stylesheet" type="text/css" href="/style_tabular.css">
     
+    @if (Program.Args.Themes.Any(p => p.Name == Program.Args.OptThemeMode))
+    {
+        <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes.First(p => p.Name == Program.Args.OptThemeMode).URI">
+    }
+    else
+    {
+        <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes[0].URI">
+    }
+    
     <script src="/script.js"></script>
     
 </head>
@@ -120,6 +129,14 @@
                                    "Playback: Open original Webpage",
                                }).ToString())"
                  ><i class="fas fa-broadcast-tower"></i></div>
+            
+            <div class="btnpad"></div>
+            
+            <div class="btn btn-theme"      
+                 data-mode="@Program.Args.OptThemeModeInt"
+                 data-initial="@Program.Args.OptThemeModeInt"
+                 data-options="@(Json.Serialize( Program.Args.Themes.Select(p => $"Theme: {p.Name}").ToArray() ).ToString())"
+                 ><i class="fas fa-palette"></i></div>
             
             <div class="btnpad"></div>
             

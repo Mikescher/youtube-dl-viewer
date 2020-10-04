@@ -62,6 +62,8 @@
         <EmbeddedResource Include="staticfiles\style_compact.css" />
 
         <EmbeddedResource Include="staticfiles\style_jobs.css" />
+
+        <EmbeddedResource Include="staticfiles\theme_default.css" />
         
         <EmbeddedResource Include="staticfiles\thumb_empty.svg" />
     </ItemGroup>

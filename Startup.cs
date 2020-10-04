@@ -78,6 +78,8 @@ namespace youtube_dl_viewer
                 endpoints.MapGet("/jobmanager/start/collectData/{idx}",                         JobController.ManuallyForceCollectData);
                 endpoints.MapGet("/jobmanager/abort/{jobid}",                                   JobController.AbortJob);
                 endpoints.MapGet("/jobmanager/clearFinished",                                   JobController.ClearFinishedJobs);
+                
+                endpoints.MapGet("/themes/{idx:int}", ThemeController.GetTheme);
 
                 endpoints.MapRazorPages();
 

@@ -233,16 +233,25 @@ Every path json object *must* have a `path` property, and can have the following
  - `display`: Override the default display value (from `--display=<v>`) for this path
  - `width`: Override the default display value (from `--width=<v>`) for this path
  - `order`: Override the default order (from `--order=<v>`) for this path
+ - `theme`: Override the default theme (from `--theme=<v>`) for this path
  - `videomode`: Override the default playback mode (from `--videomode=<v>`) for this path
 
 > **[!] Note**  
 > Under windows (and linux if there are any) do not forget to escape your backslashes:  
 > `--path="{path:'C:\\Users\\Me\\Videos', name:'My Videos', ext_order: 'order.archive.txt'}`
 
+#### - Custom themes
+
+There is currently only 1 integrated theme: `default`.  
+But you can supply one (or more) custom themes with `--usertheme=<path>` arguments. 
+Then you can either choose the themes with the theme button n the top right corner or you can set a default theme with the `--theme=<name>` argument.
+
+Themes must be valid css files, see **staticfiles/theme_default.css** for an example
+
 
 ## Commandline manual
 
-You can run `youtube-dl-viewer --help` to get a list of all available commandline arguments.  
+You can (and should) run `youtube-dl-viewer --help` to get a list of all available commandline arguments and their possible values.  
 Here are some common and useful arguments:
 
  - `--port=<value>`:  
