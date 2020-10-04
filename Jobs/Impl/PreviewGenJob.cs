@@ -66,7 +66,7 @@ namespace youtube_dl_viewer.Jobs
                     return;
                 }
 
-                var videolen = double.Parse(outputProbe.Trim(), CultureInfo.InvariantCulture);
+                var videolen = FFMPEGUtil.ParseDoubleOutput(outputProbe, "ffprobe -show_entries format=duration");
 
                 var framedistance = videolen / Program.Args.MaxPreviewImageCount; // __ frames by default (and max)
 

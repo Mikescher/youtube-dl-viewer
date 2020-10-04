@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -94,5 +95,17 @@ namespace youtube_dl_viewer.Util
             return (proc1.ExitCode, builderOut.ToString());
         }
 
+        public static double ParseDoubleOutput(string dbl, string srccmd)
+        {
+            try
+            {
+                return double.Parse(dbl.Trim(), CultureInfo.InvariantCulture);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new Exception($"Could not parse FFMPEG double '{dbl}' from command '{srccmd}'", e);
+            }
+        }
     }
 }
