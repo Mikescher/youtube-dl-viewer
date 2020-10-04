@@ -115,10 +115,14 @@ async function refresh()
     
     for (const job of data.Jobs)
     {
+        let error_tt = '';
+        //if (job.Error !== null) error_tt = "data-tooltip=\"" + escapeHtml(job.Error) + "\" data-attached=\"0\"";
+        if (job.Error !== null) error_tt = " title=\"" + escapeHtml(job.Error) + "\" ";
+
         const col1 = (job.ManagerName).padEnd(14, ' ');
         const col2 = "<span class=\"maxlen\" style=\"max-width: 48ch\">" + escapeHtml(job.Name.padEnd(50, ' ')) + "</span>" + "  ";
         const col3 = (("" + job.ProxyCount).padStart(2, ' ') + " / " + ("" + job.ProxyRequests).padStart(2, ' ')).padEnd(10, ' ');
-        const col4 = "<span class=\"statecol state_"+job.State+"\">" + (job.State).padEnd(10, ' ')+"</span>";
+        const col4 = "<span class=\"statecol state_"+job.State+"\" "+error_tt+">" + (job.State).padEnd(10, ' ')+"</span>";
         const col5 = "[<span class=\"colProgress\">" + ("").padEnd(Math.floor((progressLen-4) * job.Progress), '#').padEnd(progressLen-4, ' ') + "</span>]" + "  ";
         const col6 = ("" + job.Time).padEnd(8, ' ');
         const col7 = "<span class=\"btnAbort btn " + (job.AbortRequest ? "btn-warn" : "btn-danger") + "\" data-jobid=\""+job.ID+"\">[Abort]</span>";

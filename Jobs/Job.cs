@@ -35,6 +35,8 @@ namespace youtube_dl_viewer.Jobs
         public DateTime? StartTime = null;
         public DateTime? EndTime = null;
         
+        public string Error = null;
+        
         public abstract (int, int) Progress { get; } 
 
         public TimeSpan Time
@@ -88,6 +90,7 @@ namespace youtube_dl_viewer.Jobs
             {
                 ChangeState(JobState.Failed);
                 EndTime = DateTime.Now;
+                Error = e.ToString();
                 Console.Error.WriteLine("Error in Job:");
                 Console.Error.WriteLine(e);
             }
@@ -194,7 +197,8 @@ namespace youtube_dl_viewer.Jobs
                     new JProperty("IsAlive", Thread?.IsAlive),
                     new JProperty("IsBackground", (Thread?.IsAlive == true) ? Thread?.IsBackground : null),
                     new JProperty("State", (Thread?.IsAlive == true) ? Thread?.ThreadState : null)
-                ))
+                )),
+                new JProperty("Error", Error)
             );
         }
     }
