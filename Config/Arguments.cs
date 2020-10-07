@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using youtube_dl_viewer.Jobs;
 
-namespace youtube_dl_viewer
+namespace youtube_dl_viewer.Config
 {
     public class Arguments
     {

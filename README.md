@@ -229,6 +229,7 @@ Every path json object *must* have a `path` property, and can have the following
                 One line per video and the line order specifies the video order.  
                 If some files are not found in the file they are appended at the end (This can useful in combination with the background autorefresh feature).  
                 (!) You *can* simply use the youtube-dl archive file here, but be aware that ytdl-viewer can edit the file and youtube-dl does not guarantee any order in the file.   
+ - `update_ext_order`: Automatically add missing files to the end of the `ext_order` file (default = **true**).  
  - `htmltitle`: Specify a custom title for the webpage when this path is selected
  - `display`: Override the default display value (from `--display=<v>`) for this path
  - `width`: Override the default display value (from `--width=<v>`) for this path

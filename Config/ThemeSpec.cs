@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using youtube_dl_viewer.Util;
 
-namespace youtube_dl_viewer
+namespace youtube_dl_viewer.Config
 {
     public class ThemeSpec
     {

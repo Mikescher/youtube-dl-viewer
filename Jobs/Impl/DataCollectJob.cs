@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using youtube_dl_viewer.Config;
 using youtube_dl_viewer.Controller;
 using youtube_dl_viewer.Util;
 
@@ -88,17 +89,7 @@ namespace youtube_dl_viewer.Jobs
                 ? new HashSet<string>()
                 : Directory.EnumerateFiles(Program.Args.CacheDir).Select(Path.GetFileName).ToHashSet();
 
-            var orderFileNeedsUpdate = false;
-            Dictionary<string, int> orderIndizes = null;
-            if (ddir.OrderFilename != null)
-            {
-                if (!File.Exists(ddir.FullOrderFilename)) throw new Exception($"Order file not found: '{ddir.FullOrderFilename}'");
-                orderIndizes = File
-                    .ReadLines(ddir.FullOrderFilename)
-                    .Where(p => !string.IsNullOrWhiteSpace(p))
-                    .Select((v,i)=>(v,i))
-                    .ToDictionary(p=>p.v, p=>p.i);
-            }
+            var orderIndizes = ddir.GetOrdering();
 
             var filecount = filesInfo.Count;
 
@@ -156,23 +147,7 @@ namespace youtube_dl_viewer.Jobs
 
                 var descr = (pathDesc != null) ? File.ReadAllText(pathDesc) : jinfo.Value<string>("description");
 
-                int? order_index = null;
-                if (orderIndizes != null)
-                {
-                    var key = jinfo.Value<string>("extractor") + " " + id;
-                    if (orderIndizes.ContainsKey(key))
-                    {
-                        order_index = orderIndizes[key];
-                    }
-                    else
-                    {
-                        order_index = orderIndizes.Count;
-                        orderIndizes.Add(key, order_index.Value);
-                        
-                        orderFileNeedsUpdate = true;
-                        Console.Out.WriteLine($"Updated Orderfile '{ddir.OrderFilename}': Added [{key}] at {order_index}");
-                    }
-                }
+                var order_index = orderIndizes?.GetOrderingOrInsert(pathVideo, jinfo.Value<string>("extractor"), id, vtitle);
                 
                 if (Program.Args.TrimDataJSON) jinfo = TrimJSON(jinfo);
                 
@@ -246,25 +221,8 @@ namespace youtube_dl_viewer.Jobs
                 processedFiles.AddRange(pathSubs);
 
                 var vtitle = ddir.UseFilenameAsTitle ? Path.GetFileNameWithoutExtension(pathVideo) : Path.GetFileName(pathVideo);
-                
 
-                int? order_index = null;
-                if (orderIndizes != null)
-                {
-                    var key = "file" + " " + id;
-                    if (orderIndizes.ContainsKey(key))
-                    {
-                        order_index = orderIndizes[key];
-                    }
-                    else
-                    {
-                        order_index = orderIndizes.Count;
-                        orderIndizes.Add(key, order_index.Value);
-                        
-                        orderFileNeedsUpdate = true;
-                        Console.Out.WriteLine($"Updated Orderfile '{ddir.OrderFilename}': Added [{key}] at {order_index}");
-                    }
-                }
+                var order_index = orderIndizes?.GetOrderingOrInsert(pathVideo, null, null, vtitle);
                 
                 resultVideos.Add(new JObject
                 (
@@ -312,11 +270,7 @@ namespace youtube_dl_viewer.Jobs
                 }
             }
 
-            if (orderFileNeedsUpdate)
-            {
-                File.WriteAllLines(ddir.FullOrderFilename, orderIndizes.Select(p => p).OrderBy(p => p.Value).Select(p => p.Key));
-                Console.Out.WriteLine($"new Orderfile written to '{ddir.FullOrderFilename}'");
-            }
+            orderIndizes?.UpdateFile();
 
             var result = new JObject
             (

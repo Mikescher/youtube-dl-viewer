@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace youtube_dl_viewer
+namespace youtube_dl_viewer.Config
 {
     public class DataDirSpec
     {
@@ -13,6 +12,7 @@ namespace youtube_dl_viewer
         public readonly int RecursionDepth;
         public readonly string FilenameFilter;
         public readonly string OrderFilename;
+        public readonly bool UpdateOrderFile;
         public readonly string HTMLTitle;
         
         public readonly int?   DisplayOverride;
@@ -31,7 +31,7 @@ namespace youtube_dl_viewer
         }
 
         public DataDirSpec(string path, string name, 
-            bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, string htmltitle,
+            bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, bool updateOrderfile, string htmltitle,
             int? display_override, int? width_override, int? order_override, int? videomode_override, string theme_override)
         {
             Path               = path;
@@ -40,6 +40,7 @@ namespace youtube_dl_viewer
             RecursionDepth     = recursionDepth;
             FilenameFilter     = filenameFilter;
             OrderFilename      = orderFilename;
+            UpdateOrderFile    = updateOrderfile;
             HTMLTitle          = htmltitle;
             
             DisplayOverride    = display_override;
@@ -47,8 +48,16 @@ namespace youtube_dl_viewer
             OrderOverride      = order_override;
             VideomodeOverride  = videomode_override;
             ThemeOverride      = theme_override;
+            
+            if (!Directory.Exists(Path))         throw new Exception($"Path not found: '{Path}'");
+            if (!File.Exists(FullOrderFilename)) throw new Exception($"Order file not found: '{FullOrderFilename}'");
         }
 
+        public OrderingList GetOrdering()
+        {
+            return OrderFilename != null ? OrderingList.ParseFromFile(FullOrderFilename, UpdateOrderFile) : null;
+        }
+        
         public static DataDirSpec Parse(string spec)
         {
             if (!spec.StartsWith("{")) return FromPath(spec);
@@ -68,21 +77,22 @@ namespace youtube_dl_viewer
 
             var order = json.GetValue("ext_order")?.Value<string>();
             
+            var updateorderfile = json.GetValue("update_ext_order")?.Value<bool>() ?? true;
+            
             var ovr_display   = json.GetValue("display")?.Value<int>();
             var ovr_width     = json.GetValue("width")?.Value<int>();
             var ovr_order     = json.GetValue("order")?.Value<int>();
             var ovr_videomode = json.GetValue("videomode")?.Value<int>();
             var ovr_theme     = json.GetValue("theme")?.Value<string>();
 
-            var htmltitle = json.GetValue("htmltitle")?.Value<string>();
-            if (htmltitle != null) htmltitle = htmltitle.Replace("{version}", Program.Version);
-            
-            return new DataDirSpec(path, name, useFilename, recDepth, filter, order, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_theme);
+            var htmltitle = json.GetValue("htmltitle")?.Value<string>()?.Replace("{version}", Program.Version);
+
+            return new DataDirSpec(path, name, useFilename, recDepth, filter, order, updateorderfile, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_theme);
         }
 
         public static DataDirSpec FromPath(string dir)
         {
-            return new DataDirSpec(dir, dir, false, 0, "*", null, null, null, null, null, null, null);
+            return new DataDirSpec(dir, dir, false, 0, "*", null, false, null, null, null, null, null, null);
         }
     }
 }

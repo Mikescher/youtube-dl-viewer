@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
+using youtube_dl_viewer.Config;
 using youtube_dl_viewer.Jobs;
 
 namespace youtube_dl_viewer
