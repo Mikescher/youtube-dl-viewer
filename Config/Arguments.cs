@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using youtube_dl_viewer.Jobs;
 
 namespace youtube_dl_viewer.Config
@@ -62,45 +64,23 @@ namespace youtube_dl_viewer.Config
         
         public void Parse(IEnumerable<string> args)
         {
-            foreach (var arg in args)
-            {
-                if (arg.ToLower() == "--help" || arg.ToLower() == "-h")
-                {
-                    OptHelp = true;
-                    continue;
-                }
+            foreach (var arg in args) ParseSingleArgument(arg, true);
+            
+            if (!DataDirs.Any()) DataDirs = new List<DataDirSpec>{ DataDirSpec.FromPath(Environment.CurrentDirectory) };
+
+            if (Port == -1) Port = FindFreePort();
+        }
+
+        private void ParseSingleArgument(string arg, bool allowConfigFile)
+        {
+                if (arg.ToLower() == "--help" || arg.ToLower() == "-h") { OptHelp         = true;  return; }
+                if (arg.ToLower() == "--version")                       { OptVersion      = true;  return; }
+                if (arg.ToLower() == "--no-ffmpeg")                     { NoFFMPEG        = false; return; }
+                if (arg.ToLower() == "--open-browser")                  { AutoOpenBrowser = true;  return; }
+                if (arg.ToLower() == "--no-auto-previews")              { AutoPreviewGen  = false; return; }
+                if (arg.ToLower() == "--trim-info-json")                { TrimDataJSON    = true;  return; }
                 
-                if (arg.ToLower() == "--version")
-                {
-                    OptVersion = true;
-                    continue;
-                }
-                
-                if (arg.ToLower() == "--no-ffmpeg")
-                {
-                    NoFFMPEG = false;
-                    continue;
-                }
-                
-                if (arg.ToLower() == "--open-browser")
-                {
-                    AutoOpenBrowser = true;
-                    continue;
-                }
-                
-                if (arg.ToLower() == "--no-auto-previews")
-                {
-                    AutoPreviewGen = false;
-                    continue;
-                }
-                
-                if (arg.ToLower() == "--trim-info-json")
-                {
-                    TrimDataJSON = true;
-                    continue;
-                }
-                
-                if (!arg.StartsWith("--")) continue;
+                if (!arg.StartsWith("--")) throw new Exception($"Unknown argument: '{arg}'. Use --help for a list of commandline parameters");
                 
                 var idx = arg.IndexOf("=", StringComparison.Ordinal);
 
@@ -109,34 +89,112 @@ namespace youtube_dl_viewer.Config
 
                 if (value.StartsWith("\"") && value.EndsWith("\"")) value = value.Substring(1, value.Length - 2);
 
-                if (key == "display")              OptDisplayMode            = int.Parse(value);
-                if (key == "order")                OptOrderMode              = int.Parse(value);
-                if (key == "width")                OptWidthMode              = int.Parse(value);
-                if (key == "thumbnailmode")        OptThumbnailMode          = int.Parse(value);
-                if (key == "videomode")            OptVideoMode              = int.Parse(value);
-                if (key == "theme")                OptThemeMode              = (value.EndsWith(".css") ? value.Substring(0, value.Length-4) : value);
-                if (key == "path")                 DataDirs.Add(DataDirSpec.Parse(value));
-                if (key == "port")                 Port                      = int.Parse(value);
-                if (key == "cache")                CacheDir                  = value;
-                if (key == "max-parallel-convert") MaxParallelConvertJobs    = int.Parse(value);
-                if (key == "max-parallel-genprev") MaxParallelGenPreviewJobs = int.Parse(value);
-                if (key == "preview-width")        PreviewImageWidth         = int.Parse(value);
-                if (key == "webm-convert-params")  ConvertFFMPEGParams       = value;
-                if (key == "thumnail-ex-mode")     ThumbnailExtraction       = (ThumbnailExtractionMode)int.Parse(value);
-                if (key == "previewcount-max")     MaxPreviewImageCount      = int.Parse(value);
-                if (key == "previewcount-min")     MinPreviewImageCount      = Math.Max(2, int.Parse(value));
-                if (key == "ffmpeg-debug-dir")     FFMPEGDebugDir            = value;
-                if (key == "exec-ffmpeg")          FFMPEGExec                = value;
-                if (key == "exec-ffprobe")         FFPROBEExec               = value;
-                if (key == "autorefresh-interval") AutoRefreshInterval       = int.Parse(value);
-                if (key == "cronrefresh-interval") CronRefreshInterval       = int.Parse(value);
-                if (key == "htmltitle")            HTMLTitle                 = value;
-                if (key == "usertheme")            Themes.Add(ThemeSpec.Parse(value, Themes.Count));
-            }
-            
-            if (!DataDirs.Any()) DataDirs = new List<DataDirSpec>{ DataDirSpec.FromPath(Environment.CurrentDirectory) };
+                if (key == "config-location")
+                {
+                    if (!allowConfigFile) throw new Exception($"Nested use config-location is not allowed");
+                    ParseArgumentsFromFile(value);
+                    return;
+                }
+                
+                if (key == "path")      { DataDirs.Add(DataDirSpec.Parse(value));           return; }
+                if (key == "usertheme") { Themes.Add(ThemeSpec.Parse(value, Themes.Count)); return; }
+                
+                if (key == "display")              { OptDisplayMode            = int.Parse(value);                                                      return; }
+                if (key == "order")                { OptOrderMode              = int.Parse(value);                                                      return; }
+                if (key == "width")                { OptWidthMode              = int.Parse(value);                                                      return; }
+                if (key == "thumbnailmode")        { OptThumbnailMode          = int.Parse(value);                                                      return; }
+                if (key == "videomode")            { OptVideoMode              = int.Parse(value);                                                      return; }
+                if (key == "theme")                { OptThemeMode              = (value.EndsWith(".css") ? value.Substring(0, value.Length-4) : value); return; }
+                if (key == "port")                 { Port                      = int.Parse(value);                                                      return; }
+                if (key == "cache")                { CacheDir                  = value;                                                                 return; }
+                if (key == "max-parallel-convert") { MaxParallelConvertJobs    = int.Parse(value);                                                      return; }
+                if (key == "max-parallel-genprev") { MaxParallelGenPreviewJobs = int.Parse(value);                                                      return; }
+                if (key == "preview-width")        { PreviewImageWidth         = int.Parse(value);                                                      return; }
+                if (key == "webm-convert-params")  { ConvertFFMPEGParams       = value;                                                                 return; }
+                if (key == "thumnail-ex-mode")     { ThumbnailExtraction       = (ThumbnailExtractionMode)int.Parse(value);                             return; }
+                if (key == "previewcount-max")     { MaxPreviewImageCount      = int.Parse(value);                                                      return; }
+                if (key == "previewcount-min")     { MinPreviewImageCount      = Math.Max(2, int.Parse(value));                                         return; }
+                if (key == "ffmpeg-debug-dir")     { FFMPEGDebugDir            = value;                                                                 return; }
+                if (key == "exec-ffmpeg")          { FFMPEGExec                = value;                                                                 return; }
+                if (key == "exec-ffprobe")         { FFPROBEExec               = value;                                                                 return; }
+                if (key == "autorefresh-interval") { AutoRefreshInterval       = int.Parse(value);                                                      return; }
+                if (key == "cronrefresh-interval") { CronRefreshInterval       = int.Parse(value);                                                      return; }
+                if (key == "htmltitle")            { HTMLTitle                 = value;                                                                 return; }
+                
+                throw new Exception($"Unknown argument: '{arg}'. Use --help for a list of commandline parameters");
+        }
 
-            if (Port == -1) Port = FindFreePort();
+        private void ParseArgumentsFromFile(string filepath)
+        {
+            var text = string.Join(" ", File.ReadAllLines(filepath)
+                .Select(p => p.Trim())
+                .Where(p => !p.StartsWith("#"))
+                .Where(p => !string.IsNullOrWhiteSpace(p)));
+
+            foreach (var arg in SplitArgs(text)) ParseSingleArgument(arg, false);
+        }
+        
+        private static IEnumerable<string> SplitArgs(string commandLine)
+        {
+            var result = new StringBuilder();
+
+            var quoted = false;
+            var escaped = false;
+            var started = false;
+            var allowcaret = false;
+            for (var i = 0; i < commandLine.Length; i++)
+            {
+                var chr = commandLine[i];
+
+                if (chr == '^' && !quoted)
+                {
+                    if (allowcaret)
+                    {
+                        result.Append(chr);
+                        started = true;
+                        escaped = false;
+                        allowcaret = false;
+                    }
+                    else if (i + 1 < commandLine.Length && commandLine[i + 1] == '^')
+                    {
+                        allowcaret = true;
+                    }
+                    else if (i + 1 == commandLine.Length)
+                    {
+                        result.Append(chr);
+                        started = true;
+                        escaped = false;
+                    }
+                }
+                else if (escaped)
+                {
+                    result.Append(chr);
+                    started = true;
+                    escaped = false;
+                }
+                else if (chr == '"')
+                {
+                    quoted = !quoted;
+                    started = true;
+                }
+                else if (chr == '\\' && i + 1 < commandLine.Length && commandLine[i + 1] == '"')
+                {
+                    escaped = true;
+                }
+                else if (chr == ' ' && !quoted)
+                {
+                    if (started) yield return result.ToString();
+                    result.Clear();
+                    started = false;
+                }
+                else
+                {
+                    result.Append(chr);
+                    started = true;
+                }
+            }
+
+            if (started) yield return result.ToString();
         }
 
         public void PrintHelp()
@@ -160,6 +218,11 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("                               # can either contain a simple directory");
             Console.Out.WriteLine("                               # or a complex json object (see README)");
             Console.Out.WriteLine("                               #");
+            Console.Out.WriteLine("  --config-location=<path>   Include configurations from a file");
+            Console.Out.WriteLine("                               # The specified file must be a simple textfile which contains");
+            Console.Out.WriteLine("                               # arguments as if they were directly supplied to the program.");
+            Console.Out.WriteLine("                               # Lines can be commented with the '#' character.");
+            Console.Out.WriteLine("                               # Syntax/idea is similar to the argument with the same name in youtube-dl");
             Console.Out.WriteLine("  --display=<value>          The intial display mode");
             Console.Out.WriteLine("                               # [0] Grid");
             Console.Out.WriteLine("                               # [1] Compact");
