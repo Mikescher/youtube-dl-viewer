@@ -288,16 +288,18 @@ function initData(data)
     
     const sortmode = parseInt($attr('.btn-order', 'data-mode'));
 
-    if (sortmode === 0) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * -1);
-    if (sortmode === 1) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * +1);
-    if (sortmode === 2) videos = videos.sort((a,b) => sortcompareData(a,b,'title'));
-    if (sortmode === 3) videos = videos.sort((a,b) => sortcompare(a,b,'categories'));
-    if (sortmode === 4) videos = videos.sort((a,b) => sortcompare(a,b,'view_count'));
-    if (sortmode === 5) videos = videos.sort((a,b) => sortcompareDiv(a,b,'like_count','dislike_count') * -1);
-    if (sortmode === 6) videos = videos.sort((a,b) => sortcompare(a,b,'uploader'));
-    if (sortmode === 7) videos = videos.sort((a,b) => sortcompareMeta(a,b,'ext_order_index') * -1);
-    if (sortmode === 8) videos = videos.sort((a,b) => sortcompareMeta(a,b,'ext_order_index') * +1);
-    if (sortmode === 9) videos = shuffle(videos, new Math.seedrandom(DATA.shuffle_seed));
+    if (sortmode ===  0) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * -1);
+    if (sortmode ===  1) videos = videos.sort((a,b) => sortcompare(a,b,'upload_date') * +1);
+    if (sortmode ===  2) videos = videos.sort((a,b) => sortcompareData(a,b,'title'));
+    if (sortmode ===  3) videos = videos.sort((a,b) => sortcompare(a,b,'categories'));
+    if (sortmode ===  4) videos = videos.sort((a,b) => sortcompare(a,b,'view_count'));
+    if (sortmode ===  5) videos = videos.sort((a,b) => sortcompareDiv(a,b,'like_count','dislike_count') * -1);
+    if (sortmode ===  6) videos = videos.sort((a,b) => sortcompare(a,b,'uploader'));
+    if (sortmode ===  7) videos = videos.sort((a,b) => sortcompareMeta(a,b,'ext_order_index') * -1);
+    if (sortmode ===  8) videos = videos.sort((a,b) => sortcompareMeta(a,b,'ext_order_index') * +1);
+    if (sortmode ===  9) videos = shuffle(videos, new Math.seedrandom(DATA.shuffle_seed));
+    if (sortmode === 10) videos = videos.sort((a,b) => sortcompareMeta(a,b,'filename_base') * +1);
+    if (sortmode === 11) videos = videos.sort((a,b) => sortcompareMeta(a,b,'filename_base') * -1);
 
 
     let html = '';
