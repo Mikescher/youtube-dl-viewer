@@ -116,7 +116,7 @@ namespace youtube_dl_viewer.Config
                 var match = REX_LINE.Match(sln);
                 if (match.Success)
                 {
-                    var entry = new OrderEntry(match.Groups["extractor"].Value, match.Groups["id"].Value, match.Groups["date"].Value, match.Groups["comment"].Value);
+                    var entry = new OrderEntry(match.Groups["extractor_key"].Value, match.Groups["id"].Value, match.Groups["date"].Value, match.Groups["comment"].Value);
                     lines.Add(entry.AsLine(i1, i2, i3));
                 }
                 else

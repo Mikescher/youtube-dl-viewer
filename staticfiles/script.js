@@ -393,10 +393,10 @@ function initData(data)
             html += '<div class="view_count">' + escapeHtml(formatNumber(info["view_count"])) + '</div>';
         }
         
-        if (info.hasNonNull('extractor')) 
+        if (info.hasNonNull('extractor_key')) 
         {
             html += '<div class="info info-extractor"><i class="fas fa-laptop-code"></i></div>';
-            html += '<div class="extractor">' + escapeHtml(info["extractor"]) + '</div>';
+            html += '<div class="extractor">' + escapeHtml(info["extractor_key"]) + '</div>';
         }
 
         if (info.hasNonNull('like_count'))
