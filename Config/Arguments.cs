@@ -58,7 +58,7 @@ namespace youtube_dl_viewer.Config
         public int AutoRefreshInterval = -1; // seconds
         public int CronRefreshInterval = -1; // seconds
 
-        public bool TrimDataJSON = false;
+        public bool TrimDataJSON = true;
         
         public string HTMLTitle = $"youtube-dl Viewer (v{Program.Version})";
         
@@ -79,6 +79,7 @@ namespace youtube_dl_viewer.Config
                 if (arg.ToLower() == "--open-browser")                  { AutoOpenBrowser = true;  return; }
                 if (arg.ToLower() == "--no-auto-previews")              { AutoPreviewGen  = false; return; }
                 if (arg.ToLower() == "--trim-info-json")                { TrimDataJSON    = true;  return; }
+                if (arg.ToLower() == "--no-trim-info-json")             { TrimDataJSON    = false; return; }
                 
                 if (!arg.StartsWith("--")) throw new Exception($"Unknown argument: '{arg}'. Use --help for a list of commandline parameters");
                 
@@ -318,7 +319,7 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("  --open-browser             Automatically open browser after webserver");
             Console.Out.WriteLine("                               is started (only works on desktop)");
             Console.Out.WriteLine("  --ffmpeg-debug-dir=<dir>   Directory where all ffmpeg ouput is written to (for debugging)");
-            Console.Out.WriteLine("  --trim-info-json           Reduce the size of the /json ajax request by only returning");
+            Console.Out.WriteLine("  --no-trim-info-json        Do not reduce the size of the /json ajax request by only returning");
             Console.Out.WriteLine("                               values from the *.info.json file that are actually used");
             Console.Out.WriteLine("  --htmltitle                Change the webpage title");
             Console.Out.WriteLine();
