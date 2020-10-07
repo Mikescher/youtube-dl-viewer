@@ -27,7 +27,7 @@ namespace youtube_dl_viewer
 
         public static Timer CronTimer;
         
-        public static string Version => "0.22";
+        public static string Version => "0.23";
 
         // DataCache  :=   Dictionary<  DataDirIndex => (json, obj)  >
         // json       :=   full json for dir, aka:  { "videos": [ ... ], "missing": [ ... ] }

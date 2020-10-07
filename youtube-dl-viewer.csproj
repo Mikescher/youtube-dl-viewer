@@ -5,6 +5,14 @@
         <RootNamespace>youtube_dl_viewer</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <Title>youtube-dl-viewer</Title>
+        <Copyright>Copyright © Mikescher 2020</Copyright>
+        <AssemblyVersion>0.23</AssemblyVersion>
+        <FileVersion>0.23</FileVersion>
+        <Version>0.23</Version>
+    </PropertyGroup>
+
     <ItemGroup>
       <Content Update="Pages\Index.cshtml">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
