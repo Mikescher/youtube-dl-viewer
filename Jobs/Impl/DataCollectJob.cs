@@ -272,10 +272,11 @@ namespace youtube_dl_viewer.Jobs
 
             if (!idsAreUnique)
             {
+                var guid = Guid.NewGuid().ToString("N");
                 var uid = 10000;
                 foreach (var rv in resultVideos)
                 {
-                    rv["meta"]?["uid"]?.Replace(new JValue(uid.ToString()));
+                    rv["meta"]?["uid"]?.Replace(new JValue(guid + "_" + uid));
                     uid++;
                 }
             }
