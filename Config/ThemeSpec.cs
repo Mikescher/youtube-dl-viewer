@@ -21,7 +21,7 @@ namespace youtube_dl_viewer.Config
             Index    = idx;
             Name     = name;
             Filename = filename;
-            FullPath = fullPath;
+            FullPath = fullPath?.Replace("/", Path.DirectorySeparatorChar.ToString());
         }
 
         public static ThemeSpec Parse(string value, int idx)

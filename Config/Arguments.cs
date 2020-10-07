@@ -106,7 +106,7 @@ namespace youtube_dl_viewer.Config
                 if (key == "videomode")            { OptVideoMode              = int.Parse(value);                                                      return; }
                 if (key == "theme")                { OptThemeMode              = (value.EndsWith(".css") ? value.Substring(0, value.Length-4) : value); return; }
                 if (key == "port")                 { Port                      = int.Parse(value);                                                      return; }
-                if (key == "cache")                { CacheDir                  = value;                                                                 return; }
+                if (key == "cache")                { CacheDir                  = value.Replace("/", Path.DirectorySeparatorChar.ToString());            return; }
                 if (key == "max-parallel-convert") { MaxParallelConvertJobs    = int.Parse(value);                                                      return; }
                 if (key == "max-parallel-genprev") { MaxParallelGenPreviewJobs = int.Parse(value);                                                      return; }
                 if (key == "preview-width")        { PreviewImageWidth         = int.Parse(value);                                                      return; }
@@ -114,7 +114,7 @@ namespace youtube_dl_viewer.Config
                 if (key == "thumnail-ex-mode")     { ThumbnailExtraction       = (ThumbnailExtractionMode)int.Parse(value);                             return; }
                 if (key == "previewcount-max")     { MaxPreviewImageCount      = int.Parse(value);                                                      return; }
                 if (key == "previewcount-min")     { MinPreviewImageCount      = Math.Max(2, int.Parse(value));                                         return; }
-                if (key == "ffmpeg-debug-dir")     { FFMPEGDebugDir            = value;                                                                 return; }
+                if (key == "ffmpeg-debug-dir")     { FFMPEGDebugDir            = value.Replace("/", Path.DirectorySeparatorChar.ToString());            return; }
                 if (key == "exec-ffmpeg")          { FFMPEGExec                = value;                                                                 return; }
                 if (key == "exec-ffprobe")         { FFPROBEExec               = value;                                                                 return; }
                 if (key == "autorefresh-interval") { AutoRefreshInterval       = int.Parse(value);                                                      return; }

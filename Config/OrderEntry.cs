@@ -32,11 +32,11 @@ namespace youtube_dl_viewer.Config
             return false;
         }
 
-        public string AsLine()
+        public string AsLine(int pad1, int pad2, int pad3)
         {
-            var r = $"{ExtractorKey} {ID}";
-            if (!string.IsNullOrWhiteSpace(Date)) r += $" [{Date}]";
-            if (!string.IsNullOrWhiteSpace(Comment)) r += $" [{Comment.Replace("\r", "").Replace("\n", "")}]";
+            var r = $"{(ExtractorKey.PadRight(pad1))} {(ID.PadRight(pad2))}";
+            if (!string.IsNullOrWhiteSpace(Date)) r += " " + $"[{Date}]".PadRight(pad3);
+            if (!string.IsNullOrWhiteSpace(Comment)) r += $"    // {Comment.Replace("\r", "").Replace("\n", "")}";
             return r;
         }
     }

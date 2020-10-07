@@ -34,12 +34,12 @@ namespace youtube_dl_viewer.Config
             bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, bool updateOrderfile, string htmltitle,
             int? display_override, int? width_override, int? order_override, int? videomode_override, string theme_override)
         {
-            Path               = path;
+            Path               = path?.Replace("/", System.IO.Path.DirectorySeparatorChar.ToString());
             Name               = name;
             UseFilenameAsTitle = useFilenameAsTitle;
             RecursionDepth     = recursionDepth;
             FilenameFilter     = filenameFilter;
-            OrderFilename      = orderFilename;
+            OrderFilename      = orderFilename?.Replace("/", System.IO.Path.DirectorySeparatorChar.ToString());
             UpdateOrderFile    = updateOrderfile;
             HTMLTitle          = htmltitle;
             
@@ -49,8 +49,9 @@ namespace youtube_dl_viewer.Config
             VideomodeOverride  = videomode_override;
             ThemeOverride      = theme_override;
             
-            if (!Directory.Exists(Path))         throw new Exception($"Path not found: '{Path}'");
-            if (!File.Exists(FullOrderFilename)) throw new Exception($"Order file not found: '{FullOrderFilename}'");
+            if (!Directory.Exists(Path)) throw new Exception($"Path not found: '{Path}'");
+            
+            if (OrderFilename != null && !File.Exists(FullOrderFilename)) throw new Exception($"Order file not found: '{FullOrderFilename}'");
         }
 
         public OrderingList GetOrdering()
