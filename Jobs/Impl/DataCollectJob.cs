@@ -111,7 +111,11 @@ namespace youtube_dl_viewer.Jobs
                 }
 
                 var id = jinfo.Value<string>("id");
-                if (id == null || idlist.Contains(id)) idsAreUnique = false;
+                if (id == null || idlist.Contains(id))
+                {
+                    idsAreUnique = false;
+                    Console.Error.WriteLine($"IDs are ot unique (duplicate id: '{id}') - generating custom IDs");
+                }
                 idlist.Add(id);
                 
                 var dir = Path.GetDirectoryName(pathJson);
@@ -194,7 +198,11 @@ namespace youtube_dl_viewer.Jobs
             foreach (var pathVideo in filesVideo)
             {
                 var id = pathVideo.Sha256();
-                if (id == null || idlist.Contains(id)) idsAreUnique = false;
+                if (id == null || idlist.Contains(id))
+                {
+                    idsAreUnique = false;
+                    Console.Error.WriteLine($"IDs are ot unique (duplicate id: '{id}') - generating custom IDs");
+                }
                 idlist.Add(id);
                 
                 var dir = Path.GetDirectoryName(pathVideo);
@@ -265,7 +273,7 @@ namespace youtube_dl_viewer.Jobs
                 var uid = 10000;
                 foreach (var rv in resultVideos)
                 {
-                    rv["meta"]?["uid"]?.Replace(new JProperty("uid", uid.ToString()));
+                    rv["meta"]?["uid"]?.Replace(new JValue(uid.ToString()));
                     uid++;
                 }
             }
