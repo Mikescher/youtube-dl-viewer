@@ -55,8 +55,8 @@
     <ItemGroup>
         <EmbeddedResource Include="staticfiles\favicon.ico" />
 
-        <EmbeddedResource Include="staticfiles\script.js" />
-        <EmbeddedResource Include="staticfiles\script_jobs.js" />
+        <TypeScriptCompile Include="staticfiles\script.ts" />
+        <TypeScriptCompile Include="staticfiles\script_jobs.ts" />
 
         <EmbeddedResource Include="staticfiles\style.css" />
         <EmbeddedResource Include="staticfiles\style_animation.css" />
