@@ -6,6 +6,8 @@ html,body {
     height:100%;
 }
 
+.nodisplay, .hidden { display: none !important; }
+
 body { }
 
 #root {
@@ -50,10 +52,6 @@ footer hr {
 
 footer a {
     color: #00F;
-}
-
-.hidden {
-    display: none !important;
 }
 
 

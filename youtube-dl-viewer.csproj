@@ -29,51 +29,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="staticexternal\fa-brands-400.eot" />
-        <EmbeddedResource Include="staticexternal\fa-brands-400.svg" />
-        <EmbeddedResource Include="staticexternal\fa-brands-400.ttf" />
-        <EmbeddedResource Include="staticexternal\fa-brands-400.woff" />
-        <EmbeddedResource Include="staticexternal\fa-brands-400.woff2" />
-        <EmbeddedResource Include="staticexternal\fa-regular-400.eot" />
-        <EmbeddedResource Include="staticexternal\fa-regular-400.svg" />
-        <EmbeddedResource Include="staticexternal\fa-regular-400.ttf" />
-        <EmbeddedResource Include="staticexternal\fa-regular-400.woff" />
-        <EmbeddedResource Include="staticexternal\fa-regular-400.woff2" />
-        <EmbeddedResource Include="staticexternal\fa-solid-900.eot" />
-        <EmbeddedResource Include="staticexternal\fa-solid-900.svg" />
-        <EmbeddedResource Include="staticexternal\fa-solid-900.ttf" />
-        <EmbeddedResource Include="staticexternal\fa-solid-900.woff" />
-        <EmbeddedResource Include="staticexternal\fa-solid-900.woff2" />
-        <EmbeddedResource Include="staticexternal\fontawesome.css" />
-        <EmbeddedResource Include="staticexternal\fontawesome.min.css" />
-        <EmbeddedResource Include="staticexternal\regular.css" />
-        <EmbeddedResource Include="staticexternal\regular.min.css" />
-        <EmbeddedResource Include="staticexternal\solid.css" />
-        <EmbeddedResource Include="staticexternal\solid.min.css" />
+        <EmbeddedResource Include="staticexternal\*" />
+        <EmbeddedResource Include="staticfiles\*" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="staticfiles\favicon.ico" />
-
-        <EmbeddedResource Include="staticfiles\script.js" />
-        <EmbeddedResource Include="staticfiles\script_jobs.js" />
-
-        <EmbeddedResource Include="staticfiles\style.css" />
-        <EmbeddedResource Include="staticfiles\style_animation.css" />
-        <EmbeddedResource Include="staticfiles\style_width.css" />
-        <EmbeddedResource Include="staticfiles\style_video.css" />
-
-        <EmbeddedResource Include="staticfiles\style_detailed.css" />
-        <EmbeddedResource Include="staticfiles\style_detailed_expanded.css" />
-        <EmbeddedResource Include="staticfiles\style_grid.css" />
-        <EmbeddedResource Include="staticfiles\style_tabular.css" />
-        <EmbeddedResource Include="staticfiles\style_compact.css" />
-
-        <EmbeddedResource Include="staticfiles\style_jobs.css" />
-
-        <EmbeddedResource Include="staticfiles\theme_default.css" />
-        
-        <EmbeddedResource Include="staticfiles\thumb_empty.svg" />
+      <TypeScriptCompile Include="staticfiles\script_mainpage.ts" />
     </ItemGroup>
 
 </Project>

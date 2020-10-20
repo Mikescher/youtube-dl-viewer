@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -22,42 +23,78 @@ namespace youtube_dl_viewer.Util
                     if (file.ToLower().EndsWith(".css"))
                     {
                         ctxt.Response.Headers.Add(HeaderNames.ContentType, "text/css");
-                        await ctxt.Response.BodyWriter.WriteAsync(GetBinResource(ass, key));
+                        await ctxt.Response.BodyWriter.WriteAsync(GetBinResource(ass, key, baseResPath, file));
                     }
                     else if (file.ToLower().EndsWith(".js"))
                     {
                         ctxt.Response.Headers.Add(HeaderNames.ContentType, "application/javascript");
-                        await ctxt.Response.WriteAsync(GetTextResource(ass, key));
+                        await ctxt.Response.WriteAsync(GetTextResource(ass, key, baseResPath, file));
                     }
                     else if (file.ToLower().EndsWith(".svg"))
                     {
                         ctxt.Response.Headers.Add(HeaderNames.ContentType, "image/svg+xml");
-                        await ctxt.Response.WriteAsync(GetTextResource(ass, key));
+                        await ctxt.Response.WriteAsync(GetTextResource(ass, key, baseResPath, file));
                     }
                     else
                     {
-                        await ctxt.Response.BodyWriter.WriteAsync(GetBinResource(ass, key));
+                        await ctxt.Response.BodyWriter.WriteAsync(GetBinResource(ass, key, baseResPath, file));
                     }
                 });
             }
         }
+
+        public static void MapJSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, string baseResPath, IEnumerable<string> reslist)
+        {
+            var ass = Assembly.GetExecutingAssembly();
+
+            endpoints.MapGet(path, async (ctxt) =>
+            {
+                var js = reslist
+                    .Select(p => (baseResPath + "." + p, p))
+                    .Select(p => (p, GetTextResource(ass, p.Item1, baseResPath, p.Item2)))
+                    .Select(p => $"/* -------- [{p.Item1}] ------ */\n\n" + p.Item2 + ";\n")
+                    .Aggregate("", (a, b) => a + "\n\n" + b);
+                ctxt.Response.Headers.Add(HeaderNames.ContentType, "application/javascript");
+                await ctxt.Response.WriteAsync(js);
+            });
+        }
         
-        public static byte[] GetBinResource(Assembly ass ,string resourceName)
+        public static byte[] GetBinResource(Assembly ass, string resourceName, string resourcePath, string resourceFilename)
         {
             using var stream = ass.GetManifestResourceStream(resourceName);
             if (stream == null) throw new ArgumentException();
             using var ms = new MemoryStream();
             
             stream.CopyTo(ms);
-            return ms.ToArray();
+            var result = ms.ToArray();
+
+#if DEBUG
+            result = File.ReadAllBytes(GetFilesystemResourcePath(resourcePath, resourceFilename));
+#endif
+
+            return result;
         }
         
-        public static string GetTextResource(Assembly ass ,string resourceName)
+        public static string GetTextResource(Assembly ass, string resourceName, string resourcePath, string resourceFilename)
         {
             using var stream = ass.GetManifestResourceStream(resourceName);
             if (stream == null) throw new ArgumentException();
             using var reader = new StreamReader(stream);
-            return reader.ReadToEnd();
+            var result = reader.ReadToEnd();
+
+#if DEBUG
+            result = File.ReadAllText(GetFilesystemResourcePath(resourcePath, resourceFilename));
+#endif
+            
+            return result;
+        }
+
+        private static string GetFilesystemResourcePath(string resourcePath, string resourceFilename)
+        {
+            var rpath = resourcePath;
+            if (rpath.StartsWith("youtube_dl_viewer.")) rpath = rpath.Substring("youtube_dl_viewer.".Length);
+            
+            return Path.Combine(Directory.GetCurrentDirectory(), rpath.Replace('.', Path.DirectorySeparatorChar), resourceFilename);
         }
         
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
 namespace youtube_dl_viewer.Config
@@ -20,6 +21,8 @@ namespace youtube_dl_viewer.Config
         public readonly int?   OrderOverride;
         public readonly int?   VideomodeOverride;
         public readonly string ThemeOverride;
+
+        public readonly string SelectorID;
 
         public string FullOrderFilename
         {
@@ -48,6 +51,8 @@ namespace youtube_dl_viewer.Config
             OrderOverride      = order_override;
             VideomodeOverride  = videomode_override;
             ThemeOverride      = theme_override;
+            
+            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"^[A-Za-z0-9_\-.,;]", "");
             
             if (!Directory.Exists(Path)) throw new Exception($"Path not found: '{Path}'");
             

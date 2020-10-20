@@ -1,5 +1,6 @@
 @page
 @using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
 @using youtube_dl_viewer
 <!DOCTYPE html>
 
@@ -31,26 +32,64 @@
         <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes[0].URI">
     }
     
-    <script src="/script.js"></script>
+    <script src="/script_main.compiled.js"></script>
     
 </head>
 
 <body>
+
+<div id="options" class="nodisplay"
+
+     data-program-version="@Program.Version"
+     
+     data-themelist="@(new JArray
+                     (
+                         Program.Args.Themes.Select((p,i) => new JObject
+                         (
+                             new JProperty("text", $"Theme: {p.Name}"), 
+                             new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
+                             new JProperty("url", $"/themes/{i}"),
+                             new JProperty("name", p.Name),
+                             new JProperty("enabled", true)
+                         )).ToArray<object>() 
+                     ).ToString(Formatting.None))"
+     
+     data-dirlist="@(new JArray
+                    (
+                        Program.Args.DataDirs.Select((p,i) => new JObject
+                        (
+                            new JProperty("text", p.Name), 
+                            new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
+                            new JProperty("name", p.Name),
+                            new JProperty("enabled", true)
+                        )).ToArray<object>() 
+                    ).ToString(Formatting.None))"
+     
+     data-displaymode="@Program.Args.OptDisplayMode"
+     data-ordermode="@Program.Args.OptOrderMode"
+     data-widthmode="@Program.Args.OptWidthMode"
+     data-thumbnailmode="@Program.Args.OptThumbnailMode"
+     data-videomode="@Program.Args.OptVideoMode"
+     data-theme="@Program.Args.OptThemeModeInt"
+     data-dir="0"
+     
+     data-has_ffmpeg="@Program.HasValidFFMPEG" 
+     data-has_cache="@(Program.Args.CacheDir != null)"
+     data-has-multiple-dirs="@(Program.Args.DataDirs.Count > 1)"
+
+></div>
 
 <div id="root">
 
     <header>
         <div class="logo">
             <div class="apptitle">youtube-dl Viewer <span class="version">@Program.Version</span></div>
-            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single")" data-dirs-path="@(JsonConvert.SerializeObject(@Program.Args.DataDirs.Select(p => p.Path).ToList()))" data-dirs-name="@(JsonConvert.SerializeObject(@Program.Args.DataDirs.Select(p => p.Name).ToList()))" data-initial="0">
+            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single")">
                 <span>@Program.Args.DataDirs.First().Name</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div id="apppath_dropdown" class="dropdown hidden">
-                @for (var i = 0; i < Program.Args.DataDirs.Count; i++)
-                {
-                    <div class="row" data-path="@Program.Args.DataDirs[i].Path" data-name="@Program.Args.DataDirs[i].Name" data-idx="@i">@Program.Args.DataDirs[i].Name</div>
-                }
+                <!-- js -->
             </div>
         </div>
 
@@ -59,86 +98,19 @@
             
             <div class="btnpad"></div>
             
-            <div class="btn btn-display"        
-                 data-mode="@Program.Args.OptDisplayMode"  
-                 data-initial="@Program.Args.OptDisplayMode"
-                 data-options="@(Json.Serialize(new[]
-                               {
-                                   "ListStyle: Grid", 
-                                   "ListStyle: Compact", 
-                                   "ListStyle: Tabular", 
-                                   "ListStyle: Detailed",
-                                   "ListStyle: Grid (x2)", 
-                               }).ToString())"
-                 ><i class="far fa-eye"></i></div>
+            <div class="btn btn-display"><i class="far fa-eye"></i></div>
             
-            <div class="btn btn-order"          
-                 data-mode="@Program.Args.OptOrderMode"  
-                 data-initial="@Program.Args.OptOrderMode"  
-                 data-options="@(Json.Serialize(new[]
-                               {
-                                   "Sorting: Date [descending]", 
-                                   "Sorting: Date [ascending]", 
-                                   "Sorting: Title",
-                                   "Sorting: Category", 
-                                   "Sorting: Views", 
-                                   "Sorting: Rating", 
-                                   "Sorting: Uploader",
-                                   "Sorting: External [descending]", 
-                                   "Sorting: External [ascending]", 
-                                   "Sorting: Random",
-                                   "Sorting: Filename [ascending]", 
-                                   "Sorting: Filename [descending]", 
-                               }).ToString())"
-                 ><i class="fas fa-sort"></i></div>
+            <div class="btn btn-order"><i class="fas fa-sort"></i></div>
             
-            <div class="btn btn-width"          
-                 data-mode="@Program.Args.OptWidthMode"  
-                 data-initial="@Program.Args.OptWidthMode"  
-                 data-options="@(Json.Serialize(new[]
-                               {
-                                   "Width: Small", 
-                                   "Width: Medium", 
-                                   "Width: Wide", 
-                                   "Width: Full",
-                               }).ToString())"
-                 ><i class="fas fa-text-width"></i></div>
+            <div class="btn btn-width"><i class="fas fa-text-width"></i></div>
             
-            <div class="btn btn-loadthumbnails" 
-                 data-mode="@Program.Args.OptThumbnailMode"  
-                 data-initial="@Program.Args.OptThumbnailMode"  
-                 data-options="@(Json.Serialize(new[]
-                               {
-                                   "Thumbnails: Off", 
-                                   "Thumbnails: On (intelligent)", 
-                                   "Thumbnails: On (sequential)", 
-                                   "Thumbnails: On (parallel)",
-                               }).ToString())"
-                 ><i class="fas fa-photo-video"></i></div>
+            <div class="btn btn-loadthumbnails"><i class="fas fa-photo-video"></i></div>
             
-            <div class="btn btn-videomode"      
-                 data-mode="@Program.Args.OptVideoMode"
-                 data-initial="@Program.Args.OptVideoMode"
-                 data-options="@(Json.Serialize(new[]
-                               {
-                                   "Playback: Disabled", 
-                                   "Playback: Seekable raw file", 
-                                   "Playback: Raw file", 
-                                   "Playback: Transcoded Webm stream",
-                                   "Playback: Download file", 
-                                   "Playback: VLC Protocol Link (stream)", 
-                                   "Playback: VLC Protocol Link (local)", 
-                                   "Playback: Open original Webpage",
-                               }).ToString())"
-                 ><i class="fas fa-broadcast-tower"></i></div>
+            <div class="btn btn-videomode"><i class="fas fa-broadcast-tower"></i></div>
             
             <div class="btnpad"></div>
             
-            <div class="btn btn-theme"      
-                 data-mode="@Program.Args.OptThemeModeInt"
-                 data-initial="@Program.Args.OptThemeModeInt"
-                 data-options="@(Json.Serialize( Program.Args.Themes.Select(p => $"Theme: {p.Name}").ToArray() ).ToString())"
-                 ><i class="fas fa-palette"></i></div>
+            <div class="btn btn-theme"><i class="fas fa-palette"></i></div>
             
             <div class="btnpad"></div>
             
@@ -149,7 +121,7 @@
 
     </header>
 
-    <main data-has_ffmpeg="@Program.HasValidFFMPEG" data-has_cache="@(Program.Args.CacheDir != null)">
+    <main>
         <div class="lstyle_detailed lstyle_width_medium" id="content">
             <!-- js -->
         </div>

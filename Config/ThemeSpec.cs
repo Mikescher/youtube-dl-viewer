@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Config
@@ -12,6 +13,8 @@ namespace youtube_dl_viewer.Config
         public readonly string Filename;
         public readonly string FullPath;
 
+        public readonly string SelectorID;
+
         public string URI => $"/themes/{Index}";
 
         private string _cache = null;
@@ -22,6 +25,8 @@ namespace youtube_dl_viewer.Config
             Name     = name;
             Filename = filename;
             FullPath = fullPath?.Replace("/", Path.DirectorySeparatorChar.ToString());
+            
+            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"^[A-Za-z0-9_\-.,;]", "");
         }
 
         public static ThemeSpec Parse(string value, int idx)
@@ -42,7 +47,7 @@ namespace youtube_dl_viewer.Config
             foreach (var key in ass.GetManifestResourceNames().Where(p => p.StartsWith("youtube_dl_viewer.staticfiles.")))
             {
                 var file = key.Substring("youtube_dl_viewer.staticfiles.".Length);
-                if (file == Filename) return (_cache = ASPExtensions.GetTextResource(ass, key));
+                if (file == Filename) return (_cache = ASPExtensions.GetTextResource(ass, key, "youtube_dl_viewer.staticfiles", file));
             }
 
             return null;

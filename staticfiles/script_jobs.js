@@ -14,43 +14,6 @@ const DATA =
     last_job_texts: {},
     
 }
-    
-$     = function(sel)       { return document.querySelector(sel); };
-$all  = function(sel)       { return document.querySelectorAll(sel); };
-$attr = function(sel, attr) { return document.querySelector(sel).getAttribute(attr); }
-$ajax = function(method, url)
-{
-    return new Promise(resolve =>
-    {
-        const request = new XMLHttpRequest();
-        request.open(method, url, true);
-
-        request.onload  = function()
-        {
-            let headerMap = {};
-            request.getAllResponseHeaders().trim().split(/[\r\n]+/).forEach(function (line) { const parts = line.split(': '); const header = parts.shift(); headerMap[header.toLowerCase()] = parts.join(': '); });
-            resolve({success: true, status: this.status, statusText: this.statusText, body: this.response, headers: headerMap });
-        }
-        request.onerror  = function()
-        {
-            resolve({ success: false, status: null, statusText: null, body: null, headers: null });
-        }
-
-        request.send();
-    });
-}
-
-function escapeHtml(text)
-{
-    if (typeof text !== "string") text = (""+text).toString();
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
-
-function sleepAsync(ms)
-{
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 window.onload = async function()
 {
