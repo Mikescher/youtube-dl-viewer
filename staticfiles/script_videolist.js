@@ -1,7 +1,7 @@
 class VideoListModel {
     //isLoadingThumbnails = false;
     //
-    //current_data = null;
+    //
     //
     //thumbnailInvocationCounter = 0;
     //currentAnimatedPreview = '';
@@ -15,18 +15,18 @@ class VideoListModel {
             { text: "ListStyle: Grid (x2)", keys: ['gridx2', '4'], enabled: true, css: ['lstyle_grid', 'lstyle_x2'] },
         ];
         this.Values_OrderMode = [
-            { text: "Sorting: Date [descending]", keys: ['date-desc', '0'], enabled: true },
-            { text: "Sorting: Date [ascending]", keys: ['date-asc', '1'], enabled: true },
-            { text: "Sorting: Title", keys: ['title', '2'], enabled: true },
-            { text: "Sorting: Category", keys: ['cat', '3'], enabled: true },
-            { text: "Sorting: Views", keys: ['views', '4'], enabled: true },
-            { text: "Sorting: Rating", keys: ['rating', '5'], enabled: true },
-            { text: "Sorting: Uploader", keys: ['uploader', '6'], enabled: true },
-            { text: "Sorting: External [descending]", keys: ['ext-desc', '7'], enabled: true },
-            { text: "Sorting: External [ascending]", keys: ['ext-asc', '8'], enabled: true },
-            { text: "Sorting: Random", keys: ['rand', '9'], enabled: true },
-            { text: "Sorting: Filename [ascending]", keys: ['filename-asc', '10'], enabled: true },
-            { text: "Sorting: Filename [descending]", keys: ['filename-desc', '11'], enabled: true },
+            { text: "Sorting: Date [descending]", keys: ['date-desc', '0'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * -1) },
+            { text: "Sorting: Date [ascending]", keys: ['date-asc', '1'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * +1) },
+            { text: "Sorting: Title", keys: ['title', '2'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareData(a, b, 'title')) },
+            { text: "Sorting: Category", keys: ['cat', '3'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'categories')) },
+            { text: "Sorting: Views", keys: ['views', '4'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'view_count')) },
+            { text: "Sorting: Rating", keys: ['rating', '5'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareDiv(a, b, 'like_count', 'dislike_count') * -1) },
+            { text: "Sorting: Uploader", keys: ['uploader', '6'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'uploader')) },
+            { text: "Sorting: External [descending]", keys: ['ext-desc', '7'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * -1) },
+            { text: "Sorting: External [ascending]", keys: ['ext-asc', '8'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * +1) },
+            { text: "Sorting: Random", keys: ['rand', '9'], enabled: true, sort: (p) => { shuffle(p, new SeedRandom(this.shuffle_seed)); return p; } },
+            { text: "Sorting: Filename [ascending]", keys: ['filename-asc', '10'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * +1) },
+            { text: "Sorting: Filename [descending]", keys: ['filename-desc', '11'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * -1) },
         ];
         this.Values_WidthMode = [
             { text: "Width: Small", keys: ['small', '0'], enabled: true, css: ['lstyle_width_small'] },
@@ -44,7 +44,7 @@ class VideoListModel {
             { text: "Playback: Disabled", keys: ['disabled', '0'], enabled: true, css: ['lstyle_videomode_0', 'lstyle_videomode_disabled',] },
             { text: "Playback: Seekable raw file", keys: ['raw-seekable', '1'], enabled: true, css: ['lstyle_videomode_1', 'lstyle_videomode_raw-seekable',] },
             { text: "Playback: Raw file", keys: ['raw', '2'], enabled: true, css: ['lstyle_videomode_2', 'lstyle_videomode_raw',] },
-            { text: "Playback: Transcoded Webm stream", keys: ['transcoded', '3'], enabled: true, css: ['lstyle_videomode_3', 'lstyle_videomode_transcoded',] },
+            { text: "Playback: Transcoded Webm stream", keys: ['transcoded', '3'], enabled: false, css: ['lstyle_videomode_3', 'lstyle_videomode_transcoded',] },
             { text: "Playback: Download file", keys: ['download', '4'], enabled: true, css: ['lstyle_videomode_4', 'lstyle_videomode_download',] },
             { text: "Playback: VLC Protocol Link (stream)", keys: ['vlc-stream', '5'], enabled: true, css: ['lstyle_videomode_5', 'lstyle_videomode_vlc-stream',] },
             { text: "Playback: VLC Protocol Link (local)", keys: ['vlc-local', '6'], enabled: true, css: ['lstyle_videomode_6', 'lstyle_videomode_vlc-local',] },
@@ -71,8 +71,12 @@ class VideoListModel {
         this.theme_current = -1;
         this.datadir_default = -1;
         this.datadir_current = -1;
+        // ----------------------------------------
         this.shuffle_seed = Math.random().toString().replace(/[.,]/g, '').substr(1);
-        this.content = $('#content');
+        this.current_data = null;
+        this.data_loadid_counter = 10000;
+        this.current_data_loadid = null;
+        this.dom_content = $('#content');
         this.Values_Themes = JSON.parse(optionsource.getAttribute('data-themelist'));
         this.Values_DataDirs = JSON.parse(optionsource.getAttribute('data-dirlist'));
         this.Values_VideoMode[3].enabled = (optionsource.getAttribute('data-has_ffmpeg').toLowerCase() === 'true');
@@ -104,13 +108,66 @@ class VideoListModel {
             if (key === 'seed')
                 this.shuffle_seed = val;
         }
-        this.loadData();
+        this.loadData().then(() => { });
     }
-    loadData() {
-        this.Values_OrderMode[7].enabled = /* TODO */ true;
-        this.Values_OrderMode[7].enabled = /* TODO */ true;
+    isLoaded() {
+        return (this.current_data !== null);
+    }
+    async loadData() {
+        this.current_data = null;
+        const loadid = this.data_loadid_counter++;
+        this.current_data_loadid = loadid;
+        try {
+            const response = await $ajax('GET', '/data/' + this.datadir_current + '/json');
+            const json = JSON.parse(response.body);
+            if (this.current_data_loadid !== loadid) {
+                console.warn("Abort no longer valid loadData Task (" + this.current_data_loadid + " <> " + loadid + ")");
+                return;
+            }
+            for (const vid of json.videos) {
+                vid.has = function (key) { return Object.hasOwnProperty.call(this, key); };
+                vid.hasNonNull = function (key) { return this.has(key) && this[key] != null; };
+                vid.hasArrayWithValues = function (key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; };
+            }
+            this.current_data = json;
+            this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
+            this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
+            if (json.meta.display_override !== null)
+                this.displaymode_current = json.meta.display_override;
+            if (json.meta.order_override !== null)
+                this.ordermode_current = json.meta.order_override;
+            if (json.meta.width_override !== null)
+                this.widthmode_current = json.meta.width_override;
+            if (json.meta.thumbnail_override !== null)
+                this.thumbnailmode_current = json.meta.thumbnail_override;
+            if (json.meta.videomode_override !== null)
+                this.videomode_current = json.meta.videomode_override;
+            if (json.meta.theme_override !== null)
+                this.theme_current = json.meta.theme_override;
+            if (!this.getCurrentDisplayMode().enabled)
+                this.displaymode_current = this.displaymode_default;
+            if (!this.getCurrentOrderMode().enabled)
+                this.ordermode_current = this.ordermode_default;
+            if (!this.getCurrentWidthMode().enabled)
+                this.widthmode_current = this.widthmode_default;
+            if (!this.getCurrentThumbnailMode().enabled)
+                this.thumbnailmode_current = this.thumbnailmode_default;
+            if (!this.getCurrentVideoMode().enabled)
+                this.videomode_current = this.videomode_default;
+            if (!this.getCurrentTheme().enabled)
+                this.theme_current = this.theme_default;
+            this.recreateDOM();
+        }
+        catch (e) {
+            App.showToast('Could not load data');
+            console.error(e);
+        }
     }
     recreateDOM() {
+        let videos = this.current_data.videos;
+        videos = this.getCurrentOrderMode().sort(videos);
+        let html = '';
+        //TODO
     }
     updateHash() {
         let hash = [];
@@ -148,8 +205,8 @@ class VideoListModel {
             return;
         this.displaymode_current = value;
         for (const v of this.Values_DisplayMode)
-            this.content.classList.remove(...v.css);
-        this.content.classList.add(...this.Values_DisplayMode[this.displaymode_current].css);
+            this.dom_content.classList.remove(...v.css);
+        this.dom_content.classList.add(...this.Values_DisplayMode[this.displaymode_current].css);
         if (showtoast)
             App.showToast(this.Values_DisplayMode[value].text);
         this.updateHash();
@@ -170,8 +227,8 @@ class VideoListModel {
             return;
         this.widthmode_current = value;
         for (const v of this.Values_WidthMode)
-            this.content.classList.remove(...v.css);
-        this.content.classList.add(...this.Values_WidthMode[this.displaymode_current].css);
+            this.dom_content.classList.remove(...v.css);
+        this.dom_content.classList.add(...this.Values_WidthMode[this.displaymode_current].css);
         if (showtoast)
             App.showToast(this.Values_WidthMode[value].text);
         this.updateHash();
@@ -192,8 +249,8 @@ class VideoListModel {
             return;
         this.videomode_current = value;
         for (const v of this.Values_VideoMode)
-            this.content.classList.remove(...v.css);
-        this.content.classList.add(...this.Values_VideoMode[this.videomode_current].css);
+            this.dom_content.classList.remove(...v.css);
+        this.dom_content.classList.add(...this.Values_VideoMode[this.videomode_current].css);
         if (showtoast)
             App.showToast(this.Values_VideoMode[value].text);
         this.updateHash();
@@ -218,7 +275,7 @@ class VideoListModel {
             App.showToast(this.Values_DataDirs[value].text);
         App.USERINTERFACE.refreshPathCombobox();
         this.updateHash();
-        this.loadData();
+        this.loadData().then(() => { });
     }
     getCurrentDisplayMode() { return this.Values_DisplayMode[this.displaymode_current]; }
     getCurrentOrderMode() { return this.Values_OrderMode[this.ordermode_current]; }

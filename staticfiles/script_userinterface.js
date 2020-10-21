@@ -56,8 +56,8 @@ class UserInterfaceModel {
         $('.btn-theme').addEventListener('click', () => {
             this.toggleOptionDropDown($('.btn-theme'), 'Theme', App.VIDEOLIST.Values_Themes, App.VIDEOLIST.theme_current, v => { App.VIDEOLIST.setTheme(v); });
         });
-        $('.btn-refresh').addEventListener('click', () => {
-            App.VIDEOLIST.loadData();
+        $('.btn-refresh').addEventListener('click', async () => {
+            await App.VIDEOLIST.loadData();
         });
         $('#dropdown_background').addEventListener('click', () => {
             this.hideDropDown();
@@ -86,6 +86,8 @@ class UserInterfaceModel {
     showOptionDropDown(src, type, options, current, evt) {
         if (this.currentDropdownType !== null)
             this.hideDropDown();
+        if (!App.VIDEOLIST.isLoaded())
+            return;
         this.currentDropdownType = type;
         let ids = [];
         let html = '';

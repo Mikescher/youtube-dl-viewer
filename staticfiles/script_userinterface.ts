@@ -89,9 +89,9 @@ class UserInterfaceModel
             this.toggleOptionDropDown($('.btn-theme'), 'Theme', App.VIDEOLIST.Values_Themes, App.VIDEOLIST.theme_current, v => { App.VIDEOLIST.setTheme(v); });
         });
         
-        $('.btn-refresh').addEventListener('click', () =>
+        $('.btn-refresh').addEventListener('click', async () =>
         {
-            App.VIDEOLIST.loadData();
+            await App.VIDEOLIST.loadData();
         });
 
         $('#dropdown_background').addEventListener('click', () =>
@@ -131,6 +131,9 @@ class UserInterfaceModel
     showOptionDropDown(src: HTMLElement, type: string, options: OptionDef[], current: number, evt: (p:number) => void)
     {
         if (this.currentDropdownType !== null) this.hideDropDown();
+        
+        if (!App.VIDEOLIST.isLoaded()) return;
+        
         this.currentDropdownType = type;
 
         let ids: [number, string][] = [];
@@ -196,6 +199,7 @@ class UserInterfaceModel
     showPathDropDown()
     {
         if (this.currentDropdownType !== null) this.hideDropDown();
+        
         this.currentDropdownType = "DataDir";
 
         this.dom_apppath_icon.classList.remove('fa-chevron-down');

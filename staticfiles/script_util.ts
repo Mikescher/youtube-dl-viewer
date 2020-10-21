@@ -64,9 +64,10 @@ function formatNumber(num)
     return num;
 }
 
-function shuffle(a, srand)
+function shuffle<T>(a: T[], srand: SeedRandom): T[]
 {
-    for (let i = a.length - 1; i > 0; i--) {
+    for (let i = a.length - 1; i > 0; i--) 
+    {
         const j = Math.floor(srand.double() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
     }

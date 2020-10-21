@@ -295,6 +295,7 @@ namespace youtube_dl_viewer.Jobs
                     
                     new JProperty("display_override",   ddir.DisplayOverride),
                     new JProperty("width_override",     ddir.WidthOverride),
+                    new JProperty("thumbnail_override", null),
                     new JProperty("order_override",     ddir.OrderOverride),
                     new JProperty("videomode_override", ddir.VideomodeOverride),
                     new JProperty("theme_override",     ddir.ThemeOverride)

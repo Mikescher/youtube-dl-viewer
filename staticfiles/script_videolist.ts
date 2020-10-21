@@ -2,12 +2,83 @@
 interface CSSOptionDef extends OptionDef { css: string[]  }
 
 interface DisplayModeDef   extends CSSOptionDef { }
-interface OrderModeDef     extends OptionDef    { }
+interface OrderModeDef     extends OptionDef    { sort: (p:DataJSONVideo[]) => DataJSONVideo[] }
 interface WidthModeDef     extends CSSOptionDef { }
 interface ThumbnailModeDef extends OptionDef    { }
 interface VideoModeDef     extends CSSOptionDef { }
 interface ThemeDef         extends OptionDef    { url: string; name: string; }
 interface DataDirDef       extends OptionDef    { name: string; }
+
+interface DataJSONVideo
+{
+    has:                (key:string) => boolean;
+    hasNonNull:         (key:string) => boolean;
+    hasArrayWithValues: (key:string) => boolean;
+
+    data: 
+    {
+        description: string|null,
+        title: string|null,
+        info: 
+        {
+            upload_date?: string|null;
+            title?: string|null;
+            categories?: string[];
+            like_count?: number|null;
+            dislike_count?: number|null;
+            uploader?: string|null;
+            channel_url?: string|null;
+            uploader_url?: string|null;
+            duration?: number|null;
+            tags?: string[];
+            webpage_url?: string|null;
+            view_count?: number|null;
+            extractor_key?: string|null;
+            width?: number|null;
+            height?: number|null;
+        }
+    }
+    meta: 
+    {
+        cache_file: string|null;
+        cached: boolean;
+        cached_preview_fsize: number;
+        cached_previews: boolean;
+        cached_video_fsize: number;
+        datadirindex: number;
+        directory: string;
+        ext_order_index: number|null;
+        filename_base: string;
+        path_description: string|null;
+        path_json: string|null;
+        path_thumbnail: string|null;
+        path_video: string;
+        path_video_abs: string;
+        paths_subtitle: { [x: string]: string };
+        previewscache_file: string|null;
+        uid: string;
+    }
+}
+
+interface DataJSON 
+{
+    meta: 
+    { 
+        htmltitle: string; 
+        has_ext_order: boolean; 
+        count_total: number; 
+        count_info: number; 
+        count_raw: number; 
+        display_override: number|null;
+        order_override: number|null;
+        width_override: number|null;
+        thumbnail_override: number|null;
+        videomode_override: number|null; 
+        theme_override: number|null;  
+    };
+    videos: DataJSONVideo[];
+    missing: string[];
+}
 
 class VideoListModel
 {
@@ -23,18 +94,18 @@ class VideoListModel
 
     Values_OrderMode: OrderModeDef[] = 
     [
-        { text: "Sorting: Date [descending]",     keys: ['date-desc',     '0'  ], enabled: true },
-        { text: "Sorting: Date [ascending]",      keys: ['date-asc',      '1'  ], enabled: true },
-        { text: "Sorting: Title",                 keys: ['title',         '2'  ], enabled: true },
-        { text: "Sorting: Category",              keys: ['cat',           '3'  ], enabled: true },
-        { text: "Sorting: Views",                 keys: ['views',         '4'  ], enabled: true },
-        { text: "Sorting: Rating",                keys: ['rating',        '5'  ], enabled: true },
-        { text: "Sorting: Uploader",              keys: ['uploader',      '6'  ], enabled: true },
-        { text: "Sorting: External [descending]", keys: ['ext-desc',      '7'  ], enabled: true },
-        { text: "Sorting: External [ascending]",  keys: ['ext-asc',       '8'  ], enabled: true },
-        { text: "Sorting: Random",                keys: ['rand',          '9'  ], enabled: true },
-        { text: "Sorting: Filename [ascending]",  keys: ['filename-asc',  '10' ], enabled: true },
-        { text: "Sorting: Filename [descending]", keys: ['filename-desc', '11' ], enabled: true },
+        { text: "Sorting: Date [descending]",     keys: ['date-desc',     '0'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompare(a,b,'upload_date') * -1) },
+        { text: "Sorting: Date [ascending]",      keys: ['date-asc',      '1'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompare(a,b,'upload_date') * +1) },
+        { text: "Sorting: Title",                 keys: ['title',         '2'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompareData(a,b,'title'))  },
+        { text: "Sorting: Category",              keys: ['cat',           '3'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompare(a,b,'categories')) },
+        { text: "Sorting: Views",                 keys: ['views',         '4'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompare(a,b,'view_count')) },
+        { text: "Sorting: Rating",                keys: ['rating',        '5'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompareDiv(a,b,'like_count','dislike_count') * -1) },
+        { text: "Sorting: Uploader",              keys: ['uploader',      '6'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompare(a,b,'uploader')) },
+        { text: "Sorting: External [descending]", keys: ['ext-desc',      '7'  ], enabled: false, sort: (p) => p.sort((a,b) => CompareUtil.sortcompareMeta(a,b,'ext_order_index') * -1) },
+        { text: "Sorting: External [ascending]",  keys: ['ext-asc',       '8'  ], enabled: false, sort: (p) => p.sort((a,b) => CompareUtil.sortcompareMeta(a,b,'ext_order_index') * +1) },
+        { text: "Sorting: Random",                keys: ['rand',          '9'  ], enabled: true,  sort: (p) => { shuffle(p, new SeedRandom(this.shuffle_seed)); return p; } },
+        { text: "Sorting: Filename [ascending]",  keys: ['filename-asc',  '10' ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompareMeta(a,b,'filename_base') * +1) },
+        { text: "Sorting: Filename [descending]", keys: ['filename-desc', '11' ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompareMeta(a,b,'filename_base') * -1) },
     ];
 
     Values_WidthMode: WidthModeDef[] = 
@@ -55,14 +126,14 @@ class VideoListModel
 
     Values_VideoMode: VideoModeDef[] =
     [
-        { text: "Playback: Disabled",                   keys: ['disabled',     '0' ], enabled: true, css: [ 'lstyle_videomode_0', 'lstyle_videomode_disabled',     ] },
-        { text: "Playback: Seekable raw file",          keys: ['raw-seekable', '1' ], enabled: true, css: [ 'lstyle_videomode_1', 'lstyle_videomode_raw-seekable', ] },
-        { text: "Playback: Raw file",                   keys: ['raw',          '2' ], enabled: true, css: [ 'lstyle_videomode_2', 'lstyle_videomode_raw',          ] },
-        { text: "Playback: Transcoded Webm stream",     keys: ['transcoded',   '3' ], enabled: true, css: [ 'lstyle_videomode_3', 'lstyle_videomode_transcoded',   ] },
-        { text: "Playback: Download file",              keys: ['download',     '4' ], enabled: true, css: [ 'lstyle_videomode_4', 'lstyle_videomode_download',     ] },
-        { text: "Playback: VLC Protocol Link (stream)", keys: ['vlc-stream',   '5' ], enabled: true, css: [ 'lstyle_videomode_5', 'lstyle_videomode_vlc-stream',   ] },
-        { text: "Playback: VLC Protocol Link (local)",  keys: ['vlc-local',    '6' ], enabled: true, css: [ 'lstyle_videomode_6', 'lstyle_videomode_vlc-local',    ] },
-        { text: "Playback: Open original Webpage",      keys: ['url',          '7' ], enabled: true, css: [ 'lstyle_videomode_7', 'lstyle_videomode_url',          ] },
+        { text: "Playback: Disabled",                   keys: ['disabled',     '0' ], enabled: true,  css: [ 'lstyle_videomode_0', 'lstyle_videomode_disabled',     ] },
+        { text: "Playback: Seekable raw file",          keys: ['raw-seekable', '1' ], enabled: true,  css: [ 'lstyle_videomode_1', 'lstyle_videomode_raw-seekable', ] },
+        { text: "Playback: Raw file",                   keys: ['raw',          '2' ], enabled: true,  css: [ 'lstyle_videomode_2', 'lstyle_videomode_raw',          ] },
+        { text: "Playback: Transcoded Webm stream",     keys: ['transcoded',   '3' ], enabled: false, css: [ 'lstyle_videomode_3', 'lstyle_videomode_transcoded',   ] },
+        { text: "Playback: Download file",              keys: ['download',     '4' ], enabled: true,  css: [ 'lstyle_videomode_4', 'lstyle_videomode_download',     ] },
+        { text: "Playback: VLC Protocol Link (stream)", keys: ['vlc-stream',   '5' ], enabled: true,  css: [ 'lstyle_videomode_5', 'lstyle_videomode_vlc-stream',   ] },
+        { text: "Playback: VLC Protocol Link (local)",  keys: ['vlc-local',    '6' ], enabled: true,  css: [ 'lstyle_videomode_6', 'lstyle_videomode_vlc-local',    ] },
+        { text: "Playback: Open original Webpage",      keys: ['url',          '7' ], enabled: true,  css: [ 'lstyle_videomode_7', 'lstyle_videomode_url',          ] },
     ];
 
     Values_Themes: ThemeDef[] = 
@@ -100,13 +171,19 @@ class VideoListModel
     
     // ----------------------------------------
 
-    content;
+    dom_content: HTMLElement;
+
+    // ----------------------------------------
 
     shuffle_seed: string = Math.random().toString().replace(/[.,]/g, '').substr(1);
+
+    current_data: DataJSON|null = null;
+    data_loadid_counter: number = 10000;
+    current_data_loadid: number|null = null;
     
     //isLoadingThumbnails = false;
     //
-    //current_data = null;
+    //
     //
     //thumbnailInvocationCounter = 0;
     //currentAnimatedPreview = '';
@@ -115,7 +192,7 @@ class VideoListModel
 
     constructor(optionsource: HTMLElement) 
     {
-        this.content = $('#content');
+        this.dom_content = $('#content');
 
         this.Values_Themes   = JSON.parse(optionsource.getAttribute('data-themelist'));
         this.Values_DataDirs = JSON.parse(optionsource.getAttribute('data-dirlist'));
@@ -147,20 +224,73 @@ class VideoListModel
             if (key === 'seed')      this.shuffle_seed          = val;
         }
 
-        this.loadData();
+        this.loadData().then(()=>{});
     }
 
-    loadData()
+    isLoaded()
     {
-        this.Values_OrderMode[7].enabled = /* TODO */ true;
-        this.Values_OrderMode[7].enabled = /* TODO */ true;
+        return (this.current_data !== null);
+    }
+    
+    async loadData()
+    {
+        this.current_data = null; 
+        
+        const loadid = this.data_loadid_counter++;
+        this.current_data_loadid = loadid;
+
+        try 
+        {
+            const response = await $ajax('GET', '/data/' + this.datadir_current + '/json');
+            const json = JSON.parse(response.body) as DataJSON;
+            if (this.current_data_loadid !== loadid) { console.warn("Abort no longer valid loadData Task ("+this.current_data_loadid+" <> "+loadid+")"); return; }
+
+            for (const vid of json.videos) 
+            {
+                vid.has                = function(key) { return Object.hasOwnProperty.call(this, key); };
+                vid.hasNonNull         = function(key) { return this.has(key) && this[key] != null; };
+                vid.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; };
+            }
+            
+            this.current_data = json;
+
+            this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
+            this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
+
+            if (json.meta.display_override   !== null) this.displaymode_current   = json.meta.display_override;
+            if (json.meta.order_override     !== null) this.ordermode_current     = json.meta.order_override;
+            if (json.meta.width_override     !== null) this.widthmode_current     = json.meta.width_override;
+            if (json.meta.thumbnail_override !== null) this.thumbnailmode_current = json.meta.thumbnail_override;
+            if (json.meta.videomode_override !== null) this.videomode_current     = json.meta.videomode_override;
+            if (json.meta.theme_override     !== null) this.theme_current         = json.meta.theme_override;
+
+            if (!this.getCurrentDisplayMode().enabled)   this.displaymode_current   = this.displaymode_default;
+            if (!this.getCurrentOrderMode().enabled)     this.ordermode_current     = this.ordermode_default;
+            if (!this.getCurrentWidthMode().enabled)     this.widthmode_current     = this.widthmode_default;
+            if (!this.getCurrentThumbnailMode().enabled) this.thumbnailmode_current = this.thumbnailmode_default;
+            if (!this.getCurrentVideoMode().enabled)     this.videomode_current     = this.videomode_default;
+            if (!this.getCurrentTheme().enabled)         this.theme_current         = this.theme_default;
+
+            this.recreateDOM();
+        } 
+        catch (e) 
+        {
+            App.showToast('Could not load data');
+            console.error(e);
+        }
     }
 
     recreateDOM()
     {
+        let videos = this.current_data.videos;
 
+        videos = this.getCurrentOrderMode().sort(videos);
+
+        let html = '';
+        
+        //TODO
     }
-
+    
     updateHash()
     {
         let hash = [];
@@ -198,8 +328,8 @@ class VideoListModel
         
         this.displaymode_current = value;
 
-        for (const v of this.Values_DisplayMode) this.content.classList.remove(...v.css);
-        this.content.classList.add(...this.Values_DisplayMode[this.displaymode_current].css);
+        for (const v of this.Values_DisplayMode) this.dom_content.classList.remove(...v.css);
+        this.dom_content.classList.add(...this.Values_DisplayMode[this.displaymode_current].css);
         
         if (showtoast) App.showToast(this.Values_DisplayMode[value].text);
         
@@ -228,8 +358,8 @@ class VideoListModel
 
         this.widthmode_current = value;
 
-        for (const v of this.Values_WidthMode) this.content.classList.remove(...v.css);
-        this.content.classList.add(...this.Values_WidthMode[this.displaymode_current].css);
+        for (const v of this.Values_WidthMode) this.dom_content.classList.remove(...v.css);
+        this.dom_content.classList.add(...this.Values_WidthMode[this.displaymode_current].css);
 
         if (showtoast) App.showToast(this.Values_WidthMode[value].text);
 
@@ -259,8 +389,8 @@ class VideoListModel
 
         this.videomode_current = value;
 
-        for (const v of this.Values_VideoMode) this.content.classList.remove(...v.css);
-        this.content.classList.add(...this.Values_VideoMode[this.videomode_current].css);
+        for (const v of this.Values_VideoMode) this.dom_content.classList.remove(...v.css);
+        this.dom_content.classList.add(...this.Values_VideoMode[this.videomode_current].css);
 
         if (showtoast) App.showToast(this.Values_VideoMode[value].text);
 
@@ -296,7 +426,7 @@ class VideoListModel
         App.USERINTERFACE.refreshPathCombobox();
         
         this.updateHash();
-        this.loadData();
+        this.loadData().then(() => { });
     }
 
     getCurrentDisplayMode():   DisplayModeDef   { return this.Values_DisplayMode[this.displaymode_current];     }
