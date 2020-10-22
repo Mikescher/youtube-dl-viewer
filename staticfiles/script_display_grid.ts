@@ -1,13 +1,6 @@
 ﻿
 class DisplayGridRenderer implements DisplayRenderer
 {
-    readonly double: boolean;
-    
-    constructor(double: boolean) 
-    {
-        this.double = double;
-    }
-
     render(videos: DataJSONVideo[], dir: DataDirDef): string 
     {
         let html = '';

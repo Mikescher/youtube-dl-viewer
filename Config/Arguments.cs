@@ -234,7 +234,8 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("                               # [2] Tabular");
             Console.Out.WriteLine("                               # [3] Detailed");
             Console.Out.WriteLine("                               # [4] Grid (x2)");
-            Console.Out.WriteLine("                               # [5] Timeline");
+            Console.Out.WriteLine("                               # [5] Grid (1/2)");
+            Console.Out.WriteLine("                               # [6] Timeline");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --order=<value>            The intial display order");
             Console.Out.WriteLine("                               # [0]  Date [descending]");

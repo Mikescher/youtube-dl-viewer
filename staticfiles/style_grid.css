@@ -147,5 +147,31 @@
 }
 
 #content.lstyle_grid.lstyle_x2 .video_entry .title {
-  max-width: 20rem;
+  max-width: calc(20rem - 0.1rem - 0.1rem);
+}
+
+#content.lstyle_grid.lstyle_x2 .flexrowfiller .pseudo
+{
+  width: 20rem;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+#content.lstyle_grid.lstyle_half .video_entry .thumbnail {
+  width:  6rem;
+}
+
+#content.lstyle_grid.lstyle_half .video_entry .thumbnail .thumbnail_img {
+  width:  6rem;
+  height: 3.375rem;
+}
+
+#content.lstyle_grid.lstyle_half .video_entry .title {
+  max-width: calc(5rem - 0.1rem - 0.1rem);
+  font-size: 0.66em;
+}
+
+#content.lstyle_grid.lstyle_half .flexrowfiller .pseudo
+{
+  width: 6rem;
 }

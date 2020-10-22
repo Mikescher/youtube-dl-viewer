@@ -3,12 +3,13 @@ class VideoListModel {
     // ----------------------------------------
     constructor(optionsource) {
         this.Values_DisplayMode = [
-            { index: 0, text: "ListStyle: Grid", keys: ['grid', '0'], enabled: true, css: ['lstyle_grid'], renderer: new DisplayGridRenderer(false) },
+            { index: 0, text: "ListStyle: Grid", keys: ['grid', '0'], enabled: true, css: ['lstyle_grid'], renderer: new DisplayGridRenderer() },
             { index: 1, text: "ListStyle: Compact", keys: ['compact', '1'], enabled: true, css: ['lstyle_compact'], renderer: new DisplayCompactRenderer() },
             { index: 2, text: "ListStyle: Tabular", keys: ['tabular', '2'], enabled: true, css: ['lstyle_tabular'], renderer: new DisplayTabularRenderer() },
             { index: 3, text: "ListStyle: Detailed", keys: ['detailed', '3'], enabled: true, css: ['lstyle_detailed'], renderer: new DisplayDetailedRenderer() },
-            { index: 4, text: "ListStyle: Grid (x2)", keys: ['gridx2', '4'], enabled: true, css: ['lstyle_grid', 'lstyle_x2'], renderer: new DisplayGridRenderer(true) },
-            { index: 5, text: "ListStyle: Timeline", keys: ['timeline', '5'], enabled: false, css: ['lstyle_timeline'], renderer: new DisplayTimelineRenderer() },
+            { index: 4, text: "ListStyle: Grid (x2)", keys: ['gridx2', '4'], enabled: true, css: ['lstyle_grid', 'lstyle_x2'], renderer: new DisplayGridRenderer() },
+            { index: 5, text: "ListStyle: Grid (1/2)", keys: ['grid_half', '5'], enabled: true, css: ['lstyle_grid', 'lstyle_half'], renderer: new DisplayGridRenderer() },
+            { index: 6, text: "ListStyle: Timeline", keys: ['timeline', '6'], enabled: false, css: ['lstyle_timeline'], renderer: new DisplayTimelineRenderer() },
         ];
         this.Values_OrderMode = [
             { index: 0, text: "Sorting: Date [descending]", keys: ['date-desc', '0'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * -1) },
@@ -82,7 +83,7 @@ class VideoListModel {
         this.preview_config_mincount = parseInt(optionsource.getAttribute('data-previewcount-config-min'));
         this.preview_config_maxcount = parseInt(optionsource.getAttribute('data-previewcount-config-max'));
         this.Values_VideoMode[3].enabled = this.hasFFMPEG;
-        this.Values_DisplayMode[5].enabled = this.hasFFMPEG && this.hasCache;
+        this.Values_DisplayMode[6].enabled = this.hasFFMPEG && this.hasCache;
         this.displaymode_current = this.displaymode_default = this.getIndexFromKey("DisplayMode", this.Values_DisplayMode, optionsource.getAttribute('data-displaymode'), 0);
         this.ordermode_current = this.ordermode_default = this.getIndexFromKey("OrderMode", this.Values_OrderMode, optionsource.getAttribute('data-ordermode'), 0);
         this.widthmode_current = this.widthmode_default = this.getIndexFromKey("WidthMode", this.Values_WidthMode, optionsource.getAttribute('data-widthmode'), 0);

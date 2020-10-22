@@ -1,8 +1,5 @@
 "use strict";
 class DisplayGridRenderer {
-    constructor(double) {
-        this.double = double;
-    }
     render(videos, dir) {
         let html = '';
         for (const vid of videos) {
