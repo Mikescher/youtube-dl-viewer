@@ -165,6 +165,8 @@ main {
     transition: top 350ms, opacity 350ms;
 
     text-align: center;
+    
+    z-index: 45;
 }
 
 #toast:not(.active):not(.vanished) {

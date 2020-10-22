@@ -9,7 +9,7 @@ function $all(sel) {
     return Array.prototype.slice.apply(document.querySelectorAll(sel));
 }
 function $_all(sel) {
-    return Array.prototype.slice.apply(document.querySelectorAll(sel));
+    return toArr(document.querySelectorAll(sel));
 }
 function $attr(sel, attr) {
     var _a, _b;
@@ -29,6 +29,9 @@ function $ajax(method, url) {
         };
         request.send();
     });
+}
+function toArr(v) {
+    return Array.prototype.slice.apply(v);
 }
 function escapeHtml(text) {
     if (typeof text !== "string")
@@ -97,6 +100,19 @@ function isElementInViewport(el) {
         rect.right > 0 &&
         rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
         rect.top < (window.innerHeight || document.documentElement.clientHeight));
+}
+function isInParentBounds(el) {
+    const rect = el.getBoundingClientRect();
+    const bounds = el.parentElement.getBoundingClientRect();
+    if (rect.right <= bounds.left)
+        return false;
+    if (rect.bottom <= bounds.top)
+        return false;
+    if (rect.left >= bounds.right)
+        return false;
+    if (rect.top >= bounds.bottom)
+        return false;
+    return true;
 }
 function formatBytes(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];

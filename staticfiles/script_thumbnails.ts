@@ -46,18 +46,21 @@ class ThumbnailModel
     
     async unloadAll(taskid: number)
     {
+        let tasks: Promise<any>[] = [];
+
+        let renderer = App.VIDEOLIST.getCurrentDisplayMode().renderer;
+        
         let ctr = 1;
         for (const thumb of $all('.thumb_img_loadable'))
         {
             if (taskid !== this.currentThumbnailTask) { console.warn("Task [Thumbnails.UnloadAll] was canceled"); return; }
 
-            if (thumb.getAttribute('data-loaded') === '0') continue;
-
-            thumb.setAttribute('data-loaded', '0');
-            thumb.setAttribute('src', '/thumb_empty.svg');
+            tasks.push(renderer.unsetThumbnail(thumb));
             
             if (ctr++ % 8 === 0) await sleepAsync(0);
         }
+
+        await Promise.all(tasks);
 
         if (taskid === this.currentThumbnailTask) this.currentThumbnailTask = null;
     }
@@ -66,24 +69,16 @@ class ThumbnailModel
     {
         let tasks: Promise<any>[] = [];
         
+        let renderer = App.VIDEOLIST.getCurrentDisplayMode().renderer;
+        
         // in-viewport => parallel
         for (const thumb of $_all<HTMLImageElement>('.thumb_img_loadable'))
         {
             if (taskid !== this.currentThumbnailTask) { console.warn("Task [Thumbnails.LoadIntelligent] was canceled"); return; }
 
-            if (thumb.getAttribute('data-loaded') === '1') continue;
-
             if (!isElementInViewport(thumb)) continue; // not visible
 
-            const src = thumb.getAttribute('data-realurl')!;
-
-            if (thumb.getAttribute('src') === src) continue;
-            
-            tasks.push(setImageSource(thumb, src).then(ok =>
-            {
-                if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-                thumb.setAttribute('data-loaded', '1');
-            }));
+            tasks.push(renderer.setThumbnail(thumb));
         }
 
         await Promise.all(tasks);
@@ -93,15 +88,8 @@ class ThumbnailModel
         {
             if (taskid !== this.currentThumbnailTask) { console.warn("Task [Thumbnails.LoadIntelligent] was canceled"); return; }
 
-            if (thumb.getAttribute('data-loaded') === '1') continue;
-
-            const src = thumb.getAttribute('data-realurl')!;
-
-            if (thumb.getAttribute('src') === src) continue;
-
-            const ok = await setImageSource(thumb, src);
-            if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-            thumb.setAttribute('data-loaded', '1');
+            tasks.push(renderer.setThumbnail(thumb));
+            
             await sleepAsync(1);
         }
 
@@ -110,23 +98,22 @@ class ThumbnailModel
 
     async startLoadingSequential(taskid: number) 
     {
+        let tasks: Promise<any>[] = [];
+
+        let renderer = App.VIDEOLIST.getCurrentDisplayMode().renderer;
+        
         for (const thumb of $_all<HTMLImageElement>('.thumb_img_loadable'))
         {
             if (taskid !== this.currentThumbnailTask) { console.warn("Task [Thumbnails.LoadSequential] was canceled"); return; }
 
-            if (thumb.getAttribute('data-loaded') === '1') continue;
-
             if (!isElementInViewport(thumb)) continue; // not visible
 
-            const src = thumb.getAttribute('data-realurl')!;
-
-            if (thumb.getAttribute('src') === src) continue;
-
-            const ok = await setImageSource(thumb, src);
-            if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-            thumb.setAttribute('data-loaded', '1');
+            tasks.push(renderer.setThumbnail(thumb));
+            
             await sleepAsync(1);
         }
+
+        await Promise.all(tasks);
 
         if (taskid === this.currentThumbnailTask) this.currentThumbnailTask = null;
     }
@@ -134,24 +121,16 @@ class ThumbnailModel
     async startLoadingParallel(taskid: number) 
     {
         let tasks: Promise<any>[] = [];
+
+        let renderer = App.VIDEOLIST.getCurrentDisplayMode().renderer;
         
         for (const thumb of $_all<HTMLImageElement>('.thumb_img_loadable'))
         {
             if (taskid !== this.currentThumbnailTask) { console.warn("Task [Thumbnails.LoadParallel] was canceled"); return; }
 
-            if (thumb.getAttribute('data-loaded') === '1') continue;
-
             if (!isElementInViewport(thumb)) continue; // not visible
 
-            const src = thumb.getAttribute('data-realurl')!;
-
-            if (thumb.getAttribute('src') === src) continue;
-
-            tasks.push(setImageSource(thumb, src).then(ok =>
-            {
-                if (!ok) thumb.setAttribute('src', '/thumb_empty.svg');
-                thumb.setAttribute('data-loaded', '1');
-            }));
+            tasks.push(renderer.setThumbnail(thumb));
         }
         
         await Promise.all(tasks);

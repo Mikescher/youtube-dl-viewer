@@ -25,21 +25,14 @@ class DisplayGridRenderer implements DisplayRenderer
         for (const vid of videos)
         {
             let ve_cls = 'video_entry';
-            if (vid.meta['cached']) ve_cls += ' webm-cached';
-            if (vid.meta['cached_previews']) ve_cls += ' preview-cached';
+            if (vid.meta.cached) ve_cls += ' webm-cached';
+            if (vid.meta.cached_previews) ve_cls += ' preview-cached';
 
-            let filelink = vid.meta['path_video_abs'];
-            if (filelink.startsWith('/')) filelink = 'file://'  + filelink;
-            else                          filelink = 'file:///' + filelink;
-
-            let web_url = '';
-            if (vid.data.info.hasNonNull('webpage_url')) web_url = vid.data.info.webpage_url!;
-
-            html += '<div class="' + ve_cls + '" data-id="'+escapeHtml(vid.meta['uid'])+'" data-filelink="'+escapeHtml(filelink)+'" data-weburl="'+escapeHtml(web_url)+'">';
+            html += '<div class="' + ve_cls + '" data-id="'+escapeHtml(vid.meta.uid)+'">';
 
             html += '<i class="icon_cached fas fa-cloud"></i>';
 
-            html += '<div class="thumbnail animatable"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta['uid']) + '/thumb" data-videoid="'+escapeHtml(vid.meta['uid'])+'" /></div>';
+            html += '<div class="thumbnail animatable"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta.uid) + '/thumb" data-videoid="'+escapeHtml(vid.meta['uid'])+'" /></div>';
 
             if (vid.data.info.hasNonNull('like_count') && vid.data.info.hasNonNull('dislike_count'))
             {
@@ -58,6 +51,17 @@ class DisplayGridRenderer implements DisplayRenderer
         }
 
         return html;
+    }
+
+    async setThumbnail(thumb: HTMLImageElement): Promise<boolean>
+    {
+        // nothing to do
+        return true;
+    }
+
+    async unsetThumbnail(thumb: HTMLImageElement)
+    {
+        // nothing to do
     }
 
     initEvents(): void

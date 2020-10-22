@@ -18,7 +18,7 @@ function $all(sel: string): HTMLElement[]
 
 function $_all<T extends HTMLElement>(sel: string): T[]
 {
-    return Array.prototype.slice.apply(document.querySelectorAll<T>(sel));
+    return toArr(document.querySelectorAll<T>(sel));
 }
 
 function $attr(sel: string, attr: string): string|null
@@ -46,6 +46,11 @@ function $ajax(method: string, url: string): Promise<AjaxResult>
 
         request.send();
     });
+}
+
+function toArr<T extends Node>(v: NodeListOf<T>): T[]
+{
+    return Array.prototype.slice.apply(v);
 }
 
 function escapeHtml(text: string): string
@@ -134,6 +139,19 @@ function isElementInViewport(el: HTMLElement): boolean
         rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
         rect.top < (window.innerHeight || document.documentElement.clientHeight)
     );
+}
+
+function isInParentBounds(el: HTMLElement)
+{
+    const rect   = el.getBoundingClientRect();
+    const bounds = el.parentElement!.getBoundingClientRect();
+
+    if (rect.right  <= bounds.left)   return false;
+    if (rect.bottom <= bounds.top)    return false;
+    if (rect.left   >= bounds.right)  return false;
+    if (rect.top    >= bounds.bottom) return false;
+    
+    return true;
 }
 
 function formatBytes(bytes: number): string

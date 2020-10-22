@@ -156,7 +156,7 @@ class UserInterfaceModel {
         this.dom_toast.innerText = txt;
         this.dom_toast.classList.add('vanished');
         this.dom_toast.classList.remove('active');
-        this.toastTimeoutID = setTimeout(this.clearToast, 2000);
+        this.toastTimeoutID = setTimeout(() => App.UI.clearToast(), 2000);
         setTimeout(() => { this.dom_toast.classList.remove('vanished'); this.dom_toast.classList.add('active'); }, 10);
     }
     refreshPathCombobox() {

@@ -146,6 +146,26 @@ header .btn
     border-right: 1px solid #888;
 }
 
+/* ################ LIST-STYLE: TIMELINE ################ */
+
+#content.lstyle_timeline .video_entry
+{
+    background: #FFF;
+    border: 1px solid #BBB;
+}
+
+#content.lstyle_timeline .video_entry:hover
+{
+    border: 1px solid #88F;
+    box-shadow: 0 0 12px -2px #44F;
+}
+
+#content.lstyle_timeline .video_entry .title
+{
+    font-family:"Roboto","Courier",sans-serif;
+    font-weight: bold;
+}
+
 
 
 
