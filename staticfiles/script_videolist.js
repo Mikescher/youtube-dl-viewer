@@ -8,47 +8,47 @@ class VideoListModel {
     // ----------------------------------------
     constructor(optionsource) {
         this.Values_DisplayMode = [
-            { text: "ListStyle: Grid", keys: ['grid', '0'], enabled: true, css: ['lstyle_grid'] },
-            { text: "ListStyle: Compact", keys: ['compact', '1'], enabled: true, css: ['lstyle_compact'] },
-            { text: "ListStyle: Tabular", keys: ['tabular', '2'], enabled: true, css: ['lstyle_tabular'] },
-            { text: "ListStyle: Detailed", keys: ['detailed', '3'], enabled: true, css: ['lstyle_detailed'] },
-            { text: "ListStyle: Grid (x2)", keys: ['gridx2', '4'], enabled: true, css: ['lstyle_grid', 'lstyle_x2'] },
+            { index: 0, text: "ListStyle: Grid", keys: ['grid', '0'], enabled: true, css: ['lstyle_grid'], renderer: new DisplayGridRenderer(false) },
+            { index: 1, text: "ListStyle: Compact", keys: ['compact', '1'], enabled: true, css: ['lstyle_compact'], renderer: new DisplayCompactRenderer() },
+            { index: 2, text: "ListStyle: Tabular", keys: ['tabular', '2'], enabled: true, css: ['lstyle_tabular'], renderer: new DisplayTabularRenderer() },
+            { index: 3, text: "ListStyle: Detailed", keys: ['detailed', '3'], enabled: true, css: ['lstyle_detailed'], renderer: new DisplayDetailedRenderer() },
+            { index: 4, text: "ListStyle: Grid (x2)", keys: ['gridx2', '4'], enabled: true, css: ['lstyle_grid', 'lstyle_x2'], renderer: new DisplayGridRenderer(true) },
         ];
         this.Values_OrderMode = [
-            { text: "Sorting: Date [descending]", keys: ['date-desc', '0'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * -1) },
-            { text: "Sorting: Date [ascending]", keys: ['date-asc', '1'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * +1) },
-            { text: "Sorting: Title", keys: ['title', '2'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareData(a, b, 'title')) },
-            { text: "Sorting: Category", keys: ['cat', '3'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'categories')) },
-            { text: "Sorting: Views", keys: ['views', '4'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'view_count')) },
-            { text: "Sorting: Rating", keys: ['rating', '5'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareDiv(a, b, 'like_count', 'dislike_count') * -1) },
-            { text: "Sorting: Uploader", keys: ['uploader', '6'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'uploader')) },
-            { text: "Sorting: External [descending]", keys: ['ext-desc', '7'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * -1) },
-            { text: "Sorting: External [ascending]", keys: ['ext-asc', '8'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * +1) },
-            { text: "Sorting: Random", keys: ['rand', '9'], enabled: true, sort: (p) => { shuffle(p, new SeedRandom(this.shuffle_seed)); return p; } },
-            { text: "Sorting: Filename [ascending]", keys: ['filename-asc', '10'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * +1) },
-            { text: "Sorting: Filename [descending]", keys: ['filename-desc', '11'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * -1) },
+            { index: 0, text: "Sorting: Date [descending]", keys: ['date-desc', '0'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * -1) },
+            { index: 1, text: "Sorting: Date [ascending]", keys: ['date-asc', '1'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * +1) },
+            { index: 2, text: "Sorting: Title", keys: ['title', '2'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareData(a, b, 'title')) },
+            { index: 3, text: "Sorting: Category", keys: ['cat', '3'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'categories')) },
+            { index: 4, text: "Sorting: Views", keys: ['views', '4'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'view_count')) },
+            { index: 5, text: "Sorting: Rating", keys: ['rating', '5'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareDiv(a, b, 'like_count', 'dislike_count') * -1) },
+            { index: 6, text: "Sorting: Uploader", keys: ['uploader', '6'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'uploader')) },
+            { index: 7, text: "Sorting: External [descending]", keys: ['ext-desc', '7'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * -1) },
+            { index: 8, text: "Sorting: External [ascending]", keys: ['ext-asc', '8'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * +1) },
+            { index: 9, text: "Sorting: Random", keys: ['rand', '9'], enabled: true, sort: (p) => { shuffle(p, new SeedRandom(this.shuffle_seed)); return p; } },
+            { index: 10, text: "Sorting: Filename [ascending]", keys: ['filename-asc', '10'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * +1) },
+            { index: 11, text: "Sorting: Filename [descending]", keys: ['filename-desc', '11'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * -1) },
         ];
         this.Values_WidthMode = [
-            { text: "Width: Small", keys: ['small', '0'], enabled: true, css: ['lstyle_width_small'] },
-            { text: "Width: Medium", keys: ['medium', '1'], enabled: true, css: ['lstyle_width_medium'] },
-            { text: "Width: Wide", keys: ['wide', '2'], enabled: true, css: ['lstyle_width_wide'] },
-            { text: "Width: Full", keys: ['full', '3'], enabled: true, css: ['lstyle_width_full'] },
+            { index: 0, text: "Width: Small", keys: ['small', '0'], enabled: true, css: ['lstyle_width_small'] },
+            { index: 1, text: "Width: Medium", keys: ['medium', '1'], enabled: true, css: ['lstyle_width_medium'] },
+            { index: 2, text: "Width: Wide", keys: ['wide', '2'], enabled: true, css: ['lstyle_width_wide'] },
+            { index: 3, text: "Width: Full", keys: ['full', '3'], enabled: true, css: ['lstyle_width_full'] },
         ];
         this.Values_ThumbnailMode = [
-            { text: "Thumbnails: Off", keys: ['off', '0'], enabled: true },
-            { text: "Thumbnails: On (intelligent)", keys: ['intelligent', '1'], enabled: true },
-            { text: "Thumbnails: On (sequential)", keys: ['sequential', '2'], enabled: true },
-            { text: "Thumbnails: On (parallel)", keys: ['parallel', '3'], enabled: true },
+            { index: 0, text: "Thumbnails: Off", keys: ['off', '0'], enabled: true },
+            { index: 1, text: "Thumbnails: On (intelligent)", keys: ['intelligent', '1'], enabled: true },
+            { index: 2, text: "Thumbnails: On (sequential)", keys: ['sequential', '2'], enabled: true },
+            { index: 3, text: "Thumbnails: On (parallel)", keys: ['parallel', '3'], enabled: true },
         ];
         this.Values_VideoMode = [
-            { text: "Playback: Disabled", keys: ['disabled', '0'], enabled: true, css: ['lstyle_videomode_0', 'lstyle_videomode_disabled',] },
-            { text: "Playback: Seekable raw file", keys: ['raw-seekable', '1'], enabled: true, css: ['lstyle_videomode_1', 'lstyle_videomode_raw-seekable',] },
-            { text: "Playback: Raw file", keys: ['raw', '2'], enabled: true, css: ['lstyle_videomode_2', 'lstyle_videomode_raw',] },
-            { text: "Playback: Transcoded Webm stream", keys: ['transcoded', '3'], enabled: false, css: ['lstyle_videomode_3', 'lstyle_videomode_transcoded',] },
-            { text: "Playback: Download file", keys: ['download', '4'], enabled: true, css: ['lstyle_videomode_4', 'lstyle_videomode_download',] },
-            { text: "Playback: VLC Protocol Link (stream)", keys: ['vlc-stream', '5'], enabled: true, css: ['lstyle_videomode_5', 'lstyle_videomode_vlc-stream',] },
-            { text: "Playback: VLC Protocol Link (local)", keys: ['vlc-local', '6'], enabled: true, css: ['lstyle_videomode_6', 'lstyle_videomode_vlc-local',] },
-            { text: "Playback: Open original Webpage", keys: ['url', '7'], enabled: true, css: ['lstyle_videomode_7', 'lstyle_videomode_url',] },
+            { index: 0, text: "Playback: Disabled", keys: ['disabled', '0'], enabled: true, css: ['lstyle_videomode_0', 'lstyle_videomode_disabled',] },
+            { index: 1, text: "Playback: Seekable raw file", keys: ['raw-seekable', '1'], enabled: true, css: ['lstyle_videomode_1', 'lstyle_videomode_raw-seekable',] },
+            { index: 2, text: "Playback: Raw file", keys: ['raw', '2'], enabled: true, css: ['lstyle_videomode_2', 'lstyle_videomode_raw',] },
+            { index: 3, text: "Playback: Transcoded Webm stream", keys: ['transcoded', '3'], enabled: false, css: ['lstyle_videomode_3', 'lstyle_videomode_transcoded',] },
+            { index: 4, text: "Playback: Download file", keys: ['download', '4'], enabled: true, css: ['lstyle_videomode_4', 'lstyle_videomode_download',] },
+            { index: 5, text: "Playback: VLC Protocol Link (stream)", keys: ['vlc-stream', '5'], enabled: true, css: ['lstyle_videomode_5', 'lstyle_videomode_vlc-stream',] },
+            { index: 6, text: "Playback: VLC Protocol Link (local)", keys: ['vlc-local', '6'], enabled: true, css: ['lstyle_videomode_6', 'lstyle_videomode_vlc-local',] },
+            { index: 7, text: "Playback: Open original Webpage", keys: ['url', '7'], enabled: true, css: ['lstyle_videomode_7', 'lstyle_videomode_url',] },
         ];
         this.Values_Themes = [
         // ... dynamic: { text: "..", keys: [..] }
@@ -128,6 +128,9 @@ class VideoListModel {
                 vid.has = function (key) { return Object.hasOwnProperty.call(this, key); };
                 vid.hasNonNull = function (key) { return this.has(key) && this[key] != null; };
                 vid.hasArrayWithValues = function (key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; };
+                vid.data.info.has = function (key) { return Object.hasOwnProperty.call(this, key); };
+                vid.data.info.hasNonNull = function (key) { return this.has(key) && this[key] != null; };
+                vid.data.info.hasArrayWithValues = function (key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; };
             }
             this.current_data = json;
             this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
@@ -166,8 +169,12 @@ class VideoListModel {
     recreateDOM() {
         let videos = this.current_data.videos;
         videos = this.getCurrentOrderMode().sort(videos);
-        let html = '';
-        //TODO
+        let html = this.getCurrentDisplayMode().renderer.render(videos, this.getCurrentDataDir());
+        this.dom_content.classList.value = ''; // clear all classes
+        this.dom_content.classList.add(...this.getCurrentVideoMode().css);
+        this.dom_content.classList.add(...this.getCurrentDisplayMode().css);
+        this.dom_content.classList.add(...this.getCurrentWidthMode().css);
+        this.dom_content.innerHTML = html;
     }
     updateHash() {
         let hash = [];
@@ -190,9 +197,9 @@ class VideoListModel {
         location.hash = hash.join('&');
     }
     getIndexFromKey(type, values, key, fallback) {
-        for (let i = 0; i < values.length; i++) {
-            if (values[i].keys.includes(key))
-                return i;
+        for (const elem of values) {
+            if (elem.keys.includes(key))
+                return elem.index;
         }
         const err = "Invalid value '" + key + "' for type '" + type + "' using fallback '" + fallback + "'";
         console.warn(err);
@@ -206,10 +213,11 @@ class VideoListModel {
         this.displaymode_current = value;
         for (const v of this.Values_DisplayMode)
             this.dom_content.classList.remove(...v.css);
-        this.dom_content.classList.add(...this.Values_DisplayMode[this.displaymode_current].css);
+        this.dom_content.classList.add(...this.getCurrentDisplayMode().css);
         if (showtoast)
-            App.showToast(this.Values_DisplayMode[value].text);
+            App.showToast(this.getCurrentDisplayMode().text);
         this.updateHash();
+        this.recreateDOM();
     }
     setOrderMode(key, showtoast = false) {
         const value = this.getIndexFromKey("OrderMode", this.Values_OrderMode, key.toString(), this.ordermode_default);
@@ -217,7 +225,7 @@ class VideoListModel {
             return;
         this.ordermode_current = value;
         if (showtoast)
-            App.showToast(this.Values_OrderMode[value].text);
+            App.showToast(this.getCurrentOrderMode().text);
         this.updateHash();
         this.recreateDOM();
     }
@@ -228,9 +236,9 @@ class VideoListModel {
         this.widthmode_current = value;
         for (const v of this.Values_WidthMode)
             this.dom_content.classList.remove(...v.css);
-        this.dom_content.classList.add(...this.Values_WidthMode[this.displaymode_current].css);
+        this.dom_content.classList.add(...this.getCurrentWidthMode().css);
         if (showtoast)
-            App.showToast(this.Values_WidthMode[value].text);
+            App.showToast(this.getCurrentWidthMode().text);
         this.updateHash();
     }
     setThumbnailMode(key, showtoast = false) {
@@ -239,7 +247,7 @@ class VideoListModel {
             return;
         this.thumbnailmode_current = value;
         if (showtoast)
-            App.showToast(this.Values_WidthMode[value].text);
+            App.showToast(this.getCurrentThumbnailMode().text);
         this.updateHash();
         //TODO
     }
@@ -250,9 +258,9 @@ class VideoListModel {
         this.videomode_current = value;
         for (const v of this.Values_VideoMode)
             this.dom_content.classList.remove(...v.css);
-        this.dom_content.classList.add(...this.Values_VideoMode[this.videomode_current].css);
+        this.dom_content.classList.add(...this.getCurrentVideoMode().css);
         if (showtoast)
-            App.showToast(this.Values_VideoMode[value].text);
+            App.showToast(this.getCurrentVideoMode().text);
         this.updateHash();
     }
     setTheme(key, showtoast = false) {
@@ -263,7 +271,7 @@ class VideoListModel {
         let new_theme = this.Values_Themes[value].url;
         $('#theme_style_obj').setAttribute('href', new_theme);
         if (showtoast)
-            App.showToast(this.Values_Themes[value].text);
+            App.showToast(this.getCurrentTheme().text);
         this.updateHash();
     }
     setDataDir(key, showtoast = false) {
@@ -272,7 +280,7 @@ class VideoListModel {
             return;
         this.datadir_current = value;
         if (showtoast)
-            App.showToast(this.Values_DataDirs[value].text);
+            App.showToast(this.getCurrentDataDir().text);
         App.USERINTERFACE.refreshPathCombobox();
         this.updateHash();
         this.loadData().then(() => { });

@@ -20,9 +20,8 @@ class UserInterfaceModel {
     }
     createPathDropDown() {
         let html = '';
-        for (let i = 0; i < App.VIDEOLIST.Values_DataDirs.length; i++) {
-            const dir = App.VIDEOLIST.Values_DataDirs[i];
-            html += '<div class="row datadir_dropdown_row_' + i + '" data-name="' + dir.name + '" data-idx="' + i + '">' + escapeHtml(dir.name) + '</div>';
+        for (const dir of App.VIDEOLIST.Values_DataDirs) {
+            html += '<div class="row datadir_dropdown_row_' + dir.index + '" data-name="' + dir.name + '" data-idx="' + dir.index + '">' + escapeHtml(dir.name) + '</div>';
         }
         this.dom_apppath_dropdown.innerHTML = html;
     }
@@ -69,10 +68,10 @@ class UserInterfaceModel {
                 else
                     this.showPathDropDown();
             });
-            for (let i = 0; i < App.VIDEOLIST.Values_DataDirs.length; i++) {
-                $("#apppath_dropdown .datadir_dropdown_row_" + i).addEventListener('click', () => {
+            for (const dir of App.VIDEOLIST.Values_DataDirs) {
+                $("#apppath_dropdown .datadir_dropdown_row_" + dir.index).addEventListener('click', () => {
                     this.hideDropDown();
-                    App.VIDEOLIST.setDataDir(i);
+                    App.VIDEOLIST.setDataDir(dir.index);
                 });
             }
         }
@@ -91,15 +90,15 @@ class UserInterfaceModel {
         this.currentDropdownType = type;
         let ids = [];
         let html = '';
-        for (let i = 0; i < options.length; i++) {
-            if (!options[i].enabled)
+        for (const elem of options) {
+            if (!elem.enabled)
                 continue;
             const elemid = 'drow_' + (this.dropDownIDCounter++);
             let cls = 'row';
-            if (i === current)
+            if (elem.index === current)
                 cls += ' active';
-            html += '<div id="' + elemid + '" class="' + cls + '">' + escapeHtml(options[i].text) + '</div>';
-            ids.push([i, elemid]);
+            html += '<div id="' + elemid + '" class="' + cls + '">' + escapeHtml(elem.text) + '</div>';
+            ids.push([elem.index, elemid]);
         }
         this.dom_option_dropdown.innerHTML = html;
         this.dom_option_dropdown.classList.remove('hidden');

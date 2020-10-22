@@ -34,8 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <TypeScriptCompile Include="staticfiles\script_comphelper.ts" />
-      <TypeScriptCompile Include="staticfiles\script_mainpage.ts" />
+      <TypeScriptCompile Include="staticfiles\script_display_grid.ts" />
     </ItemGroup>
 
 </Project>

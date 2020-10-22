@@ -46,6 +46,7 @@
                      (
                          Program.Args.Themes.Select((p,i) => new JObject
                          (
+                             new JProperty("index", i), 
                              new JProperty("text", $"Theme: {p.Name}"), 
                              new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
                              new JProperty("url", $"/themes/{i}"),
@@ -58,6 +59,7 @@
                     (
                         Program.Args.DataDirs.Select((p,i) => new JObject
                         (
+                            new JProperty("index", i), 
                             new JProperty("text", p.Name), 
                             new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
                             new JProperty("name", p.Name),
@@ -122,7 +124,7 @@
     </header>
 
     <main>
-        <div class="lstyle_detailed lstyle_width_medium" id="content"></div>
+        <div class="" id="content"></div>
         
         <div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
     </main>

@@ -15,8 +15,19 @@ namespace youtube_dl_viewer
 
             endpoints.MapGet("/data/{idx:int}/refresh", DataController.RefreshData);
 
-            endpoints.MapJSEmbeddedBundle("/script_main.compiled.js", "youtube_dl_viewer.staticfiles", new[]{ "script_seedrandom.js", "script_comphelper.js", "script_util.js", "script_userinterface.js", "script_videolist.js", "script_mainpage.js" });
-            endpoints.MapJSEmbeddedBundle("/script_jobs.compiled.js", "youtube_dl_viewer.staticfiles", new[]{ "script_util.js", "script_jobs.js" });
+            endpoints.MapJSEmbeddedBundle("/script_main.compiled.js", "youtube_dl_viewer.staticfiles", new[]
+            {
+                "script_seedrandom.js", "script_comphelper.js", "script_util.js", 
+                "script_display_grid.js", "script_display_compact.js", "script_display_detailed.js", "script_display_tabular.js",
+                "script_userinterface.js", "script_videolist.js", 
+                "script_mainpage.js"
+            });
+            
+            endpoints.MapJSEmbeddedBundle("/script_jobs.compiled.js", "youtube_dl_viewer.staticfiles", new[]
+            {
+                "script_util.js", 
+                "script_jobs.js"
+            });
             
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
