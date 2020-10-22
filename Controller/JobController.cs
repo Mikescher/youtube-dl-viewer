@@ -61,6 +61,8 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task ManuallyForcePreviewJobs(HttpContext context)
         {
+            context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");
+            
             if (!Program.HasValidFFMPEG)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             if (Program.Args.CacheDir == null) { context.Response.StatusCode = 500; await context.Response.WriteAsync("No cache directory specified"); return; }
 
@@ -106,6 +108,8 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task ManuallyForceTranscodeJobs(HttpContext context)
         {
+            context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");
+            
             if (!Program.HasValidFFMPEG)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
             if (Program.Args.CacheDir == null) { context.Response.StatusCode = 500; await context.Response.WriteAsync("No cache directory specified"); return; }
 
@@ -151,6 +155,8 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task ManuallyForceCollectData(HttpContext context)
         {
+            context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");
+            
             var idx = (string)context.Request.RouteValues["idx"];
 
             if (idx.ToLower() == "all" || idx.ToLower() == "*")
@@ -163,7 +169,7 @@ namespace youtube_dl_viewer.Controller
                 }
             }
             else
-            {;
+            {
                 JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, int.Parse(idx), true), false);
                 await context.Response.WriteAsync($"Started/Attached 1 new jobs");
             }
@@ -171,6 +177,8 @@ namespace youtube_dl_viewer.Controller
 
         public static async Task AbortJob(HttpContext context)
         {
+            context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");
+            
             var jobid = (string)context.Request.RouteValues["jobid"];
 
             if (jobid == "all" || jobid == "*")
@@ -193,12 +201,12 @@ namespace youtube_dl_viewer.Controller
                 context.Response.StatusCode = 404;
                 await context.Response.WriteAsync($"Job not found");
             }
-            
-            return;
         }
 
         public static async Task ClearFinishedJobs(HttpContext context)
         {
+            context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");
+            
             foreach (var man in JobRegistry.Managers)
             {
                 man.ClearFinishedJobs();
