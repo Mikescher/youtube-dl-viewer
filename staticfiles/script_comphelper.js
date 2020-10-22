@@ -1,3 +1,4 @@
+"use strict";
 class CompareUtil {
     static sortcompare(a, b, key) {
         const va = a.data.info[key];

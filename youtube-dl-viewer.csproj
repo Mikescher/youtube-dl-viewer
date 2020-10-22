@@ -35,6 +35,8 @@
 
     <ItemGroup>
       <TypeScriptCompile Include="staticfiles\script_display_grid.ts" />
+      <TypeScriptCompile Include="staticfiles\script_player.ts" />
+      <TypeScriptCompile Include="staticfiles\script_thumbnails.ts" />
     </ItemGroup>
 
 </Project>

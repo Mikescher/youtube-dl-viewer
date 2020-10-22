@@ -1,3 +1,4 @@
+"use strict";
 class DisplayCompactRenderer {
     render(videos, dir) {
         let html = '';
@@ -23,16 +24,20 @@ class DisplayCompactRenderer {
                 filelink = 'file:///' + filelink;
             let web_url = '';
             if (vid.data.info.hasNonNull('webpage_url'))
-                web_url = vid.data.info['webpage_url'];
+                web_url = vid.data.info.webpage_url;
             html += '<div class="' + ve_cls + '" data-id="' + escapeHtml(vid.meta['uid']) + '" data-filelink="' + escapeHtml(filelink) + '" data-weburl="' + escapeHtml(web_url) + '">';
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta['uid']) + '/thumb" data-videoid="' + escapeHtml(vid.meta['uid']) + '" /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta['uid']) + '/thumb" data-videoid="' + escapeHtml(vid.meta['uid']) + '" /></div>';
             html += '</div>';
-            html += '<div class="title">' + escapeHtml(vid.data['title']) + '</div>';
+            html += '<div class="title">' + escapeHtml(vid.data.title) + '</div>';
             if (vid.data.info.hasNonNull('upload_date'))
-                html += '<div class="upload_date">' + escapeHtml(formatDate(vid.data.info["upload_date"])) + '</div>';
+                html += '<div class="upload_date">' + escapeHtml(formatDate(vid.data.info.upload_date)) + '</div>';
             html += '</div>';
             html += "\n\n";
         }
         return html;
+    }
+    initEvents() {
+        for (const btn of $all('.video_entry'))
+            btn.addEventListener('click', () => { App.PLAYER.showVideo(btn.getAttribute('data-id')); });
     }
 }

@@ -19,7 +19,7 @@ namespace youtube_dl_viewer
             {
                 "script_seedrandom.js", "script_comphelper.js", "script_util.js", 
                 "script_display_grid.js", "script_display_compact.js", "script_display_detailed.js", "script_display_tabular.js",
-                "script_userinterface.js", "script_videolist.js", 
+                "script_userinterface.js", "script_videolist.js", "script_player.js", "script_thumbnails.js", 
                 "script_mainpage.js"
             });
             

@@ -1,3 +1,4 @@
+"use strict";
 class UserInterfaceModel {
     constructor() {
         this.currentDropdownType = null;
@@ -37,6 +38,7 @@ class UserInterfaceModel {
         this.dom_apppath.style.float = "inherit";
     }
     initHeaderEvents() {
+        var _a;
         $('.btn-display').addEventListener('click', () => {
             this.toggleOptionDropDown($('.btn-display'), 'DisplayMode', App.VIDEOLIST.Values_DisplayMode, App.VIDEOLIST.displaymode_current, v => { App.VIDEOLIST.setDisplayMode(v); });
         });
@@ -69,7 +71,7 @@ class UserInterfaceModel {
                     this.showPathDropDown();
             });
             for (const dir of App.VIDEOLIST.Values_DataDirs) {
-                $("#apppath_dropdown .datadir_dropdown_row_" + dir.index).addEventListener('click', () => {
+                (_a = $("#apppath_dropdown .datadir_dropdown_row_" + dir.index)) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
                     this.hideDropDown();
                     App.VIDEOLIST.setDataDir(dir.index);
                 });
@@ -83,6 +85,7 @@ class UserInterfaceModel {
             this.showOptionDropDown(src, type, options, current, evt);
     }
     showOptionDropDown(src, type, options, current, evt) {
+        var _a;
         if (this.currentDropdownType !== null)
             this.hideDropDown();
         if (!App.VIDEOLIST.isLoaded())
@@ -101,6 +104,7 @@ class UserInterfaceModel {
             ids.push([elem.index, elemid]);
         }
         this.dom_option_dropdown.innerHTML = html;
+        this.dom_option_dropdown.style.right = '';
         this.dom_option_dropdown.classList.remove('hidden');
         const left_btn = src.getBoundingClientRect().left;
         const left_dd = this.dom_option_dropdown.getBoundingClientRect().left;
@@ -108,11 +112,11 @@ class UserInterfaceModel {
             this.dom_option_dropdown.style.right = (document.documentElement.clientWidth - left_btn - this.dom_option_dropdown.getBoundingClientRect().width) + 'px';
         }
         else {
-            this.dom_option_dropdown.style.right = null;
+            // @ts-ignore
+            this.dom_option_dropdown.style.right = '';
         }
         for (const [i, id] of ids) {
-            const elem = $('#' + id);
-            elem.addEventListener('click', () => {
+            (_a = $('#' + id)) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
                 this.hideDropDown();
                 evt(i);
             });
@@ -143,18 +147,17 @@ class UserInterfaceModel {
     clearToast() {
         if (this.toastTimeoutID != null)
             clearTimeout(this.toastTimeoutID);
-        $('#toast').classList.add('vanished');
+        this.dom_toast.classList.add('vanished');
         this.toastTimeoutID = null;
     }
     showToast(txt) {
         if (this.toastTimeoutID != null)
             clearTimeout(this.toastTimeoutID);
-        const toaster = $('#toast');
-        toaster.innerText = txt;
-        toaster.classList.add('vanished');
-        toaster.classList.remove('active');
+        this.dom_toast.innerText = txt;
+        this.dom_toast.classList.add('vanished');
+        this.dom_toast.classList.remove('active');
         this.toastTimeoutID = setTimeout(this.clearToast, 2000);
-        setTimeout(() => { toaster.classList.remove('vanished'); toaster.classList.add('active'); }, 10);
+        setTimeout(() => { this.dom_toast.classList.remove('vanished'); this.dom_toast.classList.add('active'); }, 10);
     }
     refreshPathCombobox() {
         if (this.currentDropdownType !== null)

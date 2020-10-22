@@ -4,8 +4,8 @@ interface CSSOptionDef extends OptionDef { css: string[]  }
 interface DisplayModeDef   extends CSSOptionDef { renderer: DisplayRenderer; }
 interface OrderModeDef     extends OptionDef    { sort: (p:DataJSONVideo[]) => DataJSONVideo[] }
 interface WidthModeDef     extends CSSOptionDef { }
-interface ThumbnailModeDef extends OptionDef    { }
-interface VideoModeDef     extends CSSOptionDef { }
+interface ThumbnailModeDef extends OptionDef    { start: (p:ThumbnailModel, id:number)=>Promise<void>; restartOnScroll: boolean }
+interface VideoModeDef     extends CSSOptionDef { play: (p:DataJSONVideo) => void }
 interface ThemeDef         extends OptionDef    { url: string; name: string; }
 interface DataDirDef       extends OptionDef    { name: string; }
 
@@ -18,7 +18,7 @@ interface DataJSONVideo
     data: 
     {
         description: string|null,
-        title: string|null,
+        title: string,
         info: 
         {
             upload_date?: string|null;
@@ -84,7 +84,7 @@ interface DataJSON
     missing: string[];
 }
 
-interface DisplayRenderer { render(videos: DataJSONVideo[], dir: DataDirDef): string }
+interface DisplayRenderer { render(videos: DataJSONVideo[], dir: DataDirDef): string; initEvents(): void; }
 
 class VideoListModel
 {
@@ -124,22 +124,22 @@ class VideoListModel
 
     Values_ThumbnailMode: ThumbnailModeDef[] =
     [
-        { index: 0, text: "Thumbnails: Off",               keys: ['off',         '0' ], enabled: true },
-        { index: 1, text: "Thumbnails: On (intelligent)",  keys: ['intelligent', '1' ], enabled: true },
-        { index: 2, text: "Thumbnails: On (sequential)",   keys: ['sequential',  '2' ], enabled: true },
-        { index: 3, text: "Thumbnails: On (parallel)",     keys: ['parallel',    '3' ], enabled: true },
+        { index: 0, text: "Thumbnails: Off",               keys: ['off',         '0' ], enabled: true, start: (m,id) => m.unloadAll(id),               restartOnScroll: false },
+        { index: 1, text: "Thumbnails: On (intelligent)",  keys: ['intelligent', '1' ], enabled: true, start: (m,id) => m.startLoadingIntelligent(id), restartOnScroll: true  },
+        { index: 2, text: "Thumbnails: On (sequential)",   keys: ['sequential',  '2' ], enabled: true, start: (m,id) => m.startLoadingSequential(id),  restartOnScroll: true  },
+        { index: 3, text: "Thumbnails: On (parallel)",     keys: ['parallel',    '3' ], enabled: true, start: (m,id) => m.startLoadingParallel(id),    restartOnScroll: true  },
     ];
 
     Values_VideoMode: VideoModeDef[] =
     [
-        { index: 0, text: "Playback: Disabled",                   keys: ['disabled',     '0' ], enabled: true,  css: [ 'lstyle_videomode_0', 'lstyle_videomode_disabled',     ] },
-        { index: 1, text: "Playback: Seekable raw file",          keys: ['raw-seekable', '1' ], enabled: true,  css: [ 'lstyle_videomode_1', 'lstyle_videomode_raw-seekable', ] },
-        { index: 2, text: "Playback: Raw file",                   keys: ['raw',          '2' ], enabled: true,  css: [ 'lstyle_videomode_2', 'lstyle_videomode_raw',          ] },
-        { index: 3, text: "Playback: Transcoded Webm stream",     keys: ['transcoded',   '3' ], enabled: false, css: [ 'lstyle_videomode_3', 'lstyle_videomode_transcoded',   ] },
-        { index: 4, text: "Playback: Download file",              keys: ['download',     '4' ], enabled: true,  css: [ 'lstyle_videomode_4', 'lstyle_videomode_download',     ] },
-        { index: 5, text: "Playback: VLC Protocol Link (stream)", keys: ['vlc-stream',   '5' ], enabled: true,  css: [ 'lstyle_videomode_5', 'lstyle_videomode_vlc-stream',   ] },
-        { index: 6, text: "Playback: VLC Protocol Link (local)",  keys: ['vlc-local',    '6' ], enabled: true,  css: [ 'lstyle_videomode_6', 'lstyle_videomode_vlc-local',    ] },
-        { index: 7, text: "Playback: Open original Webpage",      keys: ['url',          '7' ], enabled: true,  css: [ 'lstyle_videomode_7', 'lstyle_videomode_url',          ] },
+        { index: 0, text: "Playback: Disabled",                   keys: ['disabled',     '0' ], enabled: true,  css: [ 'lstyle_videomode_0', 'lstyle_videomode_disabled',     ], play: (_) => { }                                      },
+        { index: 1, text: "Playback: Seekable raw file",          keys: ['raw-seekable', '1' ], enabled: true,  css: [ 'lstyle_videomode_1', 'lstyle_videomode_raw-seekable', ], play: (v) => App.PLAYER.showStreamplayer(v, 'seek')   },
+        { index: 2, text: "Playback: Raw file",                   keys: ['raw',          '2' ], enabled: true,  css: [ 'lstyle_videomode_2', 'lstyle_videomode_raw',          ], play: (v) => App.PLAYER.showStreamplayer(v, 'file')   },
+        { index: 3, text: "Playback: Transcoded Webm stream",     keys: ['transcoded',   '3' ], enabled: false, css: [ 'lstyle_videomode_3', 'lstyle_videomode_transcoded',   ], play: (v) => App.PLAYER.showStreamplayer(v, 'stream') },
+        { index: 4, text: "Playback: Download file",              keys: ['download',     '4' ], enabled: true,  css: [ 'lstyle_videomode_4', 'lstyle_videomode_download',     ], play: (v) => App.PLAYER.openFile(v)                   },
+        { index: 5, text: "Playback: VLC Protocol Link (stream)", keys: ['vlc-stream',   '5' ], enabled: true,  css: [ 'lstyle_videomode_5', 'lstyle_videomode_vlc-stream',   ], play: (v) => App.PLAYER.openVLCStream(v)              },
+        { index: 6, text: "Playback: VLC Protocol Link (local)",  keys: ['vlc-local',    '6' ], enabled: true,  css: [ 'lstyle_videomode_6', 'lstyle_videomode_vlc-local',    ], play: (v) => App.PLAYER.openVLC(v)                    },
+        { index: 7, text: "Playback: Open original Webpage",      keys: ['url',          '7' ], enabled: true,  css: [ 'lstyle_videomode_7', 'lstyle_videomode_url',          ], play: (v) => App.PLAYER.openURL(v)                    },
     ];
 
     Values_Themes: ThemeDef[] = 
@@ -177,41 +177,46 @@ class VideoListModel
     
     // ----------------------------------------
 
-    dom_content: HTMLElement;
+    dom_content: HTMLDivElement;
+    dom_theme_style_obj: HTMLStyleElement;
 
+    // ----------------------------------------
+
+    readonly hasFFMPEG: boolean;
+    readonly hasCache: boolean;
+    
     // ----------------------------------------
 
     shuffle_seed: string = Math.random().toString().replace(/[.,]/g, '').substr(1);
 
     current_data: DataJSON|null = null;
+    current_videolist: Map<string, DataJSONVideo>|null = null;
+    
     data_loadid_counter: number = 10000;
     current_data_loadid: number|null = null;
     
-    //isLoadingThumbnails = false;
-    //
-    //
-    //
-    //thumbnailInvocationCounter = 0;
-    //currentAnimatedPreview = '';
-
     // ----------------------------------------
 
     constructor(optionsource: HTMLElement) 
     {
-        this.dom_content = $('#content');
+        this.dom_content         = $('#content') as HTMLDivElement;
+        this.dom_theme_style_obj = $('#theme_style_obj') as HTMLStyleElement;
 
-        this.Values_Themes   = JSON.parse(optionsource.getAttribute('data-themelist'));
-        this.Values_DataDirs = JSON.parse(optionsource.getAttribute('data-dirlist'));
+        this.Values_Themes   = JSON.parse(optionsource.getAttribute('data-themelist')!);
+        this.Values_DataDirs = JSON.parse(optionsource.getAttribute('data-dirlist')!);
         
-        this.Values_VideoMode[3].enabled = (optionsource.getAttribute('data-has_ffmpeg').toLowerCase() === 'true');
+        this.hasFFMPEG = (optionsource.getAttribute('data-has_ffmpeg')!.toLowerCase() === 'true');
+        this.hasCache  = (optionsource.getAttribute('data-has_cache')!.toLowerCase()  === 'true');
         
-        this.displaymode_current   = this.displaymode_default   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   optionsource.getAttribute('data-displaymode'),   0);
-        this.ordermode_current     = this.ordermode_default     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     optionsource.getAttribute('data-ordermode'),     0);
-        this.widthmode_current     = this.widthmode_default     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     optionsource.getAttribute('data-widthmode'),     0);
-        this.thumbnailmode_current = this.thumbnailmode_default = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, optionsource.getAttribute('data-thumbnailmode'), 0);
-        this.videomode_current     = this.videomode_default     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     optionsource.getAttribute('data-videomode'),     0);
-        this.theme_current         = this.theme_default         = this.getIndexFromKey("Theme",         this.Values_Themes,        optionsource.getAttribute('data-theme'),         0);
-        this.datadir_current       = this.datadir_default       = this.getIndexFromKey("DataDir",       this.Values_DataDirs,      optionsource.getAttribute('data-dir'),           0);
+        this.Values_VideoMode[3].enabled = this.hasFFMPEG;
+        
+        this.displaymode_current   = this.displaymode_default   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   optionsource.getAttribute('data-displaymode')!,   0);
+        this.ordermode_current     = this.ordermode_default     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     optionsource.getAttribute('data-ordermode')!,     0);
+        this.widthmode_current     = this.widthmode_default     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     optionsource.getAttribute('data-widthmode')!,     0);
+        this.thumbnailmode_current = this.thumbnailmode_default = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, optionsource.getAttribute('data-thumbnailmode')!, 0);
+        this.videomode_current     = this.videomode_default     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     optionsource.getAttribute('data-videomode')!,     0);
+        this.theme_current         = this.theme_default         = this.getIndexFromKey("Theme",         this.Values_Themes,        optionsource.getAttribute('data-theme')!,         0);
+        this.datadir_current       = this.datadir_default       = this.getIndexFromKey("DataDir",       this.Values_DataDirs,      optionsource.getAttribute('data-dir')!,           0);
     }
     
     init()
@@ -240,7 +245,10 @@ class VideoListModel
     
     async loadData()
     {
-        this.current_data = null; 
+        this.current_data = null;
+        this.current_videolist = null;
+
+        App.THUMBS.stop();
         
         const loadid = this.data_loadid_counter++;
         this.current_data_loadid = loadid;
@@ -248,21 +256,30 @@ class VideoListModel
         try 
         {
             const response = await $ajax('GET', '/data/' + this.datadir_current + '/json');
-            const json = JSON.parse(response.body) as DataJSON;
+            if (!response.success)
+            {
+                App.showToast('Could not load data');
+                return;
+            }
+            const json = JSON.parse(response.body!) as DataJSON;
             if (this.current_data_loadid !== loadid) { console.warn("Abort no longer valid loadData Task ("+this.current_data_loadid+" <> "+loadid+")"); return; }
 
+            let vlist = new Map<string, DataJSONVideo>();
             for (const vid of json.videos) 
             {
                 vid.has                = function(key) { return Object.hasOwnProperty.call(this, key); };
-                vid.hasNonNull         = function(key) { return this.has(key) && this[key] != null; };
-                vid.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; };
+                vid.hasNonNull         = function(key) { return this.has(key) && (this as any)[key] != null; };
+                vid.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call((this as any)[key], 'length') && (this as any)[key].length > 0; };
 
                 vid.data.info.has                = function(key) { return Object.hasOwnProperty.call(this, key); };
-                vid.data.info.hasNonNull         = function(key) { return this.has(key) && this[key] != null; };
-                vid.data.info.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call(this[key], 'length') && this[key].length > 0; };
+                vid.data.info.hasNonNull         = function(key) { return this.has(key) && (this as any)[key] != null; };
+                vid.data.info.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call((this as any)[key], 'length') && (this as any)[key].length > 0; };
+
+                vlist.set(vid.meta.uid, vid);
             }
             
             this.current_data = json;
+            this.current_videolist = vlist;
 
             this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
             this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
@@ -281,7 +298,7 @@ class VideoListModel
             if (!this.getCurrentVideoMode().enabled)     this.videomode_current     = this.videomode_default;
             if (!this.getCurrentTheme().enabled)         this.theme_current         = this.theme_default;
 
-            this.recreateDOM();
+            await this.recreateDOM();
         } 
         catch (e) 
         {
@@ -290,8 +307,16 @@ class VideoListModel
         }
     }
 
-    recreateDOM()
+    async recreateDOM()
     {
+        if (this.current_data === null) { this.dom_content.innerHTML = ''; App.THUMBS.stop(); return; }
+
+        App.THUMBS.stop();
+
+        this.dom_content.innerHTML = '';
+        
+        await sleepAsync(0);
+        
         let videos = this.current_data.videos;
 
         videos = this.getCurrentOrderMode().sort(videos);
@@ -305,6 +330,18 @@ class VideoListModel
         this.dom_content.classList.add(...this.getCurrentWidthMode().css);
         
         this.dom_content.innerHTML = html;
+
+        $_<HTMLTitleElement>('title')!.textContent = this.current_data.meta.htmltitle;
+        
+        this.getCurrentDisplayMode().renderer.initEvents();
+        
+        App.THUMBS.start();
+    }
+
+    getVideoByID(id: string): DataJSONVideo|null
+    {
+        if (this.current_videolist === null) return null;
+        return this.current_videolist.get(id) ?? null;
     }
     
     updateHash()
@@ -350,7 +387,7 @@ class VideoListModel
         if (showtoast) App.showToast(this.getCurrentDisplayMode().text);
         
         this.updateHash();
-        this.recreateDOM();
+        this.recreateDOM().then(()=>{});
     }
 
     setOrderMode(key: number|string, showtoast: boolean = false)
@@ -364,7 +401,7 @@ class VideoListModel
         if (showtoast) App.showToast(this.getCurrentOrderMode().text);
 
         this.updateHash();
-        this.recreateDOM();
+        this.recreateDOM().then(()=>{});
     }
 
     setWidthMode(key: number|string, showtoast: boolean = false)
@@ -381,6 +418,8 @@ class VideoListModel
         if (showtoast) App.showToast(this.getCurrentWidthMode().text);
 
         this.updateHash();
+
+        App.THUMBS.restart();
     }
 
     setThumbnailMode(key: number|string, showtoast: boolean = false)
@@ -395,7 +434,7 @@ class VideoListModel
 
         this.updateHash();
         
-        //TODO
+        App.THUMBS.restart();
     }
 
     setVideoMode(key: number|string, showtoast: boolean = false)
@@ -422,8 +461,7 @@ class VideoListModel
 
         this.theme_current = value;
 
-        let new_theme = this.Values_Themes[value].url;
-        $('#theme_style_obj').setAttribute('href', new_theme);
+        this.dom_theme_style_obj.setAttribute('href', this.getCurrentTheme().url);
 
         if (showtoast) App.showToast(this.getCurrentTheme().text);
 
@@ -440,7 +478,7 @@ class VideoListModel
 
         if (showtoast) App.showToast(this.getCurrentDataDir().text);
 
-        App.USERINTERFACE.refreshPathCombobox();
+        App.UI.refreshPathCombobox();
         
         this.updateHash();
         this.loadData().then(() => { });

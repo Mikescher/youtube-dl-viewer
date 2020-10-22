@@ -18,14 +18,14 @@ class UserInterfaceModel
     
     constructor() 
     {
-        this.dom_apppath_span        = $('.apppath span');
-        this.dom_font_test_header    = $('#font_test_header');
-        this.dom_apppath_dropdown    = $('#apppath_dropdown');
-        this.dom_apppath             = $('.apppath');
-        this.dom_apppath_icon        = $('.apppath i');
-        this.dom_option_dropdown     = $('#option_dropdown');
-        this.dom_dropdown_background = $('#dropdown_background');
-        this.dom_toast               = $('#toast')
+        this.dom_apppath_span        = $('.apppath span')!;
+        this.dom_font_test_header    = $('#font_test_header')!;
+        this.dom_apppath_dropdown    = $('#apppath_dropdown')!;
+        this.dom_apppath             = $('.apppath')!;
+        this.dom_apppath_icon        = $('.apppath i')!;
+        this.dom_option_dropdown     = $('#option_dropdown')!;
+        this.dom_dropdown_background = $('#dropdown_background')!;
+        this.dom_toast               = $('#toast')!;
     }
 
     init()
@@ -63,37 +63,37 @@ class UserInterfaceModel
 
     initHeaderEvents()
     {
-        $('.btn-display').addEventListener('click', () =>
+        $('.btn-display')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-display'), 'DisplayMode', App.VIDEOLIST.Values_DisplayMode, App.VIDEOLIST.displaymode_current, v => { App.VIDEOLIST.setDisplayMode(v); });
+            this.toggleOptionDropDown($('.btn-display')!, 'DisplayMode', App.VIDEOLIST.Values_DisplayMode, App.VIDEOLIST.displaymode_current, v => { App.VIDEOLIST.setDisplayMode(v); });
         });
-        $('.btn-width').addEventListener('click', () =>
+        $('.btn-width')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-width'), 'WidthMode', App.VIDEOLIST.Values_WidthMode, App.VIDEOLIST.widthmode_current, v => { App.VIDEOLIST.setWidthMode(v); });
+            this.toggleOptionDropDown($('.btn-width')!, 'WidthMode', App.VIDEOLIST.Values_WidthMode, App.VIDEOLIST.widthmode_current, v => { App.VIDEOLIST.setWidthMode(v); });
         });
-        $('.btn-order').addEventListener('click', () =>
+        $('.btn-order')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-order'), 'OrderMode', App.VIDEOLIST.Values_OrderMode, App.VIDEOLIST.ordermode_current, v => { App.VIDEOLIST.setOrderMode(v); });
+            this.toggleOptionDropDown($('.btn-order')!, 'OrderMode', App.VIDEOLIST.Values_OrderMode, App.VIDEOLIST.ordermode_current, v => { App.VIDEOLIST.setOrderMode(v); });
         });
-        $('.btn-loadthumbnails').addEventListener('click', () =>
+        $('.btn-loadthumbnails')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-loadthumbnails'), 'ThumbnailMode', App.VIDEOLIST.Values_ThumbnailMode, App.VIDEOLIST.thumbnailmode_current, v => { App.VIDEOLIST.setThumbnailMode(v); });
+            this.toggleOptionDropDown($('.btn-loadthumbnails')!, 'ThumbnailMode', App.VIDEOLIST.Values_ThumbnailMode, App.VIDEOLIST.thumbnailmode_current, v => { App.VIDEOLIST.setThumbnailMode(v); });
         });
-        $('.btn-videomode').addEventListener('click', () =>
+        $('.btn-videomode')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-videomode'), 'VideoMode', App.VIDEOLIST.Values_VideoMode, App.VIDEOLIST.videomode_current, v => { App.VIDEOLIST.setVideoMode(v); });
+            this.toggleOptionDropDown($('.btn-videomode')!, 'VideoMode', App.VIDEOLIST.Values_VideoMode, App.VIDEOLIST.videomode_current, v => { App.VIDEOLIST.setVideoMode(v); });
         });
-        $('.btn-theme').addEventListener('click', () =>
+        $('.btn-theme')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-theme'), 'Theme', App.VIDEOLIST.Values_Themes, App.VIDEOLIST.theme_current, v => { App.VIDEOLIST.setTheme(v); });
+            this.toggleOptionDropDown($('.btn-theme')!, 'Theme', App.VIDEOLIST.Values_Themes, App.VIDEOLIST.theme_current, v => { App.VIDEOLIST.setTheme(v); });
         });
         
-        $('.btn-refresh').addEventListener('click', async () =>
+        $('.btn-refresh')!.addEventListener('click', async () =>
         {
             await App.VIDEOLIST.loadData();
         });
 
-        $('#dropdown_background').addEventListener('click', () =>
+        $('#dropdown_background')!.addEventListener('click', () =>
         {
             this.hideDropDown();
         });
@@ -110,7 +110,7 @@ class UserInterfaceModel
 
             for (const dir of App.VIDEOLIST.Values_DataDirs)
             {
-                $("#apppath_dropdown .datadir_dropdown_row_"+dir.index).addEventListener('click', () =>
+                $("#apppath_dropdown .datadir_dropdown_row_"+dir.index)?.addEventListener('click', () =>
                 {
                     this.hideDropDown();
                     App.VIDEOLIST.setDataDir(dir.index);
@@ -150,8 +150,9 @@ class UserInterfaceModel
 
         this.dom_option_dropdown.innerHTML = html;
 
+        this.dom_option_dropdown.style.right = '';
         this.dom_option_dropdown.classList.remove('hidden');
-
+        
         const left_btn = src.getBoundingClientRect().left;
         const left_dd  = this.dom_option_dropdown.getBoundingClientRect().left;
 
@@ -161,13 +162,13 @@ class UserInterfaceModel
         }
         else
         {
-            this.dom_option_dropdown.style.right = null;
+            // @ts-ignore
+            this.dom_option_dropdown.style.right = '';
         }
 
         for (const [i, id] of ids)
         {
-            const elem = $('#' + id);
-            elem.addEventListener('click', () =>
+            $('#' + id)?.addEventListener('click', () =>
             {
                 this.hideDropDown();
                 evt(i);
@@ -212,20 +213,19 @@ class UserInterfaceModel
     clearToast()
     {
         if (this.toastTimeoutID != null) clearTimeout(this.toastTimeoutID);
-        $('#toast').classList.add('vanished');
+        this.dom_toast.classList.add('vanished');
         this.toastTimeoutID = null;
     }
 
-    showToast(txt)
+    showToast(txt: string)
     {
         if (this.toastTimeoutID != null) clearTimeout(this.toastTimeoutID);
-        const toaster = $('#toast');
-        toaster.innerText = txt;
+        this.dom_toast.innerText = txt;
     
-        toaster.classList.add('vanished');
-        toaster.classList.remove('active');
+        this.dom_toast.classList.add('vanished');
+        this.dom_toast.classList.remove('active');
         this.toastTimeoutID = setTimeout(this.clearToast, 2000);
-        setTimeout(() => { toaster.classList.remove('vanished'); toaster.classList.add('active'); }, 10)
+        setTimeout(() => { this.dom_toast.classList.remove('vanished'); this.dom_toast.classList.add('active'); }, 10)
     }
 
     refreshPathCombobox() 

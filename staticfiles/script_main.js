@@ -258,7 +258,7 @@ function initData(data)
         html += '<i class="icon_cached fas fa-cloud"></i>';
         
         {
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg"  alt="thumbnail" data-loaded="0" data-realurl="/data/' + DATA.dataidx + '/video/' + escapeHtml(meta['uid']) + '/thumb" data-videoid="'+escapeHtml(meta['uid'])+'" /></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + DATA.dataidx + '/video/' + escapeHtml(meta['uid']) + '/thumb" data-videoid="'+escapeHtml(meta['uid'])+'" /></div>';
 
             if (info.hasNonNull('like_count') && info.hasNonNull('dislike_count'))
             {

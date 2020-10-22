@@ -6,6 +6,7 @@
     [
       "dom",
       "ES2018"
-    ]
+    ],
+    "strict": true
   }
 }

@@ -78,6 +78,9 @@
      data-has_ffmpeg="@Program.HasValidFFMPEG" 
      data-has_cache="@(Program.Args.CacheDir != null)"
      data-has-multiple-dirs="@(Program.Args.DataDirs.Count > 1)"
+     
+     data-previewcount-config-min="@(Program.Args.MinPreviewImageCount)"
+     data-previewcount-config-max="@(Program.Args.MaxPreviewImageCount)"
 
 ></div>
 
