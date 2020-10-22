@@ -6,6 +6,18 @@
   justify-content: space-between;
 }
 
+#content.lstyle_grid .flexrowfiller {
+  margin: 0 0.33rem;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  display: flex;
+}
+#content.lstyle_grid .flexrowfiller .pseudo
+{
+  width: 12rem;
+  height: 0;
+}
+
 #content.lstyle_grid .video_entry {
   margin: 0.33rem;
   padding: 2px;
@@ -73,7 +85,7 @@
 
   display: inherit;
 
-  max-width: 12rem;
+  max-width: calc(12rem - 0.1rem - 0.1rem);
 
   margin: 0.5rem 0.1rem 0.1rem 0.1rem;
 

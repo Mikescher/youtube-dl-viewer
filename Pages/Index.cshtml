@@ -50,7 +50,7 @@
                              new JProperty("index", i), 
                              new JProperty("text", $"Theme: {p.Name}"), 
                              new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
-                             new JProperty("url", $"/themes/{i}"),
+                             new JProperty("url", p.URI),
                              new JProperty("name", p.Name),
                              new JProperty("enabled", true)
                          )).ToArray<object>() 

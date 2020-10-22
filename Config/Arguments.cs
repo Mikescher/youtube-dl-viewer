@@ -15,7 +15,11 @@ namespace youtube_dl_viewer.Config
 
         public List<DataDirSpec> DataDirs = new List<DataDirSpec>();
         
-        public List<ThemeSpec> Themes = new List<ThemeSpec> { new ThemeSpec(0, "default", "theme_default.css", null) };
+        public List<ThemeSpec> Themes = new List<ThemeSpec>
+        {
+            new ThemeSpec(0, "default", "theme_default.css", null),
+            new ThemeSpec(1, "dark",    "theme_dark.css",    null),
+        };
 
         public int MaxParallelConvertJobs    = 1;
         public int MaxParallelGenPreviewJobs = 2;

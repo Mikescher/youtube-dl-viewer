@@ -14,8 +14,7 @@ namespace youtube_dl_viewer.Config
         public readonly string FullPath;
 
         public readonly string SelectorID;
-
-        public string URI => $"/themes/{Index}";
+        public readonly string URI;
 
         private string _cache = null;
         
@@ -26,7 +25,9 @@ namespace youtube_dl_viewer.Config
             Filename = filename;
             FullPath = fullPath?.Replace("/", Path.DirectorySeparatorChar.ToString());
             
-            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[A-Za-z0-9_\-.,;]", "");
+            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "");
+            
+            URI = $"/themes/{Index}/theme_{Regex.Replace(Name.Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "")}.css";
         }
 
         public static ThemeSpec Parse(string value, int idx)

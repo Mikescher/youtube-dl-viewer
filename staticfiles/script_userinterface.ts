@@ -65,27 +65,27 @@ class UserInterfaceModel
     {
         $('.btn-display')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-display')!, 'DisplayMode', App.VIDEOLIST.Values_DisplayMode, App.VIDEOLIST.displaymode_current, v => { App.VIDEOLIST.setDisplayMode(v); });
+            this.toggleOptionDropDown($('.btn-display')!, 'DisplayMode', App.VIDEOLIST.Values_DisplayMode, App.VIDEOLIST.displaymode_current, v => { App.VIDEOLIST.setDisplayMode(v, true); });
         });
         $('.btn-width')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-width')!, 'WidthMode', App.VIDEOLIST.Values_WidthMode, App.VIDEOLIST.widthmode_current, v => { App.VIDEOLIST.setWidthMode(v); });
+            this.toggleOptionDropDown($('.btn-width')!, 'WidthMode', App.VIDEOLIST.Values_WidthMode, App.VIDEOLIST.widthmode_current, v => { App.VIDEOLIST.setWidthMode(v, true); });
         });
         $('.btn-order')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-order')!, 'OrderMode', App.VIDEOLIST.Values_OrderMode, App.VIDEOLIST.ordermode_current, v => { App.VIDEOLIST.setOrderMode(v); });
+            this.toggleOptionDropDown($('.btn-order')!, 'OrderMode', App.VIDEOLIST.Values_OrderMode, App.VIDEOLIST.ordermode_current, v => { App.VIDEOLIST.setOrderMode(v, true, true); });
         });
         $('.btn-loadthumbnails')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-loadthumbnails')!, 'ThumbnailMode', App.VIDEOLIST.Values_ThumbnailMode, App.VIDEOLIST.thumbnailmode_current, v => { App.VIDEOLIST.setThumbnailMode(v); });
+            this.toggleOptionDropDown($('.btn-loadthumbnails')!, 'ThumbnailMode', App.VIDEOLIST.Values_ThumbnailMode, App.VIDEOLIST.thumbnailmode_current, v => { App.VIDEOLIST.setThumbnailMode(v, true); });
         });
         $('.btn-videomode')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-videomode')!, 'VideoMode', App.VIDEOLIST.Values_VideoMode, App.VIDEOLIST.videomode_current, v => { App.VIDEOLIST.setVideoMode(v); });
+            this.toggleOptionDropDown($('.btn-videomode')!, 'VideoMode', App.VIDEOLIST.Values_VideoMode, App.VIDEOLIST.videomode_current, v => { App.VIDEOLIST.setVideoMode(v, true); });
         });
         $('.btn-theme')!.addEventListener('click', () =>
         {
-            this.toggleOptionDropDown($('.btn-theme')!, 'Theme', App.VIDEOLIST.Values_Themes, App.VIDEOLIST.theme_current, v => { App.VIDEOLIST.setTheme(v); });
+            this.toggleOptionDropDown($('.btn-theme')!, 'Theme', App.VIDEOLIST.Values_Themes, App.VIDEOLIST.theme_current, v => { App.VIDEOLIST.setTheme(v, true); });
         });
         
         $('.btn-refresh')!.addEventListener('click', async () =>
@@ -113,7 +113,7 @@ class UserInterfaceModel
                 $("#apppath_dropdown .datadir_dropdown_row_"+dir.index)?.addEventListener('click', () =>
                 {
                     this.hideDropDown();
-                    App.VIDEOLIST.setDataDir(dir.index);
+                    App.VIDEOLIST.setDataDir(dir.index, true);
                 });
             }
         }

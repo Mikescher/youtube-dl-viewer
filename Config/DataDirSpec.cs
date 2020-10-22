@@ -52,7 +52,7 @@ namespace youtube_dl_viewer.Config
             VideomodeOverride  = videomode_override;
             ThemeOverride      = theme_override;
             
-            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[A-Za-z0-9_\-.,;]", "");
+            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "");
             
             if (!Directory.Exists(Path)) throw new Exception($"Path not found: '{Path}'");
             

@@ -14,13 +14,13 @@ class VideoListModel {
             { index: 0, text: "Sorting: Date [descending]", keys: ['date-desc', '0'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * -1) },
             { index: 1, text: "Sorting: Date [ascending]", keys: ['date-asc', '1'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'upload_date') * +1) },
             { index: 2, text: "Sorting: Title", keys: ['title', '2'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareData(a, b, 'title')) },
-            { index: 3, text: "Sorting: Category", keys: ['cat', '3'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'categories')) },
+            { index: 3, text: "Sorting: Category", keys: ['category', '3'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'categories')) },
             { index: 4, text: "Sorting: Views", keys: ['views', '4'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'view_count')) },
             { index: 5, text: "Sorting: Rating", keys: ['rating', '5'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareDiv(a, b, 'like_count', 'dislike_count') * -1) },
             { index: 6, text: "Sorting: Uploader", keys: ['uploader', '6'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompare(a, b, 'uploader')) },
-            { index: 7, text: "Sorting: External [descending]", keys: ['ext-desc', '7'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * -1) },
-            { index: 8, text: "Sorting: External [ascending]", keys: ['ext-asc', '8'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * +1) },
-            { index: 9, text: "Sorting: Random", keys: ['rand', '9'], enabled: true, sort: (p) => { shuffle(p, new SeedRandom(this.shuffle_seed)); return p; } },
+            { index: 7, text: "Sorting: External [descending]", keys: ['external-desc', '7'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * -1) },
+            { index: 8, text: "Sorting: External [ascending]", keys: ['external-asc', '8'], enabled: false, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'ext_order_index') * +1) },
+            { index: 9, text: "Sorting: Random", keys: ['random', '9'], enabled: true, sort: (p) => { shuffle(p, new SeedRandom(this.shuffle_seed)); return p; } },
             { index: 10, text: "Sorting: Filename [ascending]", keys: ['filename-asc', '10'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * +1) },
             { index: 11, text: "Sorting: Filename [descending]", keys: ['filename-desc', '11'], enabled: true, sort: (p) => p.sort((a, b) => CompareUtil.sortcompareMeta(a, b, 'filename_base') * -1) },
         ];
@@ -111,6 +111,7 @@ class VideoListModel {
             if (key === 'seed')
                 this.shuffle_seed = val;
         }
+        this.updateThemeStylesheet();
         this.loadData().then(() => { });
     }
     isLoaded() {
@@ -249,11 +250,13 @@ class VideoListModel {
         this.updateHash();
         this.recreateDOM().then(() => { });
     }
-    setOrderMode(key, showtoast = false) {
+    setOrderMode(key, showtoast = false, reshuffle = false) {
         const value = this.getIndexFromKey("OrderMode", this.Values_OrderMode, key.toString(), this.ordermode_default);
-        if (value === this.ordermode_current)
+        if (value === this.ordermode_current && !(reshuffle && value === 9))
             return;
         this.ordermode_current = value;
+        if (reshuffle)
+            this.shuffle_seed = Math.random().toString().replace(/[.,]/g, '').substr(1);
         if (showtoast)
             App.showToast(this.getCurrentOrderMode().text);
         this.updateHash();
@@ -299,7 +302,7 @@ class VideoListModel {
         if (value === this.theme_current)
             return;
         this.theme_current = value;
-        this.dom_theme_style_obj.setAttribute('href', this.getCurrentTheme().url);
+        this.updateThemeStylesheet();
         if (showtoast)
             App.showToast(this.getCurrentTheme().text);
         this.updateHash();
@@ -314,6 +317,9 @@ class VideoListModel {
         App.UI.refreshPathCombobox();
         this.updateHash();
         this.loadData().then(() => { });
+    }
+    updateThemeStylesheet() {
+        this.dom_theme_style_obj.setAttribute('href', this.getCurrentTheme().url);
     }
     getCurrentDisplayMode() { return this.Values_DisplayMode[this.displaymode_current]; }
     getCurrentOrderMode() { return this.Values_OrderMode[this.ordermode_current]; }

@@ -5,15 +5,6 @@ class DisplayGridRenderer {
     }
     render(videos, dir) {
         let html = '';
-        html += '<div class="table_header">';
-        html += '    <div class="title">Titel</div>';
-        html += '    <div class="uploader">Uploader</div>';
-        html += '    <div class="catlist">Category</div>';
-        html += '    <div class="view_count">Views</div>';
-        html += '    <div class="like_count">Likes</div>';
-        html += '    <div class="dislike_count">Dislikes</div>';
-        html += '    <div class="upload_date">Upload date</div>';
-        html += '</div>';
         for (const vid of videos) {
             let ve_cls = 'video_entry';
             if (vid.meta.cached)
@@ -34,14 +25,30 @@ class DisplayGridRenderer {
             html += '</div>';
             html += "\n\n";
         }
+        for (let i = 0; i < 16; i++) {
+            html += '<div class="flexrowfiller"><div class="pseudo"></div></div>';
+            html += "\n\n";
+        }
         return html;
     }
     async setThumbnail(thumb) {
-        // nothing to do
-        return true;
+        if (thumb.getAttribute('data-loaded') === '1')
+            return true;
+        const src = thumb.getAttribute('data-realurl');
+        if (thumb.getAttribute('src') === src)
+            return true;
+        return await setImageSource(thumb, src).then(ok => {
+            if (!ok)
+                thumb.setAttribute('src', '/thumb_empty.svg');
+            thumb.setAttribute('data-loaded', ok ? '1' : '0');
+            return ok;
+        });
     }
     async unsetThumbnail(thumb) {
-        // nothing to do
+        if (thumb.getAttribute('data-loaded') === '0')
+            return;
+        thumb.setAttribute('src', '/thumb_empty.svg');
+        thumb.setAttribute('data-loaded', '0');
     }
     initEvents() {
         for (const btn of $all('.video_entry'))
