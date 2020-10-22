@@ -90,7 +90,7 @@
     <header>
         <div class="logo">
             <div class="apptitle">youtube-dl Viewer <span class="version">@Program.Version</span></div>
-            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single")">
+            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single") invisible">
                 <span>@Program.Args.DataDirs.First().Name</span>
                 <i class="fas fa-chevron-down"></i>
             </div>

@@ -5,7 +5,7 @@ body
     font-family:"Helvetica","Arial",sans-serif;
 }
 
-header, #font_test_header
+header
 {
     font-family:"Roboto","Courier",sans-serif;
 }
@@ -40,7 +40,7 @@ header
     border-bottom: 1px solid #0f3460;
 }
 
-header .logo .apppath
+header .logo .apppath, #font_test_header
 {
     font-style: italic;
     font-family: "Courier New",monospace;
@@ -61,6 +61,7 @@ header .logo .apppath.multiple
     background: #e94560;
     color: #000;
 }
+#font_test_header { font-family: "Courier New",monospace; font-style: italic; font-weight: bold }
 
 #apppath_dropdown { background: #393e46; border: 1px solid #000; }
 #apppath_dropdown .row { border-bottom: 1px solid #000; }

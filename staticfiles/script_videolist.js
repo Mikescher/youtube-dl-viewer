@@ -113,6 +113,7 @@ class VideoListModel {
                 this.shuffle_seed = val;
         }
         this.updateThemeStylesheet();
+        App.UI.initPathDropdownWidth();
         this.loadData().then(() => { });
     }
     isLoaded() {
@@ -320,6 +321,11 @@ class VideoListModel {
         this.loadData().then(() => { });
     }
     updateThemeStylesheet() {
+        let evt = () => {
+            this.dom_theme_style_obj.removeEventListener('load', evt);
+            App.UI.initPathDropdownWidth();
+        };
+        this.dom_theme_style_obj.addEventListener('load', evt);
         this.dom_theme_style_obj.setAttribute('href', this.getCurrentTheme().url);
     }
     getCurrentDisplayMode() { return this.Values_DisplayMode[this.displaymode_current]; }

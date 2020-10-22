@@ -250,6 +250,7 @@ class VideoListModel
         }
 
         this.updateThemeStylesheet();
+        App.UI.initPathDropdownWidth();
         
         this.loadData().then(()=>{});
     }
@@ -483,7 +484,7 @@ class VideoListModel
         this.updateThemeStylesheet();
 
         if (showtoast) App.showToast(this.getCurrentTheme().text);
-
+        
         this.updateHash();
     }
 
@@ -505,6 +506,13 @@ class VideoListModel
 
     updateThemeStylesheet()
     {
+        let evt = ()=>
+        {
+            this.dom_theme_style_obj.removeEventListener('load', evt);
+            App.UI.initPathDropdownWidth();
+        };
+        this.dom_theme_style_obj.addEventListener('load', evt);
+        
         this.dom_theme_style_obj.setAttribute('href', this.getCurrentTheme().url);
     }
     

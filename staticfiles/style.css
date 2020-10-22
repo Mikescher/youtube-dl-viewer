@@ -7,6 +7,7 @@ html,body {
 }
 
 .nodisplay, .hidden { display: none !important; }
+.invisible { visibility: hidden; opacity: 0.01; }
 
 body { }
 
@@ -88,7 +89,6 @@ header .logo .apppath.multiple {
     float: left;
     
     border: 1px solid #000;
-    background: #FFF;
     font-style: normal;
     margin-top: 4px;
     padding: 0.1rem 0.25rem;

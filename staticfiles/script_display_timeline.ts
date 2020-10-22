@@ -55,6 +55,7 @@ class DisplayTimelineRenderer implements DisplayRenderer
 
         for (const himg of images_hidden) 
         {
+            himg.parentElement!.parentElement!.classList.add('hidden');
             himg.setAttribute('src', '/thumb_empty.svg');
             himg.setAttribute('data-loaded', '0');
         }

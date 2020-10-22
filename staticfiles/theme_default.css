@@ -5,7 +5,7 @@
     font-family:"Helvetica","Arial",sans-serif;
 }
 
-header, #font_test_header
+header
 {
     font-family:"Roboto","Courier",sans-serif;
 }
@@ -30,6 +30,12 @@ header .logo .apppath
     font-style: italic;
     font-family: "Courier New",monospace;
 }
+header .logo .apppath.multiple {
+    border: 1px solid #000;
+    background: #FFF;
+}
+
+#font_test_header { font-family: "Courier New",monospace; font-style: italic; font-weight: bold }
 
 header .btn
 {

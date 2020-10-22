@@ -57,6 +57,7 @@ class UserInterfaceModel
         }
         len_dropdown = (len_dropdown + 1+4+4+1 + 10 + 14);
         this.dom_apppath_dropdown.style.width = len_dropdown + "px";
+        this.dom_apppath.classList.remove('invisible');
         this.dom_apppath.style.width = len_dropdown + "px";
         this.dom_apppath.style.float = "inherit";
     }
