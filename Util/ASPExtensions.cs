@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,12 +7,18 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace youtube_dl_viewer.Util
 {
     public static class ASPExtensions
     {
+#if DEBUG
+        private static ConcurrentDictionary<(string,string), string> _reloadCacheText = new ConcurrentDictionary<(string,string), string>();
+        private static ConcurrentDictionary<(string,string), byte[]> _reloadCacheBin  = new ConcurrentDictionary<(string,string), byte[]>();
+#endif
+        
         public static void MapEmbeddedResources(this IEndpointRouteBuilder endpoints, string baseWebPath, string baseResPath)
         {
             var ass = Assembly.GetExecutingAssembly();
@@ -69,7 +76,15 @@ namespace youtube_dl_viewer.Util
             var result = ms.ToArray();
 
 #if DEBUG
-            result = File.ReadAllBytes(GetFilesystemResourcePath(resourcePath, resourceFilename));
+            if (!_reloadCacheBin.ContainsKey((resourcePath, resourceFilename))) _reloadCacheBin[(resourcePath, resourceFilename)] = result;
+            
+            var resultReload = File.ReadAllBytes(GetFilesystemResourcePath(resourcePath, resourceFilename));
+            if (resultReload == null) return result;
+            if (_reloadCacheBin.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload.SequenceEqual(cacheval)) return result;
+            
+            Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
+            _reloadCacheBin[(resourcePath, resourceFilename)] = resultReload;
+            return resultReload;
 #endif
 
             return result;
@@ -83,7 +98,15 @@ namespace youtube_dl_viewer.Util
             var result = reader.ReadToEnd();
 
 #if DEBUG
-            result = File.ReadAllText(GetFilesystemResourcePath(resourcePath, resourceFilename));
+            if (!_reloadCacheText.ContainsKey((resourcePath, resourceFilename))) _reloadCacheText[(resourcePath, resourceFilename)] = result;
+            
+            var resultReload = File.ReadAllText(GetFilesystemResourcePath(resourcePath, resourceFilename));
+            if (resultReload == null) return result;
+            if (_reloadCacheText.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload == cacheval) return result;
+            
+            Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
+            _reloadCacheText[(resourcePath, resourceFilename)] = resultReload;
+            return resultReload;
 #endif
             
             return result;
@@ -93,8 +116,12 @@ namespace youtube_dl_viewer.Util
         {
             var rpath = resourcePath;
             if (rpath.StartsWith("youtube_dl_viewer.")) rpath = rpath.Substring("youtube_dl_viewer.".Length);
+
+            // specify 'RESOURCE_RELOAD_URL' in launchSettings.json to enable live-reload
+            var dir = Environment.GetEnvironmentVariable("RESOURCE_RELOAD_URL");
+            if (dir == null) return null;
             
-            return Path.Combine(Directory.GetCurrentDirectory(), rpath.Replace('.', Path.DirectorySeparatorChar), resourceFilename);
+            return Path.Combine(dir, rpath.Replace('.', Path.DirectorySeparatorChar), resourceFilename);
         }
         
     }

@@ -25,9 +25,9 @@ namespace youtube_dl_viewer.Config
             Filename = filename;
             FullPath = fullPath?.Replace("/", Path.DirectorySeparatorChar.ToString());
             
-            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "");
+            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "_");
             
-            URI = $"/themes/{Index}/theme_{Regex.Replace(Name.Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "")}.css";
+            URI = $"/themes/{Index}/theme_{Regex.Replace(Name.Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "_")}.css";
         }
 
         public static ThemeSpec Parse(string value, int idx)

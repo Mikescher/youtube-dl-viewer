@@ -130,9 +130,6 @@ class ThumbnailModel {
             this.currentAnimatedVideo = null;
             return;
         }
-        else {
-            console.error('Could not load preview images (status)');
-        }
         const max = parseInt(responseZero.headers.get('previewimagecount'));
         for (let i = 1;; i++) {
             if (this.currentAnimatedVideo !== video.meta.uid)

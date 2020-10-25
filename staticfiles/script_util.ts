@@ -162,3 +162,7 @@ function formatBytes(bytes: number): string
     return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
 }
 
+function extEncodeURIComponent(str: string) 
+{
+    return encodeURIComponent(str).replace(/[!'()*]/g, function(c) { return '%' + c.charCodeAt(0).toString(16); });
+}

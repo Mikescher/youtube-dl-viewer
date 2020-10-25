@@ -54,10 +54,17 @@ class VideoPlayerModel {
     }
     openVLC(video) {
         let filelink = video.meta.path_video_abs;
+        let suffix = "";
+        if (filelink.match(/^[A-Z]:\\/) != null) {
+            suffix = filelink.substr(0, 2) + '/';
+            filelink = filelink.substr(3);
+        }
+        filelink = filelink.replace("\\", "/"); // windows
+        filelink = filelink.split('/').map(p => extEncodeURIComponent(p)).join('/');
         if (filelink.startsWith('/'))
-            filelink = 'file://' + filelink;
+            filelink = 'file://' + suffix + filelink;
         else
-            filelink = 'file:///' + filelink;
+            filelink = 'file:///' + suffix + filelink;
         window.open('vlc://' + filelink, '_self');
         return;
     }
