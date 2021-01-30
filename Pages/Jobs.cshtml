@@ -6,13 +6,23 @@
 <head>
     <title>youtube-dl Viewer [JobManager] v@(Program.Version)</title>
     
-    <link rel="stylesheet" type="text/css" href="/fontawesome.css">
-    <link rel="stylesheet" type="text/css" href="/solid.css">
-    <link rel="stylesheet" type="text/css" href="/regular.css">
+    @if (Program.DEBUG)
+    {
+        @foreach (var css in Router.CSS_JOBS) { <link rel="stylesheet" type="text/css" href="/@css.Item2"> }
+    }
+    else
+    {
+        <link rel="stylesheet" type="text/css" href="/style_jobs.combined.css">
+    }
     
-    <link rel="stylesheet" type="text/css" href="/style_jobs.css">
-    
-    <script src="/script_jobs.compiled.js"></script>
+    @if (Program.DEBUG)
+    {
+        @foreach (var js in Router.JS_JOBS) { <script src="/@js"></script> }
+    }
+    else
+    {
+        <script src="/script_main.compiled.js"></script>
+    }
     
 </head>
 

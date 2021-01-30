@@ -9,44 +9,59 @@ namespace youtube_dl_viewer
 {
     public static class Router
     {
+        public static readonly string[] JS_MAIN =
+        {
+            "script_seedrandom.js", "script_comphelper.js", "script_util.js", 
+            "script_display_grid.js", "script_display_compact.js", "script_display_detailed.js", "script_display_tabular.js", "script_display_timeline.js",
+            "script_userinterface.js", "script_videolist.js", "script_player.js", "script_thumbnails.js", 
+            "script_mainpage.js"
+        };
+        
+        public static readonly string[] JS_JOBS =
+        {
+            "script_util.js", 
+            "script_jobs.js"
+        };
+        
+        public static readonly (string,string)[] CSS_MAIN =
+        {
+            ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
+            ("youtube_dl_viewer.staticexternal", "solid.min.css"),
+            ("youtube_dl_viewer.staticexternal", "regular.min.css"),
+                
+            ("youtube_dl_viewer.staticfiles", "style.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_animation.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_width.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_video.css"), 
+                
+            ("youtube_dl_viewer.staticfiles", "style_compact.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_detailed.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_detailed_expanded.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_grid.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_tabular.css"), 
+            ("youtube_dl_viewer.staticfiles", "style_timeline.css"), 
+        };
+        
+        public static readonly (string,string)[] CSS_JOBS =
+        {
+            ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
+            ("youtube_dl_viewer.staticexternal", "solid.min.css"),
+            ("youtube_dl_viewer.staticexternal", "regular.min.css"),
+                
+            ("youtube_dl_viewer.staticfiles", "style_jobs.css"), 
+        };
+        
         public static void Build(IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGet("/data/{idx:int}/json", DataController.GetData);
 
             endpoints.MapGet("/data/{idx:int}/refresh", DataController.RefreshData);
 
-            endpoints.MapJSEmbeddedBundle("/script_main.compiled.js", "youtube_dl_viewer.staticfiles", new[]
-            {
-                "script_seedrandom.js", "script_comphelper.js", "script_util.js", 
-                "script_display_grid.js", "script_display_compact.js", "script_display_detailed.js", "script_display_tabular.js", "script_display_timeline.js",
-                "script_userinterface.js", "script_videolist.js", "script_player.js", "script_thumbnails.js", 
-                "script_mainpage.js"
-            });
+            endpoints.MapJSEmbeddedBundle("/script_main.compiled.js", "youtube_dl_viewer.staticfiles", JS_MAIN);
+            endpoints.MapJSEmbeddedBundle("/script_jobs.compiled.js", "youtube_dl_viewer.staticfiles", JS_JOBS);
             
-            endpoints.MapJSEmbeddedBundle("/script_jobs.compiled.js", "youtube_dl_viewer.staticfiles", new[]
-            {
-                "script_util.js", 
-                "script_jobs.js"
-            });
-            
-            endpoints.MapCSSEmbeddedBundle("/style.combined.css", new[]
-            {
-                ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
-                ("youtube_dl_viewer.staticexternal", "solid.min.css"),
-                ("youtube_dl_viewer.staticexternal", "regular.min.css"),
-                
-                ("youtube_dl_viewer.staticfiles", "style.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_animation.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_width.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_video.css"), 
-                
-                ("youtube_dl_viewer.staticfiles", "style_compact.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_detailed.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_detailed_expanded.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_grid.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_tabular.css"), 
-                ("youtube_dl_viewer.staticfiles", "style_timeline.css"), 
-            });
+            endpoints.MapCSSEmbeddedBundle("/style_main.combined.css", CSS_MAIN);
+            endpoints.MapCSSEmbeddedBundle("/style_jobs.combined.css", CSS_JOBS);
             
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");

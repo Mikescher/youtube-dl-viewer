@@ -10,25 +10,11 @@
     
     @if (Program.DEBUG)
     {
-        <link rel="stylesheet" type="text/css" href="/fontawesome.css">
-        <link rel="stylesheet" type="text/css" href="/solid.css">
-        <link rel="stylesheet" type="text/css" href="/regular.css">
-    
-        <link rel="stylesheet" type="text/css" href="/style.css">
-        <link rel="stylesheet" type="text/css" href="/style_animation.css">
-        <link rel="stylesheet" type="text/css" href="/style_width.css">
-        <link rel="stylesheet" type="text/css" href="/style_video.css">
-    
-        <link rel="stylesheet" type="text/css" href="/style_compact.css">
-        <link rel="stylesheet" type="text/css" href="/style_detailed.css">
-        <link rel="stylesheet" type="text/css" href="/style_detailed_expanded.css">
-        <link rel="stylesheet" type="text/css" href="/style_grid.css">
-        <link rel="stylesheet" type="text/css" href="/style_tabular.css">
-        <link rel="stylesheet" type="text/css" href="/style_timeline.css">
+        @foreach (var css in Router.CSS_MAIN) { <link rel="stylesheet" type="text/css" href="/@css.Item2"> }
     }
     else
     {
-        <link rel="stylesheet" type="text/css" href="/style.combined.css">
+        <link rel="stylesheet" type="text/css" href="/style_main.combined.css">
     }
     
     @if (Program.Args.Themes.Any(p => p.Name == Program.Args.OptThemeMode))
@@ -40,7 +26,14 @@
         <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes[0].URI">
     }
     
-    <script src="/script_main.compiled.js"></script>
+    @if (Program.DEBUG)
+    {
+        @foreach (var js in Router.JS_MAIN) { <script src="/@js"></script> }
+    }
+    else
+    {
+        <script src="/script_main.compiled.js"></script>
+    }
     
 </head>
 

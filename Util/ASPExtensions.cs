@@ -173,17 +173,17 @@ namespace youtube_dl_viewer.Util
             var resultReload = File.ReadAllBytes(GetFilesystemResourcePath(resourcePath, resourceFilename));
             if (resultReload == null)
             {
-                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
                 return result;
             }
             if (_reloadCacheBin.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload.SequenceEqual(cacheval))
             {
-                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
                 return result;
             }
             
             Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
-            ctxt.Response.Headers.Add("X-LIVE_RELOADED", "true");
+            ctxt.Response.Headers["X-LIVE_RELOADED"] = "true";
             _reloadCacheBin[(resourcePath, resourceFilename)] = resultReload;
             return resultReload;
 #endif
@@ -204,18 +204,18 @@ namespace youtube_dl_viewer.Util
             var resultReload = File.ReadAllText(GetFilesystemResourcePath(resourcePath, resourceFilename));
             if (resultReload == null)
             {
-                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
                 return result;
             }
 
             if (_reloadCacheText.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload == cacheval)
             {
-                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
                 return result;
             }
             
             Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
-            ctxt.Response.Headers.Add("X-LIVE_RELOADED", "true");
+            ctxt.Response.Headers["X-LIVE_RELOADED"] = "true";
             _reloadCacheText[(resourcePath, resourceFilename)] = resultReload;
             return resultReload;
 #endif
