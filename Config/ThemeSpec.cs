@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Config
@@ -35,7 +36,7 @@ namespace youtube_dl_viewer.Config
             return new ThemeSpec(idx, Path.GetFileNameWithoutExtension(value), Path.GetFileName(value), value);
         }
 
-        public string ReadCSS()
+        public string ReadCSS(HttpContext context)
         {
             if (_cache != null) return _cache;
 
@@ -48,7 +49,7 @@ namespace youtube_dl_viewer.Config
             foreach (var key in ass.GetManifestResourceNames().Where(p => p.StartsWith("youtube_dl_viewer.staticfiles.")))
             {
                 var file = key.Substring("youtube_dl_viewer.staticfiles.".Length);
-                if (file == Filename) return (_cache = ASPExtensions.GetTextResource(ass, key, "youtube_dl_viewer.staticfiles", file));
+                if (file == Filename) return (_cache = ASPExtensions.GetTextResource(context, ass, key, "youtube_dl_viewer.staticfiles", file));
             }
 
             return null;

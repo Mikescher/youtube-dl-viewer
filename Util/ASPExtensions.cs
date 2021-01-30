@@ -15,9 +15,12 @@ namespace youtube_dl_viewer.Util
     public static class ASPExtensions
     {
 #if DEBUG
-        private static ConcurrentDictionary<(string,string), string> _reloadCacheText = new ConcurrentDictionary<(string,string), string>();
-        private static ConcurrentDictionary<(string,string), byte[]> _reloadCacheBin  = new ConcurrentDictionary<(string,string), byte[]>();
+        private static readonly ConcurrentDictionary<(string,string), string> _reloadCacheText = new ConcurrentDictionary<(string,string), string>();
+        private static readonly ConcurrentDictionary<(string,string), byte[]> _reloadCacheBin  = new ConcurrentDictionary<(string,string), byte[]>();
 #endif
+        
+        private static readonly ConcurrentDictionary<string, string> _resCacheText = new ConcurrentDictionary<string, string>();
+        private static readonly ConcurrentDictionary<string, byte[]> _resCacheBin  = new ConcurrentDictionary<string, byte[]>();
         
         public static void MapEmbeddedResources(this IEndpointRouteBuilder endpoints, string baseWebPath, string baseResPath)
         {
@@ -30,21 +33,72 @@ namespace youtube_dl_viewer.Util
                     if (file.ToLower().EndsWith(".css"))
                     {
                         ctxt.Response.Headers.Add(HeaderNames.ContentType, "text/css");
-                        await ctxt.Response.BodyWriter.WriteAsync(GetBinResource(ass, key, baseResPath, file));
+                        
+                        var cachekey = $"${baseResPath}|{file}";
+                        if (!Program.DEBUG && _resCacheBin.TryGetValue(cachekey, out var cacheResult))
+                        {
+                            ctxt.Response.Headers.Add("X-CACHED", "true");
+                            await ctxt.Response.BodyWriter.WriteAsync(cacheResult);
+                            return;
+                        }
+
+                        var dat = GetTextResource(ctxt, ass, key, baseResPath, file);
+                        _resCacheText[cachekey] = dat;
+                        
+                        ctxt.Response.Headers.Add("X-CACHED", "false");
+                        await ctxt.Response.WriteAsync(dat);
                     }
                     else if (file.ToLower().EndsWith(".js"))
                     {
                         ctxt.Response.Headers.Add(HeaderNames.ContentType, "application/javascript");
-                        await ctxt.Response.WriteAsync(GetTextResource(ass, key, baseResPath, file));
+                        
+                        var cachekey = $"${baseResPath}|{file}";
+                        if (!Program.DEBUG && _resCacheBin.TryGetValue(cachekey, out var cacheResult))
+                        {
+                            ctxt.Response.Headers.Add("X-CACHED", "true");
+                            await ctxt.Response.BodyWriter.WriteAsync(cacheResult);
+                            return;
+                        }
+
+                        var dat = GetTextResource(ctxt, ass, key, baseResPath, file);
+                        _resCacheText[cachekey] = dat;
+                        
+                        ctxt.Response.Headers.Add("X-CACHED", "false");
+                        await ctxt.Response.WriteAsync(dat);
                     }
                     else if (file.ToLower().EndsWith(".svg"))
                     {
                         ctxt.Response.Headers.Add(HeaderNames.ContentType, "image/svg+xml");
-                        await ctxt.Response.WriteAsync(GetTextResource(ass, key, baseResPath, file));
+                        
+                        var cachekey = $"${baseResPath}|{file}";
+                        if (!Program.DEBUG && _resCacheBin.TryGetValue(cachekey, out var cacheResult))
+                        {
+                            ctxt.Response.Headers.Add("X-CACHED", "true");
+                            await ctxt.Response.BodyWriter.WriteAsync(cacheResult);
+                            return;
+                        }
+
+                        var dat = GetTextResource(ctxt, ass, key, baseResPath, file);
+                        _resCacheText[cachekey] = dat;
+                        
+                        ctxt.Response.Headers.Add("X-CACHED", "false");
+                        await ctxt.Response.WriteAsync(dat);
                     }
                     else
                     {
-                        await ctxt.Response.BodyWriter.WriteAsync(GetBinResource(ass, key, baseResPath, file));
+                        var cachekey = $"${baseResPath}|{file}";
+                        if (!Program.DEBUG && _resCacheBin.TryGetValue(cachekey, out var cacheResult))
+                        {
+                            ctxt.Response.Headers.Add("X-CACHED", "true");
+                            await ctxt.Response.BodyWriter.WriteAsync(cacheResult);
+                            return;
+                        }
+
+                        var dat = GetBinResource(ctxt, ass, key, baseResPath, file);
+                        _resCacheBin[cachekey] = dat;
+                        
+                        ctxt.Response.Headers.Add("X-CACHED", "false");
+                        await ctxt.Response.BodyWriter.WriteAsync(dat);
                     }
                 });
             }
@@ -56,17 +110,55 @@ namespace youtube_dl_viewer.Util
 
             endpoints.MapGet(path, async (ctxt) =>
             {
+                ctxt.Response.Headers.Add(HeaderNames.ContentType, "application/javascript");
+
+                if (!Program.DEBUG && _resCacheText.TryGetValue(path, out var cacheResult))
+                {
+                    ctxt.Response.Headers.Add("X-CACHED", "true");
+                    await ctxt.Response.WriteAsync(cacheResult);
+                    return;
+                }
+                
                 var js = reslist
                     .Select(p => (baseResPath + "." + p, p))
-                    .Select(p => (p, GetTextResource(ass, p.Item1, baseResPath, p.Item2)))
+                    .Select(p => (p, GetTextResource(ctxt, ass, p.Item1, baseResPath, p.Item2)))
                     .Select(p => $"/* -------- [{p.Item1}] ------ */\n\n" + p.Item2 + ";\n")
                     .Aggregate("", (a, b) => a + "\n\n" + b);
-                ctxt.Response.Headers.Add(HeaderNames.ContentType, "application/javascript");
+                _resCacheText[path] = js;
+                
+                ctxt.Response.Headers.Add("X-CACHED", "false");
                 await ctxt.Response.WriteAsync(js);
             });
         }
+
+        public static void MapCSSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, IEnumerable<(string, string)> reslist)
+        {
+            var ass = Assembly.GetExecutingAssembly();
+
+            endpoints.MapGet(path, async (ctxt) =>
+            {
+                ctxt.Response.Headers.Add(HeaderNames.ContentType, "text/css");
+
+                if (!Program.DEBUG && _resCacheText.TryGetValue(path, out var cacheResult))
+                {
+                    ctxt.Response.Headers.Add("X-CACHED", "true");
+                    await ctxt.Response.WriteAsync(cacheResult);
+                    return;
+                }
+                
+                var css = reslist
+                    .Select(p => (p.Item1 + "." + p.Item2, p.Item2, p.Item1))
+                    .Select(p => (p, GetTextResource(ctxt, ass, p.Item1, p.Item3, p.Item2)))
+                    .Select(p => $"/* -------- [{p.Item1}] ------ */\n\n" + p.Item2 + "\n")
+                    .Aggregate("", (a, b) => a + "\n\n" + b);
+                _resCacheText[path] = css;
+                
+                ctxt.Response.Headers.Add("X-CACHED", "false");
+                await ctxt.Response.WriteAsync(css);
+            });
+        }
         
-        public static byte[] GetBinResource(Assembly ass, string resourceName, string resourcePath, string resourceFilename)
+        public static byte[] GetBinResource(HttpContext ctxt, Assembly ass, string resourceName, string resourcePath, string resourceFilename)
         {
             using var stream = ass.GetManifestResourceStream(resourceName);
             if (stream == null) throw new ArgumentException();
@@ -79,10 +171,19 @@ namespace youtube_dl_viewer.Util
             if (!_reloadCacheBin.ContainsKey((resourcePath, resourceFilename))) _reloadCacheBin[(resourcePath, resourceFilename)] = result;
             
             var resultReload = File.ReadAllBytes(GetFilesystemResourcePath(resourcePath, resourceFilename));
-            if (resultReload == null) return result;
-            if (_reloadCacheBin.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload.SequenceEqual(cacheval)) return result;
+            if (resultReload == null)
+            {
+                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                return result;
+            }
+            if (_reloadCacheBin.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload.SequenceEqual(cacheval))
+            {
+                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                return result;
+            }
             
             Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
+            ctxt.Response.Headers.Add("X-LIVE_RELOADED", "true");
             _reloadCacheBin[(resourcePath, resourceFilename)] = resultReload;
             return resultReload;
 #endif
@@ -90,7 +191,7 @@ namespace youtube_dl_viewer.Util
             return result;
         }
         
-        public static string GetTextResource(Assembly ass, string resourceName, string resourcePath, string resourceFilename)
+        public static string GetTextResource(HttpContext ctxt, Assembly ass, string resourceName, string resourcePath, string resourceFilename)
         {
             using var stream = ass.GetManifestResourceStream(resourceName);
             if (stream == null) throw new ArgumentException();
@@ -101,10 +202,20 @@ namespace youtube_dl_viewer.Util
             if (!_reloadCacheText.ContainsKey((resourcePath, resourceFilename))) _reloadCacheText[(resourcePath, resourceFilename)] = result;
             
             var resultReload = File.ReadAllText(GetFilesystemResourcePath(resourcePath, resourceFilename));
-            if (resultReload == null) return result;
-            if (_reloadCacheText.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload == cacheval) return result;
+            if (resultReload == null)
+            {
+                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                return result;
+            }
+
+            if (_reloadCacheText.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload == cacheval)
+            {
+                ctxt.Response.Headers.Add("X-LIVE_RELOADED", "false");
+                return result;
+            }
             
             Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
+            ctxt.Response.Headers.Add("X-LIVE_RELOADED", "true");
             _reloadCacheText[(resourcePath, resourceFilename)] = resultReload;
             return resultReload;
 #endif

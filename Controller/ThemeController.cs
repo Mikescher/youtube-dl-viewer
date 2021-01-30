@@ -14,7 +14,7 @@ namespace youtube_dl_viewer.Controller
             var theme = Program.Args.Themes.FirstOrDefault(p => p.Index == idx);
             if (theme == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Theme not found"); return; }
 
-            var css = theme.ReadCSS();
+            var css = theme.ReadCSS(context);
             if (css == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("CSS not found"); return; }
             
             context.Response.Headers.Add(HeaderNames.ContentType, "text/css");

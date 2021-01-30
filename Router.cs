@@ -29,6 +29,25 @@ namespace youtube_dl_viewer
                 "script_jobs.js"
             });
             
+            endpoints.MapCSSEmbeddedBundle("/style.combined.css", new[]
+            {
+                ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
+                ("youtube_dl_viewer.staticexternal", "solid.min.css"),
+                ("youtube_dl_viewer.staticexternal", "regular.min.css"),
+                
+                ("youtube_dl_viewer.staticfiles", "style.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_animation.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_width.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_video.css"), 
+                
+                ("youtube_dl_viewer.staticfiles", "style_compact.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_detailed.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_detailed_expanded.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_grid.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_tabular.css"), 
+                ("youtube_dl_viewer.staticfiles", "style_timeline.css"), 
+            });
+            
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
 

@@ -8,21 +8,28 @@
 <head>
     <title>@(Program.Args.HTMLTitle)</title>
     
-    <link rel="stylesheet" type="text/css" href="/fontawesome.css">
-    <link rel="stylesheet" type="text/css" href="/solid.css">
-    <link rel="stylesheet" type="text/css" href="/regular.css">
+    @if (Program.DEBUG)
+    {
+        <link rel="stylesheet" type="text/css" href="/fontawesome.css">
+        <link rel="stylesheet" type="text/css" href="/solid.css">
+        <link rel="stylesheet" type="text/css" href="/regular.css">
     
-    <link rel="stylesheet" type="text/css" href="/style.css">
-    <link rel="stylesheet" type="text/css" href="/style_animation.css">
-    <link rel="stylesheet" type="text/css" href="/style_width.css">
-    <link rel="stylesheet" type="text/css" href="/style_video.css">
+        <link rel="stylesheet" type="text/css" href="/style.css">
+        <link rel="stylesheet" type="text/css" href="/style_animation.css">
+        <link rel="stylesheet" type="text/css" href="/style_width.css">
+        <link rel="stylesheet" type="text/css" href="/style_video.css">
     
-    <link rel="stylesheet" type="text/css" href="/style_compact.css">
-    <link rel="stylesheet" type="text/css" href="/style_detailed.css">
-    <link rel="stylesheet" type="text/css" href="/style_detailed_expanded.css">
-    <link rel="stylesheet" type="text/css" href="/style_grid.css">
-    <link rel="stylesheet" type="text/css" href="/style_tabular.css">
-    <link rel="stylesheet" type="text/css" href="/style_timeline.css">
+        <link rel="stylesheet" type="text/css" href="/style_compact.css">
+        <link rel="stylesheet" type="text/css" href="/style_detailed.css">
+        <link rel="stylesheet" type="text/css" href="/style_detailed_expanded.css">
+        <link rel="stylesheet" type="text/css" href="/style_grid.css">
+        <link rel="stylesheet" type="text/css" href="/style_tabular.css">
+        <link rel="stylesheet" type="text/css" href="/style_timeline.css">
+    }
+    else
+    {
+        <link rel="stylesheet" type="text/css" href="/style.combined.css">
+    }
     
     @if (Program.Args.Themes.Any(p => p.Name == Program.Args.OptThemeMode))
     {

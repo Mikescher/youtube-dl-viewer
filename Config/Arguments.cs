@@ -51,6 +51,9 @@ namespace youtube_dl_viewer.Config
         public bool OptHelp = false;
 
         public bool OptVersion = false;
+        
+        public bool ForceDebug = false;
+        public bool NoDebug    = false;
 
         public int Port = -1;
 
@@ -84,6 +87,8 @@ namespace youtube_dl_viewer.Config
                 if (arg.ToLower() == "--no-auto-previews")              { AutoPreviewGen  = false; return; }
                 if (arg.ToLower() == "--trim-info-json")                { TrimDataJSON    = true;  return; }
                 if (arg.ToLower() == "--no-trim-info-json")             { TrimDataJSON    = false; return; }
+                if (arg.ToLower() == "--debug")                         { ForceDebug      = false; return; }
+                if (arg.ToLower() == "--no-debug")                      { NoDebug         = false; return; }
                 
                 if (!arg.StartsWith("--")) throw new Exception($"Unknown argument: '{arg}'. Use --help for a list of commandline parameters");
                 

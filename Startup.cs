@@ -23,9 +23,9 @@ namespace youtube_dl_viewer
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-#if DEBUG
-            app.UseDeveloperExceptionPage();
-#endif
+            
+            if (Program.DEBUG) app.UseDeveloperExceptionPage();
+            
             app.UseExceptionHandler(errorApp =>
             {
                 errorApp.Run(async context =>

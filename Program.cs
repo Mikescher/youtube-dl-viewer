@@ -17,6 +17,12 @@ namespace youtube_dl_viewer
 {
     public static class Program
     {
+#if DEBUG
+        public static bool DEBUG = true;
+#else
+        public static bool DEBUG = false;
+#endif
+        
         public static readonly string[] ExtVideo     = { "mkv", "mp4", "webm", "avi", "flv", "wmv", "mpg", "mpeg" };
         public static readonly string[] ExtThumbnail = { "jpg", "jpeg", "webp", "png" };
 
@@ -49,9 +55,12 @@ namespace youtube_dl_viewer
 
             if (Args.OptVersion) { Console.Out.WriteLine(Version); return; }
 
+            if (Args.ForceDebug) DEBUG = true;
+            if (Args.NoDebug)    DEBUG = false;
+
             for (var i = 0; i < Args.DataDirs.Count; i++)
             {
-                Console.Out.WriteLine($"> Start enumerating video data [{i}]: {Args.DataDirs[i]} (background)");
+                Console.Out.WriteLine($"> Start enumerating video data [{i}]: {Args.DataDirs[i].Path} (background)");
                 var idx = i;
                 lock (DataCache) { DataCache[idx] = (null, null); }
                 JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx, true), false);
