@@ -64,6 +64,14 @@ class UserInterfaceModel
 
     initHeaderEvents()
     {
+        $('.btn-adminlinks')!.addEventListener('click', () =>
+        {
+            this.toggleActionDropDown($('.btn-adminlinks')!, 'AdminLinks', ["Jobs", "Config"], (idx, act) => 
+            {
+                if (idx == 0) window.open('/Jobs', '_blank')
+                if (idx == 1) window.open('/Config', '_blank')
+            });
+        });
         $('.btn-display')!.addEventListener('click', () =>
         {
             this.toggleOptionDropDown($('.btn-display')!, 'DisplayMode', App.VIDEOLIST.Values_DisplayMode, App.VIDEOLIST.displaymode_current, v => { App.VIDEOLIST.setDisplayMode(v, true); });
@@ -128,6 +136,14 @@ class UserInterfaceModel
             this.showOptionDropDown(src, type, options, current, evt);
     }
 
+    toggleActionDropDown(src: HTMLElement, type: string, options: string[], action: (idx:number, val:string) => void)
+    {
+        if (type === this.currentDropdownType)
+            this.hideDropDown();
+        else
+            this.showActionDropDown(src, type, options, action);
+    }
+
     showOptionDropDown(src: HTMLElement, type: string, options: OptionDef[], current: number, evt: (p:number) => void)
     {
         if (this.currentDropdownType !== null) this.hideDropDown();
@@ -178,7 +194,56 @@ class UserInterfaceModel
 
         this.dom_dropdown_background.classList.remove('hidden');
     }
-    
+
+    showActionDropDown(src: HTMLElement, type: string, options: string[], action: (idx:number, val:string) => void)
+    {
+        if (this.currentDropdownType !== null) this.hideDropDown();
+
+        this.currentDropdownType = type;
+
+        let ids: [number, string, string][] = [];
+
+        let html = '';
+        let idx = 0;
+        for (const elem of options)
+        {
+            const elemid = 'drow_' + (this.dropDownIDCounter++);
+            let cls = 'row';
+            html += '<div id="'+elemid+'" class="'+cls+'">'+escapeHtml(elem)+'</div>';
+            ids.push([idx, elem, elemid]);
+            idx++
+        }
+
+        this.dom_option_dropdown.innerHTML = html;
+
+        this.dom_option_dropdown.style.right = '';
+        this.dom_option_dropdown.classList.remove('hidden');
+
+        const left_btn = src.getBoundingClientRect().left;
+        const left_dd  = this.dom_option_dropdown.getBoundingClientRect().left;
+
+        if (left_btn < left_dd)
+        {
+            this.dom_option_dropdown.style.right = (document.documentElement.clientWidth  - left_btn - this.dom_option_dropdown.getBoundingClientRect().width)+'px';
+        }
+        else
+        {
+            // @ts-ignore
+            this.dom_option_dropdown.style.right = '';
+        }
+
+        for (const [idx, act, id] of ids)
+        {
+            $('#' + id)?.addEventListener('click', () =>
+            {
+                this.hideDropDown();
+                action(idx, act);
+            });
+        }
+
+        this.dom_dropdown_background.classList.remove('hidden');
+    }
+
     hideDropDown()
     {
         // datadir dropdown

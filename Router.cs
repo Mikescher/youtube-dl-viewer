@@ -23,6 +23,12 @@ namespace youtube_dl_viewer
             "script_jobs.js"
         };
         
+        public static readonly string[] JS_CONFIG =
+        {
+            "script_util.js", 
+            "script_config.js"
+        };
+        
         public static readonly (string,string)[] CSS_MAIN =
         {
             ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
@@ -49,6 +55,15 @@ namespace youtube_dl_viewer
             ("youtube_dl_viewer.staticexternal", "regular.min.css"),
                 
             ("youtube_dl_viewer.staticfiles", "style_jobs.css"), 
+        };
+        
+        public static readonly (string,string)[] CSS_CONFIG =
+        {
+            ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
+            ("youtube_dl_viewer.staticexternal", "solid.min.css"),
+            ("youtube_dl_viewer.staticexternal", "regular.min.css"),
+                
+            ("youtube_dl_viewer.staticfiles", "style_config.css"), 
         };
         
         public static void Build(IEndpointRouteBuilder endpoints)

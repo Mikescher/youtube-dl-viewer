@@ -20,6 +20,8 @@ namespace youtube_dl_viewer.Controller
 
             var r = new JObject
             (
+                new JProperty("commandline", Environment.CommandLine),
+                new JProperty("configfilecontent", Program.Args.ExtConfigContent),
                 new JProperty("raw", ListRawConfigValues().ToArray<object>()),
                 new JProperty("config", ListNormalConfigValues().ToArray<object>()),
                 new JProperty("datadirs", ListDataDirs().ToArray<object>()),

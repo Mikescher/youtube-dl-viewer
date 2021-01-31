@@ -1,0 +1,86 @@
+html,body
+{
+  margin:0;
+  padding:0;
+  height:100%;
+
+  font-family: Consolas, monospace;
+  background-color: #003049;
+}
+
+html
+{
+  display: flex;
+  justify-content: center;
+}
+
+body {
+  max-width: 1200px;
+}
+
+#root
+{
+  padding: 1rem;
+  color: #eae2b7;
+
+  white-space: pre;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.config_root {
+  background-color: #002844;
+  padding: 2px;
+  margin: 4px 0;
+}
+
+h1 {
+  color: #d62828;
+  font-size: 4rem;
+  margin: 0;
+  text-align: center;
+}
+
+h2 {
+  color: #d62828;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+code {
+  border: 1px dashed #f77f00;
+  border-radius: 3px;
+  padding: 4px;
+  background-color: #000;
+  color: #FFF;
+
+  display: block;
+}
+
+table {
+  border: 1px solid #f77f00;
+  border-collapse: collapse;
+  width: 100%;
+}
+th, td {
+  border: 1px solid #f77f00;
+}
+td {
+  word-wrap: anywhere;
+  word-break: break-all;
+}
+
+
+#font_test
+{
+  font-family: Consolas, monospace;
+
+  position: absolute;
+  visibility: hidden;
+  height: auto;
+  width: auto;
+  white-space: nowrap;
+}

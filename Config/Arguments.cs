@@ -33,7 +33,7 @@ namespace youtube_dl_viewer.Config
         public int PreviewImageWidth = 480;
 
         [BoolConfig("--ffmpeg", "--no-ffmpeg")]
-        public bool UseFFMPEG = false;
+        public bool UseFFMPEG = true;
 
         [BoolConfig("--open-browser", null)]
         public bool AutoOpenBrowser = false;
@@ -120,6 +120,8 @@ namespace youtube_dl_viewer.Config
         [StringConfig("--config-location")]
         public string ExtConfigLocation = null;
         
+        public string ExtConfigContent = null;
+        
         public void Parse(IEnumerable<string> args)
         {
             foreach (var arg in args) ParseSingleArgument(arg, true);
@@ -163,6 +165,7 @@ namespace youtube_dl_viewer.Config
             {
                 if (!allowConfigFile) throw new Exception($"Nested use config-location is not allowed");
                 ExtConfigLocation = value;
+                ExtConfigContent = File.ReadAllText(value);
                 ParseArgumentsFromFile(value);
                 return;
             }

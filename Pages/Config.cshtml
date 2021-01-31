@@ -1,0 +1,38 @@
+﻿@page
+@using youtube_dl_viewer
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>Config</title>
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var css in Router.CSS_CONFIG) { <link rel="stylesheet" type="text/css" href="/@css.Item2"> }
+    }
+    else
+    {
+        <link rel="stylesheet" type="text/css" href="/style_config.combined.css">
+    }
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var js in Router.JS_CONFIG) { <script src="/@js"></script> }
+    }
+    else
+    {
+        <script src="/script_config.compiled.js"></script>
+    }
+    
+</head>
+
+<body>
+
+<h1>Config</h1>
+
+<div id="root">Loading...</div>
+
+<div id="font_test">M</div>
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+html,body
+{
+  margin:0;
+  padding:0;
+  height:100%;
+
+  font-family: Consolas, monospace;
+  background-color: #003049;
+}
+
+html
+{
+  display: flex;
+  justify-content: center;
+}
+
+body {
+  max-width: 1200px;
+}
+
+#root
+{
+  padding: 1rem;
+  color: #eae2b7;
+
+  white-space: pre;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.config_root {
+  background-color: #002844;
+  padding: 2px;
+  margin: 4px 0;
+}
+
+h1 {
+  color: #d62828;
+  font-size: 4rem;
+  margin: 0;
+  text-align: center;
+}
+
+h2 {
+  color: #d62828;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+code {
+  border: 1px dashed #f77f00;
+  border-radius: 3px;
+  padding: 4px;
+  background-color: #000;
+  color: #FFF;
+
+  display: block;
+
+  margin: 8px 4px;
+  white-space: pre-wrap;
+}
+
+code.scroll {
+  white-space: pre;
+  overflow-x: scroll;
+}
+
+table {
+  border: 1px solid #f77f00;
+  border-collapse: collapse;
+  margin: 8px 4px;
+  width: calc(100% - 8px);
+  overflow-wrap: break-word;
+}
+th, td {
+  border: 1px solid #f77f00;
+}
+th {
+  text-align: left;
+  background-color: #001029;
+  padding-left: 4px;
+}
+td {
+  word-wrap: anywhere;
+  word-break: break-all;
+  white-space: pre-wrap;
+  padding: 0 4px;
+}
+
+tr.changed_false {
+  opacity: 0.25;
+}
+
+.arguments table th:first-of-type { width: 250px; }
+.configs   table th:first-of-type { width: 250px; }
+.datadirs  table th:first-of-type { width: 250px; }
+
+.config_sub {
+  background-color: #003049;
+  padding: 2px;
+  margin: 0 8px 24px 8px;
+  border: 1px solid #fcbf49;
+}
+
+#font_test
+{
+  font-family: Consolas, monospace;
+
+  position: absolute;
+  visibility: hidden;
+  height: auto;
+  width: auto;
+  white-space: nowrap;
+}
