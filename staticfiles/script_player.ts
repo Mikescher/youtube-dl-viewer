@@ -4,10 +4,21 @@ class VideoPlayerModel
     dom_root: HTMLDivElement;
     
     dom_fullsizevideo: HTMLElement|null = null;
+
+    dom_headernormal: HTMLElement;
+    dom_headerplayer: HTMLElement;
+
+    dom_headertitle: HTMLElement;
+    dom_headerplaybackmode: HTMLElement;
     
     constructor()
     {
-        this.dom_root = $('#root') as HTMLDivElement;
+        this.dom_root         = $('#root')               as HTMLDivElement;
+        this.dom_headernormal = $('#header_normal')      as HTMLDivElement;
+        this.dom_headerplayer = $('#header_videoplayer') as HTMLDivElement;
+
+        this.dom_headertitle        = $('#header_videoplayer .title') as HTMLDivElement;
+        this.dom_headerplaybackmode = $('#header_videoplayer .type')  as HTMLDivElement;
     }
 
     init() 
@@ -27,6 +38,9 @@ class VideoPlayerModel
         this.dom_fullsizevideo.parentNode!.removeChild(this.dom_fullsizevideo);
 
         this.dom_fullsizevideo = null;
+
+        this.dom_headernormal.classList.remove('nodisplay');
+        this.dom_headerplayer.classList.add('nodisplay');
     }
 
     showVideo(id: string)
@@ -39,6 +53,12 @@ class VideoPlayerModel
         if (vid === null) return;
         
         App.VIDEOLIST.getCurrentVideoMode().play(vid);
+
+        this.dom_headertitle.innerText        = vid.data.title;
+        this.dom_headerplaybackmode.innerText = App.VIDEOLIST.getCurrentVideoMode().text;
+        
+        this.dom_headernormal.classList.add('nodisplay');
+        this.dom_headerplayer.classList.remove('nodisplay');
     }
 
     showStreamplayer(video: DataJSONVideo, streamtype: string) 

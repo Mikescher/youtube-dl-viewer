@@ -32,3 +32,24 @@
   
   object-fit: contain;
 }
+
+#header_videoplayer .left {
+    grid-column: 1;
+}
+
+#header_videoplayer .left .title {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+#header_videoplayer .left .type {
+    opacity: 0.5;
+    box-sizing: border-box;
+}
+
+
+
+
+
+
+

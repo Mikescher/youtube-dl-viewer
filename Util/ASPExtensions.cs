@@ -179,7 +179,7 @@ namespace youtube_dl_viewer.Util
             if (_reloadCacheBin.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload.SequenceEqual(cacheval))
             {
                 ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
-                return result;
+                return resultReload;
             }
             
             Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
@@ -211,7 +211,7 @@ namespace youtube_dl_viewer.Util
             if (_reloadCacheText.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload == cacheval)
             {
                 if (ctxt != null) ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
-                return result;
+                return resultReload;
             }
             
             Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");

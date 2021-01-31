@@ -19,8 +19,6 @@ body { }
     flex-direction: column;
 }
 
-header { }
-
 #font_test_header
 {
     position: absolute;
@@ -59,7 +57,13 @@ footer a {
 header {
     z-index: 50;
     position: fixed;
-    width: calc(100% - 1rem);
+    width: 100%;
+    height: 70px;
+}
+
+.header_div {
+    width:  calc(100% - 1rem);
+    height: calc(100% - 1rem);;
 
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -67,25 +71,25 @@ header {
     padding: 0.5rem;
 }
 
-header .logo {
+#header_normal .logo {
     grid-column: 1;
 }
 
-header .logo .apptitle {
+#header_normal .logo .apptitle {
     font-weight: bold;
     font-size: 1.5rem;
 }
 
-header .logo .apppath {
+#header_normal .logo .apppath {
     opacity: 0.5;
     box-sizing: border-box;
 }
 
-header .logo .apppath.single i {
+#header_normal .logo .apppath.single i {
     display: none;
 }
 
-header .logo .apppath.multiple {
+#header_normal .logo .apppath.multiple {
     float: left;
     
     border: 1px solid #000;
@@ -102,21 +106,21 @@ header .logo .apppath.multiple {
     user-select: none;
 }
 
-header .logo .apppath.multiple span {
+#header_normal .logo .apppath.multiple span {
     flex-grow: 1;
 }
 
-header .logo .apppath.multiple i {
+#header_normal .logo .apppath.multiple i {
     margin-left: 0.33rem;
 }
 
-header .buttons {
+.header_div .buttons {
     grid-column: 3;
     display: flex;
     align-items: center;
 }
 
-header .btn {
+.header_div .btn {
     min-width: 24px;
     min-height: 24px;
     margin: 4px;
@@ -130,11 +134,11 @@ header .btn {
     text-decoration: none;
 }
 
-header .btnpad {
+.header_div .btnpad {
     width: 1.5rem;
 }
 
-header .btn:hover {
+.header_div .btn:hover {
     background-color: #44A;
 }
 

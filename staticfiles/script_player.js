@@ -3,6 +3,10 @@ class VideoPlayerModel {
     constructor() {
         this.dom_fullsizevideo = null;
         this.dom_root = $('#root');
+        this.dom_headernormal = $('#header_normal');
+        this.dom_headerplayer = $('#header_videoplayer');
+        this.dom_headertitle = $('#header_videoplayer .title');
+        this.dom_headerplaybackmode = $('#header_videoplayer .type');
     }
     init() {
     }
@@ -15,6 +19,8 @@ class VideoPlayerModel {
         videlem.load();
         this.dom_fullsizevideo.parentNode.removeChild(this.dom_fullsizevideo);
         this.dom_fullsizevideo = null;
+        this.dom_headernormal.classList.remove('nodisplay');
+        this.dom_headerplayer.classList.add('nodisplay');
     }
     showVideo(id) {
         if (this.dom_fullsizevideo !== null)
@@ -25,6 +31,10 @@ class VideoPlayerModel {
         if (vid === null)
             return;
         App.VIDEOLIST.getCurrentVideoMode().play(vid);
+        this.dom_headertitle.innerText = vid.data.title;
+        this.dom_headerplaybackmode.innerText = App.VIDEOLIST.getCurrentVideoMode().text;
+        this.dom_headernormal.classList.add('nodisplay');
+        this.dom_headerplayer.classList.remove('nodisplay');
     }
     showStreamplayer(video, streamtype) {
         var _a;

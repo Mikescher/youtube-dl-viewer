@@ -102,6 +102,11 @@ class UserInterfaceModel
             await App.VIDEOLIST.loadData();
         });
 
+        $('.btn-close-videoplayer')!.addEventListener('click', () =>
+        {
+            App.PLAYER.removeVideo();
+        });
+        
         $('#dropdown_background')!.addEventListener('click', () =>
         {
             this.hideDropDown();

@@ -88,43 +88,54 @@
 <div id="root">
 
     <header>
-        <div class="logo">
-            <div class="apptitle">youtube-dl Viewer <span class="version">@Program.Version</span></div>
-            <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single") invisible">
-                <span>@Program.Args.DataDirs.First().Name</span>
-                <i class="fas fa-chevron-down"></i>
+        <div id="header_normal" class="header_div">
+            <div class="logo">
+                <div class="apptitle">youtube-dl Viewer <span class="version">@Program.Version</span></div>
+                <div class="apppath @Html.Raw((Program.Args.DataDirs.Count > 1) ? "multiple" : "single") invisible">
+                    <span>@Program.Args.DataDirs.First().Name</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div id="apppath_dropdown" class="dropdown hidden">
+                    <!-- js -->
+                </div>
             </div>
-            <div id="apppath_dropdown" class="dropdown hidden">
-                <!-- js -->
+
+            <div class="buttons">
+                <div class="btn btn-adminlinks"><i class="fas fa-terminal"></i></div>
+                
+                <div class="btnpad"></div>
+                
+                <div class="btn btn-display"><i class="far fa-eye"></i></div>
+                
+                <div class="btn btn-order"><i class="fas fa-sort"></i></div>
+                
+                <div class="btn btn-width"><i class="fas fa-text-width"></i></div>
+                
+                <div class="btn btn-loadthumbnails"><i class="fas fa-photo-video"></i></div>
+                
+                <div class="btn btn-videomode"><i class="fas fa-broadcast-tower"></i></div>
+                
+                <div class="btnpad"></div>
+                
+                <div class="btn btn-theme"><i class="fas fa-palette"></i></div>
+                
+                <div class="btnpad"></div>
+                
+                <div class="btn btn-refresh"><i class="fas fa-sync-alt"></i></div>
+                
+                <div id="option_dropdown" class="dropdown hidden"></div>
             </div>
         </div>
+        <div id="header_videoplayer" class="header_div nodisplay">
+            <div class="left">
+                <div class="title"><!-- --></div>
+                <div class="type"><!-- --></div>
+            </div>
 
-        <div class="buttons">
-            <div class="btn btn-adminlinks"><i class="fas fa-terminal"></i></div>
-            
-            <div class="btnpad"></div>
-            
-            <div class="btn btn-display"><i class="far fa-eye"></i></div>
-            
-            <div class="btn btn-order"><i class="fas fa-sort"></i></div>
-            
-            <div class="btn btn-width"><i class="fas fa-text-width"></i></div>
-            
-            <div class="btn btn-loadthumbnails"><i class="fas fa-photo-video"></i></div>
-            
-            <div class="btn btn-videomode"><i class="fas fa-broadcast-tower"></i></div>
-            
-            <div class="btnpad"></div>
-            
-            <div class="btn btn-theme"><i class="fas fa-palette"></i></div>
-            
-            <div class="btnpad"></div>
-            
-            <div class="btn btn-refresh"><i class="fas fa-sync-alt"></i></div>
-            
-            <div id="option_dropdown" class="dropdown hidden"></div>
+            <div class="buttons">
+                <div class="btn btn-close-videoplayer"><i class="fas fa-times"></i></div>
+            </div>
         </div>
-
     </header>
 
     <main>
