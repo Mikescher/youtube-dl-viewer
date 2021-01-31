@@ -97,17 +97,7 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine();
             }
 
-            if (Args.CronRefreshInterval > 0)
-            {
-                var ts_real = TimeSpan.FromSeconds(Args.CronRefreshInterval);
-                var ts_timr = TimeSpan.FromSeconds(Args.CronRefreshInterval + 45);
-                CronTimer = new Timer(async e =>
-                {
-                    await Console.Out.WriteLineAsync("Run autorefresh via cron timer");
-                    await Console.Out.WriteLineAsync();
-                    await CronMiddleware.RunCron(ts_real);
-                }, null, ts_timr, ts_timr);
-            }
+            Cron.Start();
             
             Initialized = true;
             CreateHostBuilder(args).Build().Run();

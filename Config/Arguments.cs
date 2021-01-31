@@ -65,6 +65,10 @@ namespace youtube_dl_viewer.Config
         public int AutoRefreshInterval = -1; // seconds
         public int CronRefreshInterval = -1; // seconds
 
+        public bool CronDoRefresh          = true;
+        public bool CronDoGeneratePreviews = false;
+        public bool CronDoConvertVideos    = false;
+        
         public bool TrimDataJSON = true;
         
         public string HTMLTitle = $"youtube-dl Viewer (v{Program.Version})";
@@ -130,6 +134,9 @@ namespace youtube_dl_viewer.Config
                 if (key == "autorefresh-interval") { AutoRefreshInterval       = int.Parse(value);                                                      return; }
                 if (key == "cronrefresh-interval") { CronRefreshInterval       = int.Parse(value);                                                      return; }
                 if (key == "htmltitle")            { HTMLTitle                 = value;                                                                 return; }
+                if (key == "cron-refresh")         { CronDoRefresh             = bool.Parse(value);                                                      return; }
+                if (key == "cron-genprev")         { CronDoGeneratePreviews    = bool.Parse(value);                                                      return; }
+                if (key == "cron-convert")         { CronDoConvertVideos       = bool.Parse(value);                                                      return; }
                 
                 throw new Exception($"Unknown argument: '{arg}'. Use --help for a list of commandline parameters");
         }
@@ -382,10 +389,21 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("                               if the last refresh is longer than <t> seconds ago.");
             Console.Out.WriteLine("                               Only triggers on web requests, if the webapp is not used the");
             Console.Out.WriteLine("                               interval can be longer");
-            Console.Out.WriteLine("  --cronrefresh-interval=<t> Automatically trigger a refresh (reload data from filesytem)");
+            Console.Out.WriteLine("  --cronrefresh-interval=<t> Automatically trigger a cron run");
             Console.Out.WriteLine("                               every <t> seconds.");
-            Console.Out.WriteLine("                               This one also triggers without any user interaction.");
+            Console.Out.WriteLine("                               The cron job can execute various operations (Default: refresh data)");
+            Console.Out.WriteLine("                               This one triggers without any user interaction.");
             Console.Out.WriteLine("                               Default := -1 (disabled)");
+            Console.Out.WriteLine("  --cron-refresh=<b>         Refresh data (reload data from filesytem) in cron execution");
+            Console.Out.WriteLine("                               Values  := [true|false]");
+            Console.Out.WriteLine("                               Default := true");
+            Console.Out.WriteLine("  --cron-genprev=<b>         Generate preview images in cron execution");
+            Console.Out.WriteLine("                               Values  := [true|false]");
+            Console.Out.WriteLine("                               Default := false");
+            Console.Out.WriteLine("  --cron-convert=<b>         Generate transcoded videos in cron execution");
+            Console.Out.WriteLine("                               (only for applicable videos)");
+            Console.Out.WriteLine("                               Values  := [true|false]");
+            Console.Out.WriteLine("                               Default := false");
             Console.Out.WriteLine("  --max-parallel-convert=<v> Maximum amount of parallel ffmpeg calls to");
             Console.Out.WriteLine("                               transcode video files to (stream-able) webm");
             Console.Out.WriteLine("                               Default := " + MaxParallelConvertJobs);
