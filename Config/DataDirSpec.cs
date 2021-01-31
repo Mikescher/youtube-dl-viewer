@@ -20,6 +20,7 @@ namespace youtube_dl_viewer.Config
         public readonly int?   WidthOverride;
         public readonly int?   OrderOverride;
         public readonly int?   VideomodeOverride;
+        public readonly int?   ThumbnailmodeOverride;
         public readonly string ThemeOverride;
 
         public readonly string SelectorID;
@@ -35,7 +36,7 @@ namespace youtube_dl_viewer.Config
 
         public DataDirSpec(string path, string name, 
             bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, bool updateOrderfile, string htmltitle,
-            int? display_override, int? width_override, int? order_override, int? videomode_override, string theme_override)
+            int? display_override, int? width_override, int? order_override, int? videomode_override, int? thumbnailmode_override, string theme_override)
         {
             Path               = path?.Replace("/", System.IO.Path.DirectorySeparatorChar.ToString());
             Name               = name;
@@ -46,11 +47,12 @@ namespace youtube_dl_viewer.Config
             UpdateOrderFile    = updateOrderfile;
             HTMLTitle          = htmltitle;
             
-            DisplayOverride    = display_override;
-            WidthOverride      = width_override;
-            OrderOverride      = order_override;
-            VideomodeOverride  = videomode_override;
-            ThemeOverride      = theme_override;
+            DisplayOverride       = display_override;
+            WidthOverride         = width_override;
+            OrderOverride         = order_override;
+            VideomodeOverride     = videomode_override;
+            ThumbnailmodeOverride = thumbnailmode_override;
+            ThemeOverride         = theme_override;
             
             SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "_");
             
@@ -85,20 +87,28 @@ namespace youtube_dl_viewer.Config
             
             var updateorderfile = json.GetValue("update_ext_order")?.Value<bool>() ?? true;
             
-            var ovr_display   = json.GetValue("display")?.Value<int>();
-            var ovr_width     = json.GetValue("width")?.Value<int>();
-            var ovr_order     = json.GetValue("order")?.Value<int>();
-            var ovr_videomode = json.GetValue("videomode")?.Value<int>();
-            var ovr_theme     = json.GetValue("theme")?.Value<string>();
+            var raw_ovr_display       = json.GetValue("display")?.Value<string>();
+            var raw_ovr_width         = json.GetValue("width")?.Value<string>();
+            var raw_ovr_order         = json.GetValue("order")?.Value<string>();
+            var raw_ovr_thumbnailmode = json.GetValue("thumbnailmode")?.Value<string>();
+            var raw_ovr_videomode     = json.GetValue("videomode")?.Value<string>();
+
+            var ovr_display       = (raw_ovr_display       == null) ? (int?) null : Arguments.ParseDisplayMode(raw_ovr_display);
+            var ovr_width         = (raw_ovr_width         == null) ? (int?) null : Arguments.ParseWidthMode(raw_ovr_width); 
+            var ovr_order         = (raw_ovr_order         == null) ? (int?) null : Arguments.ParseOrderMode(raw_ovr_order); 
+            var ovr_thumbnailmode = (raw_ovr_thumbnailmode == null) ? (int?) null : Arguments.ParseThumbnailMode(raw_ovr_thumbnailmode); 
+            var ovr_videomode     = (raw_ovr_videomode     == null) ? (int?) null : Arguments.ParseVideoMode(raw_ovr_videomode); 
+            
+            var ovr_theme = json.GetValue("theme")?.Value<string>();
 
             var htmltitle = json.GetValue("htmltitle")?.Value<string>()?.Replace("{version}", Program.Version);
 
-            return new DataDirSpec(path, name, useFilename, recDepth, filter, order, updateorderfile, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_theme);
+            return new DataDirSpec(path, name, useFilename, recDepth, filter, order, updateorderfile, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_thumbnailmode, ovr_theme);
         }
 
         public static DataDirSpec FromPath(string dir)
         {
-            return new DataDirSpec(dir, dir, false, 0, "*", null, false, null, null, null, null, null, null);
+            return new DataDirSpec(dir, dir, false, 0, "*", null, false, null, null, null, null, null, null, null);
         }
     }
 }

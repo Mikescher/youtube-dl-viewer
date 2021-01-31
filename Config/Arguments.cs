@@ -39,11 +39,11 @@ namespace youtube_dl_viewer.Config
         public int MaxPreviewImageCount = 32;
         public int MinPreviewImageCount = 8;
         
-        public int OptDisplayMode   = 0;
-        public int OptWidthMode     = 1;
-        public int OptOrderMode     = 0;
-        public int OptThumbnailMode = 1;
-        public int OptVideoMode     = 4;
+        public int OptDisplayMode   = 0; // grid
+        public int OptWidthMode     = 1; // medium
+        public int OptOrderMode     = 0; // date-desc
+        public int OptThumbnailMode = 1; // intelligent
+        public int OptVideoMode     = 4; // download
         
         public string OptThemeMode  = "default";
         public int OptThemeModeInt => (Themes.FirstOrDefault(p => p.Name == OptThemeMode))?.Index ?? 0;
@@ -109,11 +109,11 @@ namespace youtube_dl_viewer.Config
                 if (key == "path")      { DataDirs.Add(DataDirSpec.Parse(value));           return; }
                 if (key == "usertheme") { Themes.Add(ThemeSpec.Parse(value, Themes.Count)); return; }
                 
-                if (key == "display")              { OptDisplayMode            = int.Parse(value);                                                      return; }
-                if (key == "order")                { OptOrderMode              = int.Parse(value);                                                      return; }
-                if (key == "width")                { OptWidthMode              = int.Parse(value);                                                      return; }
-                if (key == "thumbnailmode")        { OptThumbnailMode          = int.Parse(value);                                                      return; }
-                if (key == "videomode")            { OptVideoMode              = int.Parse(value);                                                      return; }
+                if (key == "display")              { OptDisplayMode            = ParseDisplayMode(value);                                               return; }
+                if (key == "order")                { OptOrderMode              = ParseOrderMode(value);                                                 return; }
+                if (key == "width")                { OptWidthMode              = ParseWidthMode(value);                                                 return; }
+                if (key == "thumbnailmode")        { OptThumbnailMode          = ParseThumbnailMode(value);                                             return; }
+                if (key == "videomode")            { OptVideoMode              = ParseVideoMode(value);                                                 return; }
                 if (key == "theme")                { OptThemeMode              = (value.EndsWith(".css") ? value.Substring(0, value.Length-4) : value); return; }
                 if (key == "port")                 { Port                      = int.Parse(value);                                                      return; }
                 if (key == "cache")                { CacheDir                  = value.Replace("/", Path.DirectorySeparatorChar.ToString());            return; }
@@ -121,7 +121,7 @@ namespace youtube_dl_viewer.Config
                 if (key == "max-parallel-genprev") { MaxParallelGenPreviewJobs = int.Parse(value);                                                      return; }
                 if (key == "preview-width")        { PreviewImageWidth         = int.Parse(value);                                                      return; }
                 if (key == "webm-convert-params")  { ConvertFFMPEGParams       = value;                                                                 return; }
-                if (key == "thumnail-ex-mode")     { ThumbnailExtraction       = (ThumbnailExtractionMode)int.Parse(value);                             return; }
+                if (key == "thumnail-ex-mode")     { ThumbnailExtraction       = ParseThumbnailExtractionMode(value);                                   return; }
                 if (key == "previewcount-max")     { MaxPreviewImageCount      = int.Parse(value);                                                      return; }
                 if (key == "previewcount-min")     { MinPreviewImageCount      = Math.Max(2, int.Parse(value));                                         return; }
                 if (key == "ffmpeg-debug-dir")     { FFMPEGDebugDir            = value.Replace("/", Path.DirectorySeparatorChar.ToString());            return; }
@@ -132,6 +132,98 @@ namespace youtube_dl_viewer.Config
                 if (key == "htmltitle")            { HTMLTitle                 = value;                                                                 return; }
                 
                 throw new Exception($"Unknown argument: '{arg}'. Use --help for a list of commandline parameters");
+        }
+
+        public static int ParseDisplayMode(string v)
+        {
+            switch (v)
+            {
+                case "0": case "grid":      return 0;
+                case "1": case "compact":   return 1;
+                case "2": case "tabular":   return 2;
+                case "3": case "detailed":  return 3;
+                case "4": case "gridx2":    return 4;
+                case "5": case "grid_half": return 5;
+                case "6": case "timeline":  return 6;
+            }
+
+            throw new Exception($"Invalid value '{v}' for [display]");
+        }
+        
+        public static int ParseOrderMode(string v)
+        {
+            switch (v)
+            {
+                case "0":  case "date-desc":      return 0;
+                case "1":  case "date-asc":       return 1;
+                case "2":  case "title":          return 2;
+                case "3":  case "category":       return 3;
+                case "4":  case "views":          return 4;
+                case "5":  case "rating":         return 5;
+                case "6":  case "uploader":       return 6;
+                case "7":  case "external-desc":  return 7;
+                case "8":  case "external-asc":   return 8;
+                case "9":  case "random":         return 9;
+                case "10": case "filename-asc":   return 10;
+                case "11": case "filename-desc":  return 11;
+            }
+
+            throw new Exception($"Invalid value '{v}' for [order]");
+        }
+        
+        public static int ParseWidthMode(string v)
+        {
+            switch (v)
+            {
+                case "0":  case "small":      return 0;
+                case "1":  case "medium":     return 1;
+                case "2":  case "wide":       return 2;
+                case "3":  case "full":       return 3;
+            }
+
+            throw new Exception($"Invalid value '{v}' for [width]");
+        }
+        
+        public static int ParseThumbnailMode(string v)
+        {
+            switch (v)
+            {
+                case "0":  case "off":         return 0;
+                case "1":  case "intelligent": return 1;
+                case "2":  case "sequential":  return 2;
+                case "3":  case "parallel":    return 3;
+            }
+
+            throw new Exception($"Invalid value '{v}' for [thumbnail]");
+        }
+        
+        public static int ParseVideoMode(string v)
+        {
+            switch (v)
+            {
+                case "0": case "disabled":     return 0;
+                case "1": case "raw-seekable": return 1;
+                case "2": case "raw":          return 2;
+                case "3": case "transcoded":   return 3;
+                case "4": case "download":     return 4;
+                case "5": case "vlc-stream":   return 5;
+                case "6": case "vlc-local":    return 6;
+                case "7": case "url":          return 7;
+            }
+
+            throw new Exception($"Invalid value '{v}' for [display]");
+        }
+        
+        public static ThumbnailExtractionMode ParseThumbnailExtractionMode(string v)
+        {
+            switch (v)
+            {
+                case "0": case "seq":    case "sequential":    return ThumbnailExtractionMode.Sequential;
+                case "1":                case "parallel":      return ThumbnailExtractionMode.Parallel;
+                case "2": case "single": case "singlecommand": return ThumbnailExtractionMode.SingleCommand;
+            }
+
+            throw new Exception($"Invalid value '{v}' for [thumnail-ex-mode]");
         }
 
         private void ParseArgumentsFromFile(string filepath)
@@ -234,49 +326,49 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("                               # Lines can be commented with the '#' character.");
             Console.Out.WriteLine("                               # Syntax/idea is similar to the argument with the same name in youtube-dl");
             Console.Out.WriteLine("  --display=<value>          The intial display mode");
-            Console.Out.WriteLine("                               # [0] Grid");
-            Console.Out.WriteLine("                               # [1] Compact");
-            Console.Out.WriteLine("                               # [2] Tabular");
-            Console.Out.WriteLine("                               # [3] Detailed");
-            Console.Out.WriteLine("                               # [4] Grid (x2)");
-            Console.Out.WriteLine("                               # [5] Grid (1/2)");
-            Console.Out.WriteLine("                               # [6] Timeline");
+            Console.Out.WriteLine("                               # [grid]      Grid");
+            Console.Out.WriteLine("                               # [compact]   Compact");
+            Console.Out.WriteLine("                               # [tabular]   Tabular");
+            Console.Out.WriteLine("                               # [detailed]  Detailed");
+            Console.Out.WriteLine("                               # [gridx2]    Grid (x2)");
+            Console.Out.WriteLine("                               # [grid_half] Grid (1/2)");
+            Console.Out.WriteLine("                               # [timeline]  Timeline");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --order=<value>            The intial display order");
-            Console.Out.WriteLine("                               # [0]  Date [descending]");
-            Console.Out.WriteLine("                               # [1]  Date [ascending]");
-            Console.Out.WriteLine("                               # [2]  Title");
-            Console.Out.WriteLine("                               # [3]  Category");
-            Console.Out.WriteLine("                               # [4]  Views");
-            Console.Out.WriteLine("                               # [5]  Rating");
-            Console.Out.WriteLine("                               # [6]  Uploader");
-            Console.Out.WriteLine("                               # [7]  External [descending] (if available)");
-            Console.Out.WriteLine("                               # [8]  External [ascending] (if available)");
-            Console.Out.WriteLine("                               # [9]  Random");
-            Console.Out.WriteLine("                               # [10] Filename [ascending]");
-            Console.Out.WriteLine("                               # [11] Filename [descending]");
+            Console.Out.WriteLine("                               # [date-desc]     Date [descending]");
+            Console.Out.WriteLine("                               # [date-asc]      Date [ascending]");
+            Console.Out.WriteLine("                               # [title]         Title");
+            Console.Out.WriteLine("                               # [category]      Category");
+            Console.Out.WriteLine("                               # [views]         Views");
+            Console.Out.WriteLine("                               # [rating]        Rating");
+            Console.Out.WriteLine("                               # [uploader]      Uploader");
+            Console.Out.WriteLine("                               # [external-desc] External [descending] (if available)");
+            Console.Out.WriteLine("                               # [external-asc]  External [ascending] (if available)");
+            Console.Out.WriteLine("                               # [random]        Random");
+            Console.Out.WriteLine("                               # [filename-asc]  Filename [ascending]");
+            Console.Out.WriteLine("                               # [filename-desc] Filename [descending]");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --width=<value>            The intial display list width");
-            Console.Out.WriteLine("                               # [0] Small");
-            Console.Out.WriteLine("                               # [1] Medium");
-            Console.Out.WriteLine("                               # [2] Wide");
-            Console.Out.WriteLine("                               # [3] Full");
+            Console.Out.WriteLine("                               # [small]  Small");
+            Console.Out.WriteLine("                               # [medium] Medium");
+            Console.Out.WriteLine("                               # [wide]   Wide");
+            Console.Out.WriteLine("                               # [full]   Full");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --thumbnailmode=<value>    The intial thumbnail loading mode");
-            Console.Out.WriteLine("                               # [0] Off");
-            Console.Out.WriteLine("                               # [1] On (intelligent)");
-            Console.Out.WriteLine("                               # [2] On (sequential)");
-            Console.Out.WriteLine("                               # [3] On (parallel)");
+            Console.Out.WriteLine("                               # [off]         Off");
+            Console.Out.WriteLine("                               # [intelligent] On (intelligent)");
+            Console.Out.WriteLine("                               # [sequential]  On (sequential)");
+            Console.Out.WriteLine("                               # [parallel]    On (parallel)");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --videomode=<value>        The intial video playback mode");
-            Console.Out.WriteLine("                               # [0] Disabled");
-            Console.Out.WriteLine("                               # [1] Seekable raw file");
-            Console.Out.WriteLine("                               # [2] Raw file");
-            Console.Out.WriteLine("                               # [3] Transcoded webm stream");
-            Console.Out.WriteLine("                               # [4] Download file");
-            Console.Out.WriteLine("                               # [5] VLC Protocol Link (stream)"); // https://github.com/stefansundin/vlc-protocol
-            Console.Out.WriteLine("                               # [6] VLC Protocol Link (local)");  // https://github.com/stefansundin/vlc-protocol
-            Console.Out.WriteLine("                               # [7] Open original Webpage");
+            Console.Out.WriteLine("                               # [disabled]     Disabled");
+            Console.Out.WriteLine("                               # [raw-seekable] Seekable raw file");
+            Console.Out.WriteLine("                               # [raw]          Raw file");
+            Console.Out.WriteLine("                               # [transcoded]   Transcoded webm stream");
+            Console.Out.WriteLine("                               # [download]     Download file");
+            Console.Out.WriteLine("                               # [vlc-stream]   VLC Protocol Link (stream)"); // https://github.com/stefansundin/vlc-protocol
+            Console.Out.WriteLine("                               # [vlc-local]    VLC Protocol Link (local)");  // https://github.com/stefansundin/vlc-protocol
+            Console.Out.WriteLine("                               # [url]          Open original Webpage");
             Console.Out.WriteLine("                               #");
             Console.Out.WriteLine("  --theme=<value>            The intial theme");
             Console.Out.WriteLine("                               # Can either be:");
@@ -314,14 +406,14 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("  --preview-width=<value>    Width for generated preview and thumbnail images");
             Console.Out.WriteLine("                               Default := " + PreviewImageWidth);
             Console.Out.WriteLine("  --thumnail-ex-mode=<v>     The algorithm to create preview images from the video file");
-            Console.Out.WriteLine("                               # [0] Sequential: Multiple calls to ffmpeg to");
-            Console.Out.WriteLine("                               #                 extract single frames (only one call at a time)");
-            Console.Out.WriteLine("                               #                 (only one call at a time)");
-            Console.Out.WriteLine("                               # [1] Parallel: Multiple calls to ffmpeg to");
-            Console.Out.WriteLine("                               #               extract single frames");
-            Console.Out.WriteLine("                               #               (all calls parallel)");
-            Console.Out.WriteLine("                               # [2] SingleCommand: Only a single call to ffmpeg");
-            Console.Out.WriteLine("                               #                    with an fps filter");
+            Console.Out.WriteLine("                               # [sequential]    Multiple calls to ffmpeg to");
+            Console.Out.WriteLine("                               #                   extract single frames (only one call at a time)");
+            Console.Out.WriteLine("                               #                   (only one call at a time)");
+            Console.Out.WriteLine("                               # [parallel]      Multiple calls to ffmpeg to");
+            Console.Out.WriteLine("                               #                   extract single frames");
+            Console.Out.WriteLine("                               #                   (all calls parallel)");
+            Console.Out.WriteLine("                               # [singlecommand] SingleCommand: Only a single call to ffmpeg");
+            Console.Out.WriteLine("                               #                   with an fps filter");
             Console.Out.WriteLine("  --previewcount-max=<v>     The max amount of generated preview images per video");
             Console.Out.WriteLine("                               Default := " + MaxPreviewImageCount);
             Console.Out.WriteLine("  --previewcount-min=<v>     The minimum amount of generated preview images per video");

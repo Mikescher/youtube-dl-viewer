@@ -23,8 +23,7 @@ REM (remove comments before copying)
 
 youtube-dl-viewer.exe                                ^
   --cache="C:\Users\me\AppData\Local\Tempytdl_cache" ^  # specify cache directory for generated thumbnails
-  --videomode=6                                      ^  # default to local vlc protocol links for playback
-  --thumbnailmode=2                                  ^  # default to grid 
+  --videomode=vlc-local                              ^  # default to local vlc protocol links for playback
   --open-browser                                        # autom. open browser after startup
 ~~~
 
@@ -41,7 +40,11 @@ export DOTNET_BUNDLE_EXTRACT_BASE_DIR
 
 ./youtube-dl-viewer --port=9876                                                              \
                     --cache="/media/youtube-dl-viewer_cache/"                                \
-                    --display=0 --order=0 --width=1 --thumbnailmode=1 --videomode=3          \
+                    --display=grid                                                           \
+                    --order=date-desc                                                        \
+                    --width=medium                                                           \
+                    --thumbnailmode=intelligent                                              \
+                    --videomode=transcoded                                                   \
                     --path="/media/nextcloud/data/Mikescher/files/Videos/YoutubePlaylist1"   \
                     --path="/media/nextcloud/data/Mikescher/files/Videos/YoutubePlaylist2"   \
                     --path="/media/filecloud/data/Mikescher/files/Videos/YoutubePlaylist3"
@@ -175,9 +178,9 @@ You can modify this behavior with the following program arguments:
   - `--previewcount-min`: The minimum amount of preview frames per video file (can still be less if the video is too short)
   - `--previewcount-max`: The maximum amount of preview frames per video file
   - `--thumnail-ex-mode`: Choose one of the three ways to extract the frames:
-     * `0`: **Sequential:** Call ffmpeg multiple times for each frame, one call after the other
-     * `1`: **Parallel:** Call ffmpeg multiple times for each frame, all calls parallel (can lead to many simultaneous ffmpeg processes)
-     * `2`: **SingleCommand:** Call ffmpeg oce with the appropriate filter arguments, leads to frames that are more precisely positioned (at the exact timestamps), but takes longer.
+     * `sequential`: **Sequential:** Call ffmpeg multiple times for each frame, one call after the other
+     * `parallel`: **Parallel:** Call ffmpeg multiple times for each frame, all calls parallel (can lead to many simultaneous ffmpeg processes)
+     * `singlecommand`: **SingleCommand:** Call ffmpeg oce with the appropriate filter arguments, leads to frames that are more precisely positioned (at the exact timestamps), but takes longer.
      
 If the video does not have a provided thumbnail the second (!) preview frame is also used as an thumbnail
 
@@ -192,6 +195,11 @@ This can be deactivated (as all ffmpeg dependent functionality with the `--no-ff
 The playback modes **VLC protocol link (stream)** and **VLC protocol link (local)** use "VLC URL protocol" links (`vlc://...`).  
 This means they try to launch your locally installed VLC player with a specific URI (either a local file or a streamable link).  
 Your client needs to support these links, the easiest way is to use the ready-made scripts from [stefansundin](https://github.com/stefansundin/vlc-protocol).
+
+> **Note for Firefox**  
+> If you are often restarting youtube-dl-viewer and everytime use a different (random) port firefox will always warn you with the popup:  
+> `Allow this site to open the PROTOCOL link with APPLICATION?`  
+> To permanently allow (all) external protocols go to `about:config` and set the value `security.external_protocol_requires_permission` to *false*
 
 #### - Cache directory
 
