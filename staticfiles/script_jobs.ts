@@ -34,7 +34,7 @@ async function refresh()
     const dom_font_test    = $('#font_test')!
     
     const linelen = Math.max(110, Math.floor(dom_root.clientWidth / dom_font_test.clientWidth));
-    const progressLen = linelen - (14+50+10+10+8+7);
+    const progressLen = linelen - (22+14+50+10+10+8+7);
 
     const response = await $ajax('GET', '/jobmanager/list');
 
@@ -61,7 +61,7 @@ async function refresh()
     text_head += (("Cached Previews:                " + (""+data.Meta.Videos.CountCachedPreviews).padStart(3, " ") + " / " + data.Meta.Videos.CountTotal).padEnd(44, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedPreviews).padStart(8, ' ') + " )").padEnd(linelen - 22, ' ') + " <span id=\"btnClearFinished\" class=\"btn btn-action\">[Clear finished jobs]</span>" + "\n";
     text_head += (("Cached Videos (webm transcode): " + (""+data.Meta.Videos.CountCachedVideos  ).padStart(3, " ") + " / " + data.Meta.Videos.CountTotal).padEnd(44, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedVideos).padStart(8, ' ')   + " )").padEnd(linelen - 17, ' ') + " <span id=\"btnAbortAll\" class=\"btn btn-danger\">[Abort all jobs]</span>"           + "\n";
     text_head += "\n";
-    text_head += "<span class=\"header\">" + ("Type").padEnd(14, ' ') + ("Name").padEnd(50, ' ') + ("Proxies").padEnd(10, ' ') + ("State").padEnd(10, ' ') + ("Progress").padEnd(progressLen, ' ') + ("Time").padEnd(8, ' ') + ("Actions").padEnd(7, ' ') + "</span>" + "\n";
+    text_head += "<span class=\"header\">" + ("Timestamp (Start)").padEnd(22, ' ') + ("Type").padEnd(14, ' ') + ("Name").padEnd(50, ' ') + ("Proxies").padEnd(10, ' ') + ("State").padEnd(10, ' ') + ("Progress").padEnd(progressLen, ' ') + ("Time").padEnd(8, ' ') + ("Actions").padEnd(7, ' ') + "</span>" + "\n";
 
     if (DATA.last_text_head !== (linelen + ";" + text_head))
     {
@@ -88,6 +88,7 @@ async function refresh()
         //if (job.Error !== null) error_tt = "data-tooltip=\"" + escapeHtml(job.Error) + "\" data-attached=\"0\"";
         if (job.Error !== null) error_tt = " title=\"" + escapeHtml(job.Error) + "\" ";
 
+        const col0 = (job.StartTimeStr).padEnd(22, ' ');
         const col1 = (job.ManagerName).padEnd(14, ' ');
         const col2 = "<span class=\"maxlen\" style=\"max-width: 48ch\">" + escapeHtml(job.Name.padEnd(50, ' ')) + "</span>" + "  ";
         const col3 = (("" + job.ProxyCount).padStart(2, ' ') + " / " + ("" + job.ProxyRequests).padStart(2, ' ')).padEnd(10, ' ');
@@ -96,7 +97,7 @@ async function refresh()
         const col6 = ("" + job.Time).padEnd(8, ' ');
         const col7 = "<span class=\"btnAbort btn " + (job.AbortRequest ? "btn-warn" : "btn-danger") + "\" data-jobid=\""+job.ID+"\">[Abort]</span>";
 
-        const job_content = "<span class=\"job state_"+job.State+" queue_"+job.QueueName+" abort_"+job.AbortRequest+"\">" + [col1, col2, col3, col4, col5, col6, col7].join("") + "</span>" + "\n";
+        const job_content = "<span class=\"job state_"+job.State+" queue_"+job.QueueName+" abort_"+job.AbortRequest+"\">" + [col0, col1, col2, col3, col4, col5, col6, col7].join("") + "</span>" + "\n";
         
         if (!DATA.last_job_texts.hasOwnProperty(job.ID) || DATA.last_job_texts[job.ID] !== job_content)
         {

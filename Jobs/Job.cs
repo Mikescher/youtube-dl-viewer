@@ -188,6 +188,8 @@ namespace youtube_dl_viewer.Jobs
                 new JProperty("Source", Source),
                 new JProperty("StartTime", StartTime),
                 new JProperty("EndTime", EndTime),
+                new JProperty("StartTimeStr", StartTime?.ToString("yyyy-MM-dd HH:mm:ss")),
+                new JProperty("EndTimeStr", EndTime?.ToString("yyyy-MM-dd HH:mm:ss")),
                 new JProperty("Time", $"{((int)Time.TotalMinutes)}".PadLeft(2, '0') + ":" + $"{Time.Seconds}".PadLeft(2, '0')),
                 new JProperty("Progress", progress),
                 new JProperty("Thread", new JObject
