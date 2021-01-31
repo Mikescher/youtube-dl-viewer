@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Config;
 using youtube_dl_viewer.Jobs;
+using youtube_dl_viewer.Model;
 
 namespace youtube_dl_viewer.Controller
 {
@@ -41,12 +42,12 @@ namespace youtube_dl_viewer.Controller
                     
                     new JProperty("Videos", new JObject
                     (
-                        new JProperty("CountCachedPreviews", vidcache.Count(p => p["meta"]["cached_previews"].Value<bool>())),
-                        new JProperty("CountCachedVideos",   vidcache.Count(p => p["meta"]["cached"].Value<bool>())),
+                        new JProperty("CountCachedPreviews", vidcache.Count(p => p.IsCachedPreview)),
+                        new JProperty("CountCachedVideos",   vidcache.Count(p => p.IsCachedVideo)),
                         new JProperty("CountTotal",          vidcache.Count),
                         
-                        new JProperty("FilesizeCachedPreviews", vidcache.Sum(p => p["meta"]["cached_preview_fsize"].Value<long>())),
-                        new JProperty("FilesizeCachedVideos",   vidcache.Sum(p => p["meta"]["cached_video_fsize"].Value<long>()))
+                        new JProperty("FilesizeCachedPreviews", vidcache.Sum(p => p.CachePreviewSize)),
+                        new JProperty("FilesizeCachedVideos",   vidcache.Sum(p => p.CacheVideoSize))
                     )),
                     
                     new JProperty("CountActive", JobRegistry.Managers.Sum(p => p.CountActive)),
@@ -70,7 +71,7 @@ namespace youtube_dl_viewer.Controller
             var selector1 = (string)context.Request.RouteValues["selector1"];
             var selector2 = (string)context.Request.RouteValues["selector2"];
 
-            List<(string json, Dictionary<string, JObject> obj)> selection1;
+            List<DataDirData> selection1;
             if (selector1.ToLower() == "all" || selector1.ToLower() == "*")
             {
                 selection1 = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
@@ -80,20 +81,20 @@ namespace youtube_dl_viewer.Controller
                 selection1 = new[]{ (await Program.GetData(int.Parse(selector1))) }.ToList();
             }
             
-            List<JObject> selection2;
+            List<VideoData> selection2;
             if (selector2.ToLower() == "all" || selector2.ToLower() == "*")
             {
-                selection2 = selection1.Select(p => p.obj).SelectMany(p => p.Values).ToList();
+                selection2 = selection1.SelectMany(p => p.Videos.Values).ToList();
             }
             else
             {
-                selection2 = selection1.SelectMany(p => p.obj).Where(p => p.Key == selector2).Select(p => p.Value).ToList();
+                selection2 = selection1.SelectMany(p => p.Videos).Where(p => p.Key == selector2).Select(p => p.Value).ToList();
             }
 
             var count = 0;
-            foreach (var obj in selection2)
+            foreach (var vid in selection2)
             {
-                var pathVideo = obj["meta"]?.Value<string>("path_video");
+                var pathVideo = vid.PathVideo;
                 if (pathVideo == null) { continue; }
                 
                 var pathCache = ThumbnailController.GetPreviewCachePath(pathVideo);
@@ -101,7 +102,7 @@ namespace youtube_dl_viewer.Controller
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
-                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, obj["meta"].Value<int>("datadirindex"), obj["meta"].Value<string>("uid")), false);
+                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, vid.DataDirIndex, vid.UID), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");
@@ -117,30 +118,30 @@ namespace youtube_dl_viewer.Controller
             var selector1 = (string)context.Request.RouteValues["selector1"];
             var selector2 = (string)context.Request.RouteValues["selector2"];
 
-            List<(DataDirSpec, (string json, Dictionary<string, JObject> obj))> selection1;
+            List<DataDirData> selection1;
             if (selector1.ToLower() == "all" || selector1.ToLower() == "*")
             {
-                selection1 = (await Task.WhenAll(Program.Args.DataDirs.Select(async (s, i) => (s, await Program.GetData(i))))).ToList();
+                selection1 = (await Task.WhenAll(Program.Args.DataDirs.Select(async (s, i) => await Program.GetData(i)))).ToList();
             }
             else
             {
-                selection1 = new[]{ (Program.Args.DataDirs[int.Parse(selector1)], await Program.GetData(int.Parse(selector1))) }.ToList();
+                selection1 = new[]{ await Program.GetData(int.Parse(selector1)) }.ToList();
             }
             
-            List<(DataDirSpec, JObject)> selection2;
+            List<VideoData> selection2;
             if (selector2.ToLower() == "all" || selector2.ToLower() == "*")
             {
-                selection2 = selection1.SelectMany(p => p.Item2.obj.Values.Select(q => (p.Item1, q))).ToList();
+                selection2 = selection1.SelectMany(p => p.Videos.Values).ToList();
             }
             else
             {
-                selection2 = selection1.SelectMany(p => p.Item2.obj.Select(q => (p.Item1, q))).Where(p => p.Item2.Key == selector2).Select(p => (p.Item1, p.Item2.Value)).ToList();
+                selection2 = selection1.SelectMany(p => p.Videos).Where(p => p.Key == selector2).Select(p => p.Value).ToList();
             }
 
             var count = 0;
-            foreach (var (dir, obj) in selection2)
+            foreach (var vid in selection2)
             {
-                var pathVideo = obj["meta"]?.Value<string>("path_video");
+                var pathVideo = vid.PathVideo;
                 if (pathVideo == null) { continue; }
                 if (pathVideo.ToLower().EndsWith(".webm")) continue;
                 if (pathVideo.ToLower().EndsWith(".mp4"))  continue;
@@ -150,7 +151,7 @@ namespace youtube_dl_viewer.Controller
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
-                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache, obj["meta"].Value<int>("datadirindex"), obj["meta"].Value<string>("uid")), false);
+                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache, vid.DataDirIndex, vid.UID), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");

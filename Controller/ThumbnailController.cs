@@ -30,12 +30,12 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
-            var pathVideo = obj["meta"]?.Value<string>("path_video");
+            var pathVideo = vid.PathVideo;
             
-            var pathThumbnail = obj["meta"]?.Value<string>("path_thumbnail");
-            if (pathThumbnail == null)
+            var pathThumbnail = vid.PathThumbnail;
+            if (vid.PathThumbnail == null)
             {
                 if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
@@ -71,11 +71,9 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
-            var pathVideo = obj["meta"]?.Value<string>("path_video");
-
-            await GetPreviewImage(context, pathVideo, idx, id, 1);
+            await GetPreviewImage(context, vid.PathVideo, idx, id, 1);
         }
 
         public static async Task GetPreview(HttpContext context)
@@ -86,11 +84,9 @@ namespace youtube_dl_viewer.Controller
             var id  = (string)context.Request.RouteValues["id"];
             var img = int.Parse((string)context.Request.RouteValues["img"]);
 
-            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
-            var pathVideo = obj["meta"]?.Value<string>("path_video");
-
-            await GetPreviewImage(context, pathVideo, idx, id, img);
+            await GetPreviewImage(context, vid.PathVideo, idx, id, img);
         }
         
         private static async Task GetPreviewImage(HttpContext context, string videopath, int datadirindex, string videouid, int imageIndex)

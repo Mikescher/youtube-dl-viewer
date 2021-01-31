@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Config;
 using youtube_dl_viewer.Controller;
+using youtube_dl_viewer.Model;
 using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Jobs
@@ -18,7 +19,7 @@ namespace youtube_dl_viewer.Jobs
         public readonly bool ClearOld;
         
         public string Result = null;
-        public (string json, Dictionary<string, JObject> obj)? FullResult = null;
+        public DataDirData FullResult = null;
         
         private (int, int) _progress = (0, 1);
         public override (int, int) Progress => _progress;
@@ -40,17 +41,17 @@ namespace youtube_dl_viewer.Jobs
         {
             if (ClearOld)
             {
-                lock (Program.DataCache) Program.DataCache[Index] = (null, null);
+                lock (Program.DataCache) Program.DataCache[Index] = null;
             }
             
-            var (jsonstr, jsonobj) = CreateData(Index);
+            var dat = CreateData(Index);
             
             lock (Program.DataCache)
             {
                 Program.DataRefreshTimestamps[Index] = DateTime.Now;
-                Program.DataCache[Index] = (jsonstr, jsonobj);
-                Result = jsonstr;
-                FullResult = (jsonstr, jsonobj);
+                Program.DataCache[Index] = dat;
+                Result = dat.JsonString;
+                FullResult = dat;
             }
             
             _progress = (1, 1);
@@ -70,7 +71,7 @@ namespace youtube_dl_viewer.Jobs
             FullResult = null;
         }
         
-        public (string jsonstr, Dictionary<string, JObject> jsonobj) CreateData(int index)
+        public DataDirData CreateData(int index)
         {
             var ddir = Program.Args.DataDirs[index];
             
@@ -80,7 +81,7 @@ namespace youtube_dl_viewer.Jobs
             var filesSubs = datafiles.Where(p => p.EndsWith(".vtt")).ToList();
             var filesInfo = datafiles.Where(p => p.EndsWith(".info.json")).ToList();
 
-            var resultVideos = new JArray();
+            var resultVideos = new List<VideoData>();
 
             var idsAreUnique = true;
             var idlist = new HashSet<string>();
@@ -157,7 +158,7 @@ namespace youtube_dl_viewer.Jobs
                 
                 if (Program.Args.TrimDataJSON) jinfo = TrimJSON(jinfo);
                 
-                resultVideos.Add(new JObject
+                var vid_data = new JObject
                 (
                     new JProperty("meta", new JObject
                     (
@@ -193,7 +194,9 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("description", descr),
                         new JProperty("info", jinfo)
                     ))
-                ));
+                );
+                
+                resultVideos.Add(new VideoData(ddir, vid_data));
             }
 
             var filesVideo = datafiles.Except(processedFiles).Where(p => Program.ExtVideo.Any(q => string.Equals("." + q, Path.GetExtension(p), StringComparison.CurrentCultureIgnoreCase))).ToList();
@@ -234,7 +237,7 @@ namespace youtube_dl_viewer.Jobs
 
                 var order_index = orderIndizes?.GetOrderingOrInsert(pathVideo, null, null, vtitle);
                 
-                resultVideos.Add(new JObject
+                var vid_data = new JObject
                 (
                     new JProperty("meta", new JObject
                     (
@@ -267,7 +270,9 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("description", (pathDesc != null) ? File.ReadAllText(pathDesc) : null),
                         new JProperty("info", new JObject())
                     ))
-                ));
+                );
+
+                resultVideos.Add(new VideoData(ddir, vid_data));
             }
 
             if (!idsAreUnique)
@@ -276,38 +281,30 @@ namespace youtube_dl_viewer.Jobs
                 var uid = 10000;
                 foreach (var rv in resultVideos)
                 {
-                    rv["meta"]?["uid"]?.Replace(new JValue(guid + "_" + uid));
+                    rv.Data["meta"]?["uid"]?.Replace(new JValue(guid + "_" + uid));
                     uid++;
                 }
             }
 
             orderIndizes?.UpdateFile();
 
-            var result = new JObject
+            var meta = new JObject
             (
-                new JProperty("meta", new JObject
-                (
-                    new JProperty("htmltitle", ddir.HTMLTitle ?? Program.Args.HTMLTitle),
-                    new JProperty("has_ext_order", orderIndizes != null),
-                    new JProperty("count_total", filesInfo.Count + filesVideo.Count),
-                    new JProperty("count_info", filesInfo.Count),
-                    new JProperty("count_raw", filesVideo.Count),
+                new JProperty("htmltitle",     ddir.HTMLTitle ?? Program.Args.HTMLTitle),
+                new JProperty("has_ext_order", orderIndizes != null),
+                new JProperty("count_total",   filesInfo.Count + filesVideo.Count),
+                new JProperty("count_info",    filesInfo.Count),
+                new JProperty("count_raw",     filesVideo.Count),
                     
-                    new JProperty("display_override",   ddir.DisplayOverride),
-                    new JProperty("width_override",     ddir.WidthOverride),
-                    new JProperty("thumbnail_override", ddir.ThumbnailmodeOverride),
-                    new JProperty("order_override",     ddir.OrderOverride),
-                    new JProperty("videomode_override", ddir.VideomodeOverride),
-                    new JProperty("theme_override",     ddir.ThemeOverride)
-                )),
-                new JProperty("videos", resultVideos),
-                new JProperty("missing", new JArray(datafiles.Except(processedFiles).ToArray<object>()))
+                new JProperty("display_override",   ddir.DisplayOverride),
+                new JProperty("width_override",     ddir.WidthOverride),
+                new JProperty("thumbnail_override", ddir.ThumbnailmodeOverride),
+                new JProperty("order_override",     ddir.OrderOverride),
+                new JProperty("videomode_override", ddir.VideomodeOverride),
+                new JProperty("theme_override",     ddir.ThemeOverride)
             );
-
-            var jsonstr = result.ToString(Formatting.Indented);
-            var jsonobj = resultVideos.ToDictionary(rv => rv["meta"]?.Value<string>("uid"), rv => (JObject) rv);
             
-            return (jsonstr, jsonobj);
+            return new DataDirData(ddir, meta, datafiles.Except(processedFiles).ToList(), resultVideos.ToDictionary(p => p.UID, p => p));
         }
 
         private JObject TrimJSON(JObject jinfo)

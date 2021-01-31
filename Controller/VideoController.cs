@@ -28,9 +28,9 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
-            var pathVideo = obj["meta"]?.Value<string>("path_video");
+            var pathVideo = vid.PathVideo;
             if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
             
             Stream iStream = null;
@@ -71,9 +71,9 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
-            var pathVideo = obj["meta"]?.Value<string>("path_video");
+            var pathVideo = vid.PathVideo;
             if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
             await GetSeekableFile(context, pathVideo);
@@ -84,9 +84,9 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!(await Program.GetData(idx)).obj.TryGetValue(id, out var obj)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
 
-            var pathVideo = obj["meta"]?.Value<string>("path_video");
+            var pathVideo = vid.PathVideo;
             if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
             var pathCache = GetStreamCachePath(pathVideo);

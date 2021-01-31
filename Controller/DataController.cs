@@ -16,7 +16,7 @@ namespace youtube_dl_viewer.Controller
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             
             context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
-            await context.Response.WriteAsync((await Program.GetData(idx)).json);
+            await context.Response.WriteAsync((await Program.GetData(idx)).JsonString);
         }
 
         public static async Task RefreshData(HttpContext context)

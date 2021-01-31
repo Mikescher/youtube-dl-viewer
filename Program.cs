@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Config;
 using youtube_dl_viewer.Jobs;
+using youtube_dl_viewer.Model;
 
 namespace youtube_dl_viewer
 {
@@ -35,11 +36,7 @@ namespace youtube_dl_viewer
         
         public static string Version => "0.26";
 
-        // DataCache  :=   Dictionary<  DataDirIndex => (json, obj)  >
-        // json       :=   full json for dir, aka:  { "videos": [ ... ], "missing": [ ... ] }
-        // obj        :=   Dictionary<  VideoUID => video_json  >
-        // video_json :=   json Object, aka:  { meta: { ... }, data: { ... } }
-        public static readonly Dictionary<int, (string json, Dictionary<string, JObject> obj)> DataCache = new Dictionary<int, (string json, Dictionary<string, JObject> obj)>();
+        public static readonly Dictionary<int, DataDirData> DataCache = new Dictionary<int, DataDirData>();
 
         public static bool Initialized = false;
         
@@ -62,7 +59,7 @@ namespace youtube_dl_viewer
             {
                 Console.Out.WriteLine($"> Start enumerating video data [{i}]: {Args.DataDirs[i].Path} (background)");
                 var idx = i;
-                lock (DataCache) { DataCache[idx] = (null, null); }
+                lock (DataCache) { DataCache[idx] = null; }
                 JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx, true), false);
                 Console.Out.WriteLine();
             }
@@ -212,19 +209,19 @@ namespace youtube_dl_viewer
                 });
         }
 
-        public static async Task<(string json, Dictionary<string, JObject> obj)> GetData(int idx)
+        public static async Task<DataDirData> GetData(int idx)
         {
-            (string json, Dictionary<string, JObject> obj) data;
+            DataDirData data;
             
             lock (DataCache) { data = DataCache[idx]; }
             
-            if (data.json != null || data.obj != null) return data;
+            if (data != null) return data;
 
             JobProxy<DataCollectJob> proxy;
             lock (JobRegistry.DataCollectJobs.LockObject)
             {
                 lock (DataCache) { data = DataCache[idx]; }
-                if (data.json != null || data.obj != null) return data;
+                if (data != null) return data;
                 
                 proxy = JobRegistry.DataCollectJobs.GetProxyOrNullLockless((man) => new DataCollectJob(man, idx, true));;
                 if (proxy == null) throw new Exception($"Data for index {idx} not found");
@@ -238,18 +235,18 @@ namespace youtube_dl_viewer
                 
                 if (proxy.Job.FullResult == null) throw new Exception("Job returned no data");
 
-                return proxy.Job.FullResult.Value;
+                return proxy.Job.FullResult;
             }
         }
 
-        public static List<JObject> GetAllCachedData()
+        public static List<VideoData> GetAllCachedData()
         {
             // returns video-json objects
             // aka
             // { meta: { ... }, data: { ... } }
             lock (DataCache)
             {
-                return DataCache.Select(p => p.Value.obj).Where(p => p != null).SelectMany(p => p.Values).ToList();
+                return DataCache.Select(p => p.Value).Where(p => p != null).SelectMany(p => p.Videos.Values).ToList();
             }
         }
 
@@ -258,12 +255,12 @@ namespace youtube_dl_viewer
             lock (DataCache)
             {
                 if (!DataCache.ContainsKey(dataDirIndex)) return false;
-                if (DataCache[dataDirIndex].json == null) return false;
-                if (DataCache[dataDirIndex].obj == null)  return false;
+                if (DataCache[dataDirIndex] == null) return false;
 
-                if (!DataCache[dataDirIndex].obj.ContainsKey(videoUID)) return false;
-                
-                ((JValue)field.Aggregate((JToken)DataCache[dataDirIndex].obj[videoUID], (current, fe) => current[fe])).Value = value;
+                if (!DataCache[dataDirIndex].Videos.ContainsKey(videoUID)) return false;
+
+                DataCache[dataDirIndex].Videos[videoUID].PatchData(field, value);
+                DataCache[dataDirIndex].RecreateJSON();
                 return true;
             }
         }

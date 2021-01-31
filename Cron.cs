@@ -75,18 +75,18 @@ namespace youtube_dl_viewer
             if (Program.Args.CacheDir == null) { Console.WriteLine("Could not [GeneratePreviews] in cron - No cache directory specified"); return; }
 
             var dirs = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
-            var videos = dirs.Select(p => p.obj).SelectMany(p => p.Values).ToList();
+            var videos = dirs.SelectMany(p => p.Videos.Values).ToList();
             
-            foreach (var obj in videos)
+            foreach (var vid in videos)
             {
-                var pathVideo = obj["meta"]?.Value<string>("path_video");
+                var pathVideo = vid.PathVideo;
                 if (pathVideo == null) { continue; }
                 
                 var pathCache = ThumbnailController.GetPreviewCachePath(pathVideo);
 
                 if (File.Exists(pathCache)) continue;
                 
-                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, obj["meta"].Value<int>("datadirindex"), obj["meta"].Value<string>("uid")), false);
+                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, vid.DataDirIndex, vid.UID), false);
             }
         }
 
@@ -95,14 +95,14 @@ namespace youtube_dl_viewer
             if (!Program.HasValidFFMPEG)  { Console.WriteLine("Could not [GeneratePreviews] in cron - No ffmpeg installation found"); return; }
             if (Program.Args.CacheDir == null) { Console.WriteLine("Could not [GeneratePreviews] in cron - No cache directory specified"); return; }
 
-            var dirs = (await Task.WhenAll(Program.Args.DataDirs.Select(async (s, i) => (s, await Program.GetData(i))))).ToList();
-            var videos = dirs.SelectMany(p => p.Item2.obj.Values.Select(q => (p.Item1, q))).ToList();
+            var dirs = (await Task.WhenAll(Program.Args.DataDirs.Select(async (s, i) => await Program.GetData(i)))).ToList();
+            var videos = dirs.SelectMany(p => p.Videos.Values).ToList();
             
-            foreach (var (dir, obj) in videos)
+            foreach (var vid in videos)
             {
-                if ((dir.VideomodeOverride ?? Program.Args.OptVideoMode) != 3) continue;
+                if ((vid.DataDir.VideomodeOverride ?? Program.Args.OptVideoMode) != 3) continue;
                 
-                var pathVideo = obj["meta"]?.Value<string>("path_video");
+                var pathVideo = vid.PathVideo;
                 if (pathVideo == null) continue;
                 if (pathVideo.ToLower().EndsWith(".webm")) continue;
                 if (pathVideo.ToLower().EndsWith(".mp4"))  continue;
@@ -111,7 +111,7 @@ namespace youtube_dl_viewer
 
                 if (File.Exists(pathCache)) continue;
                 
-                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache, obj["meta"].Value<int>("datadirindex"), obj["meta"].Value<string>("uid")), false);
+                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache, vid.DataDirIndex, vid.UID), false);
             }
         }
     }
