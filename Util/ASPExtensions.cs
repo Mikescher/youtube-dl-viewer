@@ -204,18 +204,18 @@ namespace youtube_dl_viewer.Util
             var resultReload = File.ReadAllText(GetFilesystemResourcePath(resourcePath, resourceFilename));
             if (resultReload == null)
             {
-                ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
+                if (ctxt != null) ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
                 return result;
             }
 
             if (_reloadCacheText.TryGetValue((resourcePath, resourceFilename), out var cacheval) && resultReload == cacheval)
             {
-                ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
+                if (ctxt != null) ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
                 return result;
             }
             
             Console.Out.WriteLine($"Reloaded [{resourcePath}|{resourceFilename}] from Filesystem");
-            ctxt.Response.Headers["X-LIVE_RELOADED"] = "true";
+            if (ctxt != null) ctxt.Response.Headers["X-LIVE_RELOADED"] = "true";
             _reloadCacheText[(resourcePath, resourceFilename)] = resultReload;
             return resultReload;
 #endif

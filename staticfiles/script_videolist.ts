@@ -106,6 +106,14 @@ class VideoListModel
         { index: 6, text: "ListStyle: Timeline",   keys: ['timeline',  '6' ], enabled: false, css: [ 'lstyle_timeline'            ], renderer: new DisplayTimelineRenderer()  },
     ];
 
+    Values_WidthMode: WidthModeDef[] =
+    [
+        { index: 0, text: "Width: Small",  keys: ['small',  '0' ], enabled: true, css: [ 'lstyle_width_small'  ] },
+        { index: 1, text: "Width: Medium", keys: ['medium', '1' ], enabled: true, css: [ 'lstyle_width_medium' ] },
+        { index: 2, text: "Width: Wide",   keys: ['wide',   '2' ], enabled: true, css: [ 'lstyle_width_wide'   ] },
+        { index: 3, text: "Width: Full",   keys: ['full',   '3' ], enabled: true, css: [ 'lstyle_width_full'   ] },
+    ];
+
     Values_OrderMode: OrderModeDef[] = 
     [
         { index: 0,  text: "Sorting: Date [descending]",     keys: ['date-desc',     '0'  ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompare(a,b,'upload_date') * -1) },
@@ -120,14 +128,6 @@ class VideoListModel
         { index: 9,  text: "Sorting: Random",                keys: ['random',        '9'  ], enabled: true,  sort: (p) => { shuffle(p, new SeedRandom(this.shuffle_seed)); return p; } },
         { index: 10, text: "Sorting: Filename [ascending]",  keys: ['filename-asc',  '10' ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompareMeta(a,b,'filename_base') * +1) },
         { index: 11, text: "Sorting: Filename [descending]", keys: ['filename-desc', '11' ], enabled: true,  sort: (p) => p.sort((a,b) => CompareUtil.sortcompareMeta(a,b,'filename_base') * -1) },
-    ];
-
-    Values_WidthMode: WidthModeDef[] = 
-    [
-        { index: 0, text: "Width: Small",  keys: ['small',  '0' ], enabled: true, css: [ 'lstyle_width_small'  ] },
-        { index: 1, text: "Width: Medium", keys: ['medium', '1' ], enabled: true, css: [ 'lstyle_width_medium' ] },
-        { index: 2, text: "Width: Wide",   keys: ['wide',   '2' ], enabled: true, css: [ 'lstyle_width_wide'   ] },
-        { index: 3, text: "Width: Full",   keys: ['full',   '3' ], enabled: true, css: [ 'lstyle_width_full'   ] },
     ];
 
     Values_ThumbnailMode: ThumbnailModeDef[] =
@@ -165,11 +165,11 @@ class VideoListModel
     displaymode_default: number = -1;
     displaymode_current: number = -1;
 
-    ordermode_default: number = -1;
-    ordermode_current: number = -1;
-
     widthmode_default: number = -1;
     widthmode_current: number = -1;
+
+    ordermode_default: number = -1;
+    ordermode_current: number = -1;
 
     thumbnailmode_default: number = -1;
     thumbnailmode_current: number = -1;
@@ -225,8 +225,8 @@ class VideoListModel
         this.Values_DisplayMode[6].enabled = this.hasFFMPEG && this.hasCache;
         
         this.displaymode_current   = this.displaymode_default   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   optionsource.getAttribute('data-displaymode')!,   0);
-        this.ordermode_current     = this.ordermode_default     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     optionsource.getAttribute('data-ordermode')!,     0);
         this.widthmode_current     = this.widthmode_default     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     optionsource.getAttribute('data-widthmode')!,     0);
+        this.ordermode_current     = this.ordermode_default     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     optionsource.getAttribute('data-ordermode')!,     0);
         this.thumbnailmode_current = this.thumbnailmode_default = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, optionsource.getAttribute('data-thumbnailmode')!, 0);
         this.videomode_current     = this.videomode_default     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     optionsource.getAttribute('data-videomode')!,     0);
         this.theme_current         = this.theme_default         = this.getIndexFromKey("Theme",         this.Values_Themes,        optionsource.getAttribute('data-theme')!,         0);
@@ -240,8 +240,8 @@ class VideoListModel
             const [key, val] = e.split('=');
 
             if (key === 'display')   this.displaymode_current   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   val, this.displaymode_default);
-            if (key === 'order')     this.ordermode_current     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     val, this.ordermode_default);
             if (key === 'width')     this.widthmode_current     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     val, this.widthmode_default);
+            if (key === 'order')     this.ordermode_current     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     val, this.ordermode_default);
             if (key === 'thumb')     this.thumbnailmode_current = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, val, this.thumbnailmode_default);
             if (key === 'videomode') this.videomode_current     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     val, this.videomode_default);
             if (key === 'theme')     this.theme_current         = this.getIndexFromKey("Theme",         this.Values_Themes,        val, this.theme_default);
@@ -302,15 +302,15 @@ class VideoListModel
             this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
 
             if (json.meta.display_override   !== null) this.displaymode_current   = json.meta.display_override;
-            if (json.meta.order_override     !== null) this.ordermode_current     = json.meta.order_override;
             if (json.meta.width_override     !== null) this.widthmode_current     = json.meta.width_override;
+            if (json.meta.order_override     !== null) this.ordermode_current     = json.meta.order_override;
             if (json.meta.thumbnail_override !== null) this.thumbnailmode_current = json.meta.thumbnail_override;
             if (json.meta.videomode_override !== null) this.videomode_current     = json.meta.videomode_override;
             if (json.meta.theme_override     !== null) this.theme_current         = json.meta.theme_override;
 
             if (!this.getCurrentDisplayMode().enabled)   this.displaymode_current   = this.displaymode_default;
-            if (!this.getCurrentOrderMode().enabled)     this.ordermode_current     = this.ordermode_default;
             if (!this.getCurrentWidthMode().enabled)     this.widthmode_current     = this.widthmode_default;
+            if (!this.getCurrentOrderMode().enabled)     this.ordermode_current     = this.ordermode_default;
             if (!this.getCurrentThumbnailMode().enabled) this.thumbnailmode_current = this.thumbnailmode_default;
             if (!this.getCurrentVideoMode().enabled)     this.videomode_current     = this.videomode_default;
             if (!this.getCurrentTheme().enabled)         this.theme_current         = this.theme_default;
@@ -368,8 +368,8 @@ class VideoListModel
         let hash = [];
 
         if (this.displaymode_current   !== this.displaymode_default)   hash.push('display='   + this.getCurrentDisplayMode().keys[0]);
-        if (this.ordermode_current     !== this.ordermode_default)     hash.push('order='     + this.getCurrentOrderMode().keys[0]);
         if (this.widthmode_current     !== this.widthmode_default)     hash.push('width='     + this.getCurrentWidthMode().keys[0]);
+        if (this.ordermode_current     !== this.ordermode_default)     hash.push('order='     + this.getCurrentOrderMode().keys[0]);
         if (this.thumbnailmode_current !== this.thumbnailmode_default) hash.push('thumb='     + this.getCurrentThumbnailMode().keys[0]);
         if (this.videomode_current     !== this.videomode_default)     hash.push('videomode=' + this.getCurrentVideoMode().keys[0]);
         if (this.theme_current         !== this.theme_default)         hash.push('theme='     + this.getCurrentTheme().keys[0]);
@@ -409,21 +409,6 @@ class VideoListModel
         this.recreateDOM().then(()=>{});
     }
 
-    setOrderMode(key: number|string, showtoast: boolean = false, reshuffle: boolean = false)
-    {
-        const value = this.getIndexFromKey("OrderMode", this.Values_OrderMode, key.toString(), this.ordermode_default);
-
-        if (value === this.ordermode_current && !(reshuffle && value === 9)) return;
-
-        this.ordermode_current = value;
-        if (reshuffle) this.shuffle_seed = Math.random().toString().replace(/[.,]/g, '').substr(1);
-
-        if (showtoast) App.showToast(this.getCurrentOrderMode().text);
-
-        this.updateHash();
-        this.recreateDOM().then(()=>{});
-    }
-
     setWidthMode(key: number|string, showtoast: boolean = false)
     {
         const value = this.getIndexFromKey("WidthMode", this.Values_WidthMode, key.toString(), this.widthmode_default);
@@ -440,6 +425,21 @@ class VideoListModel
         this.updateHash();
 
         App.THUMBS.restart();
+    }
+
+    setOrderMode(key: number|string, showtoast: boolean = false, reshuffle: boolean = false)
+    {
+        const value = this.getIndexFromKey("OrderMode", this.Values_OrderMode, key.toString(), this.ordermode_default);
+
+        if (value === this.ordermode_current && !(reshuffle && value === 9)) return;
+
+        this.ordermode_current = value;
+        if (reshuffle) this.shuffle_seed = Math.random().toString().replace(/[.,]/g, '').substr(1);
+
+        if (showtoast) App.showToast(this.getCurrentOrderMode().text);
+
+        this.updateHash();
+        this.recreateDOM().then(()=>{});
     }
 
     setThumbnailMode(key: number|string, showtoast: boolean = false)
@@ -517,8 +517,8 @@ class VideoListModel
     }
     
     getCurrentDisplayMode():   DisplayModeDef   { return this.Values_DisplayMode[this.displaymode_current];     }
-    getCurrentOrderMode():     OrderModeDef     { return this.Values_OrderMode[this.ordermode_current];         }
     getCurrentWidthMode():     WidthModeDef     { return this.Values_WidthMode[this.widthmode_current];         }
+    getCurrentOrderMode():     OrderModeDef     { return this.Values_OrderMode[this.ordermode_current];         }
     getCurrentThumbnailMode(): ThumbnailModeDef { return this.Values_ThumbnailMode[this.thumbnailmode_current]; }
     getCurrentVideoMode():     VideoModeDef     { return this.Values_VideoMode[this.videomode_current];         }
     getCurrentTheme():         ThemeDef         { return this.Values_Themes[this.theme_current];                }

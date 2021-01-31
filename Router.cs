@@ -83,6 +83,8 @@ namespace youtube_dl_viewer
                 
             endpoints.MapGet("/themes/{idx:int}",        ThemeController.GetTheme);
             endpoints.MapGet("/themes/{idx:int}/{name}", ThemeController.GetTheme);
+            
+            endpoints.MapGet("/config/list", ConfigController.ListConfig);
 
             endpoints.MapRazorPages();
 

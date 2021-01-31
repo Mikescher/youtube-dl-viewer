@@ -58,7 +58,7 @@ namespace youtube_dl_viewer.Controller
             );
             
             context.Response.Headers.Add(HeaderNames.ContentType, "application/json");
-            await context.Response.WriteAsync(r.ToString(Formatting.Indented));
+            await context.Response.WriteAsync(r.ToString(Program.DEBUG ? Formatting.Indented : Formatting.None));
         }
 
         public static async Task ManuallyForcePreviewJobs(HttpContext context)

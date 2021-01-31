@@ -51,7 +51,7 @@ namespace youtube_dl_viewer.Model
                 new JProperty("missing", new JArray(Missing.ToArray<object>()))
             );
 
-            JsonString = json.ToString(Formatting.Indented);
+            JsonString = json.ToString(Program.DEBUG ? Formatting.Indented : Formatting.None);
         }
     }
 }

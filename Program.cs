@@ -64,7 +64,7 @@ namespace youtube_dl_viewer
                 Console.Out.WriteLine();
             }
 
-            if (!Args.NoFFMPEG) // if disabled by cmd switch then we don't need to check
+            if (Args.UseFFMPEG) // if disabled by cmd switch then we don't need to check
             {
                 Console.Out.WriteLine($"> Verifying ffmpeg installation");
                 VerifyFFMPEG();
