@@ -1,0 +1,239 @@
+body
+{
+    background-color: #16213e;
+    color:#333;
+    font-family:"Helvetica","Arial",sans-serif;
+}
+
+header
+{
+    font-family:"Roboto","Courier",sans-serif;
+}
+
+header .apptitle {
+    color: #FAA;
+}
+
+footer
+{
+    color: #884444;
+}
+
+footer hr {
+    background: #884444;
+    background: -webkit-gradient(radial,50% 50%,0,50% 50%,350,from(#884444FF),to(#00000000));
+}
+
+footer a 
+{
+    color: #b8b;
+}
+footer a:hover
+{
+    color: #88d;
+}
+
+header 
+{
+    background: #1a1a2e;
+    color: #AAA;
+    border-bottom: 1px solid #0f3460;
+}
+
+header .logo .apppath, #font_test_header
+{
+    font-style: italic;
+    font-family: "Courier New",monospace;
+}
+
+header .btn
+{
+    border: 1px solid #000;
+    background-color: #e94560;
+    color: #222;
+}
+header .btn:hover { background-color: #801336; }
+
+header .logo .apppath.multiple
+{
+    font-weight: bold;
+    border: 1px solid #000;
+    background: #e94560;
+    color: #000;
+}
+#font_test_header { font-family: "Courier New",monospace; font-style: italic; font-weight: bold }
+
+#apppath_dropdown { background: #393e46; border: 1px solid #000; }
+#apppath_dropdown .row { border-bottom: 1px solid #000; }
+#apppath_dropdown .row:hover { background: #2d132c; }
+
+#option_dropdown { background: #393e46; border: 1px solid #888; }
+#option_dropdown .row { border-bottom: 1px solid #000; }
+#option_dropdown .row.active { background-color: #252525; }
+#option_dropdown .row:hover { background: #2d132c; }
+
+#toast
+{
+    background-color: #666;
+    border: 1px solid #222;
+    border-radius: 0;
+    box-shadow: none;
+
+    color: #fff;
+    font-size: 16px;
+}
+
+/* ################ LIST-STYLE: COMPACT ################ */
+
+#content.lstyle_compact .video_entry
+{
+    background: #1c2b2d;
+    border: 1px solid #888;
+    color: #AAA;
+}
+
+#content.lstyle_compact .video_entry:hover
+{
+    background: #2d132c;
+    color: #AAF;
+}
+
+/* ################ LIST-STYLE: DETAILED ################ */
+
+#content.lstyle_detailed .video_entry
+{
+    background: #1c2b2d;
+    border: 1px solid #888;
+    color: #AAA;
+}
+
+#content.lstyle_detailed .video_entry:hover
+{
+    background: #2d132c;
+    color: #AAF;
+}
+#content.lstyle_detailed .video_entry .btn
+{
+    background-color: #e94560;
+    color: #222;
+}
+
+#content.lstyle_detailed .video_entry .btn:hover
+{
+    background-color: #801336;
+}
+
+#content.lstyle_detailed .video_entry.expanded .description
+{
+    background-color: #16213e;
+    border: 1px solid #BBB;
+}
+
+#content.lstyle_detailed .video_entry.expanded .taglist .tag
+{
+    color: #080;
+}
+
+#content.lstyle_detailed .video_entry .uploader 
+{
+    color: #88F;
+}
+
+/* ################ LIST-STYLE: GRID ################ */
+
+#content.lstyle_grid .video_entry
+{
+    background: transparent;
+    border: 1px solid transparent;
+    color: #AAA;
+}
+
+#content.lstyle_grid .video_entry:hover
+{
+    background: #2d132c;
+    color: #AAF;
+    border: 1px solid #88F;
+    box-shadow: 0 0 12px -2px #44F;
+}
+
+#content.lstyle_grid .video_entry .title
+{
+    font-family:"Roboto","Courier",sans-serif;
+    font-weight: bold;
+}
+
+#content.lstyle_grid .btn
+{
+    border: 1px solid #000;
+    background-color: #e94560;
+    color: #222;
+}
+
+#content.lstyle_grid .btn:hover {
+    background-color: #801336;
+}
+
+/* ################ LIST-STYLE: TABULAR ################ */
+
+#content.lstyle_tabular
+{
+    background: #1c2b2d;
+    border: 1px solid #888;
+    color: #AAA;
+}
+#content.lstyle_tabular .video_entry  > *,
+#content.lstyle_tabular .table_header > *
+{
+    border-bottom: 1px solid #888;
+    background: transparent;
+}
+
+#content.lstyle_tabular .video_entry:hover > *
+{
+    background-color: #2d132c;
+}
+
+#content.lstyle_tabular .video_entry  > *,
+#content.lstyle_tabular .table_header > * {
+    border-right: 1px solid #888;
+}
+
+#content.lstyle_tabular a {
+    color: #88f;
+}
+#content.lstyle_tabular a:hover {
+    color: #44f;
+}
+
+/* ################ LIST-STYLE: TIMELINE ################ */
+
+#content.lstyle_timeline .video_entry
+{
+    background: #1c2b2d;
+    border: 1px solid #888;
+    color: #AAA;
+}
+
+#content.lstyle_timeline .video_entry:hover
+{
+    border: 1px solid #88F;
+    box-shadow: 0 0 12px -2px #44F;
+    background-color: #2d132c;
+}
+
+#content.lstyle_timeline .video_entry .title
+{
+    font-family:"Roboto","Courier",sans-serif;
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+
+
+
+

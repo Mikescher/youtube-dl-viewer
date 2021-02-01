@@ -217,6 +217,10 @@ main {
     user-select: none;
 }
 
+#apppath_dropdown .row:last-of-type {
+    border-bottom: none;
+}
+
 #apppath_dropdown .row:hover {
     background: #CCF;
 }
