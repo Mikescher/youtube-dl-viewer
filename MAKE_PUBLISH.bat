@@ -1,4 +1,6 @@
 
+dotnet clean
+
 rm releases/youtube-dl-viewer
 rm releases/youtube-dl-viewer.exe
 
@@ -23,4 +25,4 @@ cp bin/Release/netcoreapp3.1/win-x64/publish/youtube-dl-viewer.exe releases
 
 
 
-PAUSE
+REM PAUSE

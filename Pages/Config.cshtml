@@ -4,24 +4,24 @@
 
 <html lang="en">
 <head>
-    <title>Config</title>
+    <title>youtube-dl Viewer [Config] v@(Program.Version)</title>
     
     @if (Program.DEBUG)
     {
-        @foreach (var css in Router.CSS_CONFIG) { <link rel="stylesheet" type="text/css" href="/@css.Item2"> }
+        @foreach (var css in Router.CSS_CONFIG) { <link rel="stylesheet" type="text/css" href="/@css.Item2?v=@Program.Version"> }
     }
     else
     {
-        <link rel="stylesheet" type="text/css" href="/style_config.combined.css">
+        <link rel="stylesheet" type="text/css" href="/style_config.combined.css?v=@Program.Version">
     }
     
     @if (Program.DEBUG)
     {
-        @foreach (var js in Router.JS_CONFIG) { <script src="/@js.Item2"></script> }
+        @foreach (var js in Router.JS_CONFIG) { <script src="/@js.Item2?v=@Program.Version"></script> }
     }
     else
     {
-        <script src="/script_config.compiled.js"></script>
+        <script src="/script_config.compiled.js?v=@Program.Version"></script>
     }
     
 </head>

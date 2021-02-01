@@ -4,24 +4,24 @@
 
 <html lang="en">
 <head>
-    <title>Datadump</title>
+    <title>youtube-dl Viewer [Datadump] v@(Program.Version)</title>
     
     @if (Program.DEBUG)
     {
-        @foreach (var css in Router.CSS_DATA) { <link rel="stylesheet" type="text/css" href="/@css.Item2"> }
+        @foreach (var css in Router.CSS_DATA) { <link rel="stylesheet" type="text/css" href="/@css.Item2?v=@Program.Version"> }
     }
     else
     {
-        <link rel="stylesheet" type="text/css" href="/style_data.combined.css">
+        <link rel="stylesheet" type="text/css" href="/style_data.combined.css?v=@Program.Version">
     }
     
     @if (Program.DEBUG)
     {
-        @foreach (var js in Router.JS_DATA) { <script src="/@js.Item2"></script> }
+        @foreach (var js in Router.JS_DATA) { <script src="/@js.Item2?v=@Program.Version"></script> }
     }
     else
     {
-        <script src="/script_data.compiled.js"></script>
+        <script src="/script_data.compiled.js?v=@Program.Version"></script>
     }
     
 </head>

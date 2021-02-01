@@ -10,29 +10,29 @@
     
     @if (Program.DEBUG)
     {
-        @foreach (var css in Router.CSS_MAIN) { <link rel="stylesheet" type="text/css" href="/@css.Item2"> }
+        @foreach (var css in Router.CSS_MAIN) { <link rel="stylesheet" type="text/css" href="/@css.Item2?v=@Program.Version"> }
     }
     else
     {
-        <link rel="stylesheet" type="text/css" href="/style_main.combined.css">
+        <link rel="stylesheet" type="text/css" href="/style_main.combined.css?v=@Program.Version">
     }
     
     @if (Program.Args.Themes.Any(p => p.Name == Program.Args.OptThemeMode))
     {
-        <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes.First(p => p.Name == Program.Args.OptThemeMode).URI">
+        <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes.First(p => p.Name == Program.Args.OptThemeMode).URI?v=@Program.Version">
     }
     else
     {
-        <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes[0].URI">
+        <link id="theme_style_obj" rel="stylesheet" type="text/css" href="@Program.Args.Themes[0].URI?v=@Program.Version">
     }
     
     @if (Program.DEBUG)
     {
-        @foreach (var js in Router.JS_MAIN) { <script src="/@js.Item2"></script> }
+        @foreach (var js in Router.JS_MAIN) { <script src="/@js.Item2?v=@Program.Version"></script> }
     }
     else
     {
-        <script src="/script_main.compiled.js"></script>
+        <script src="/script_main.compiled.js?v=@Program.Version"></script>
     }
     
 </head>
@@ -50,7 +50,7 @@
                              new JProperty("index", i), 
                              new JProperty("text", $"Theme: {p.Name}"), 
                              new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
-                             new JProperty("url", p.URI),
+                             new JProperty("url", p.URI+"?v="+Program.Version),
                              new JProperty("name", p.Name),
                              new JProperty("enabled", true)
                          )).ToArray<object>() 
