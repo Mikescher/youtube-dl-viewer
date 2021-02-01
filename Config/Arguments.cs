@@ -20,6 +20,7 @@ namespace youtube_dl_viewer.Config
             new ThemeSpec(0, "default",  "theme_default.css",  null),
             new ThemeSpec(1, "dark",     "theme_dark.css",     null),
             new ThemeSpec(2, "darkblue", "theme_darkblue.css", null),
+            new ThemeSpec(3, "pastel",   "theme_pastel.css",   null),
         };
 
         public List<(string, string)> RawArgumentValues = new List<(string, string)>();

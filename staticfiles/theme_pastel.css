@@ -1,0 +1,280 @@
+:root
+{
+    /* https://colorhunt.co/palette/167311 */
+    
+    --themecol-background:  #5d5b6a;
+
+    --themecol-header-background: #493323;
+    --themecol-header-border:     #000000;
+    --themecol-header-textcolor:  #f5cdaa;
+
+    --themecol-entry-background: #758184;
+    --themecol-entry-border:     #000000;
+    --themecol-entry-textcolor:  #282828;
+
+    --themecol-entry-hover-background: #cfb495;
+    --themecol-entry-hover-textcolor:  #282828;
+
+    --themecol-footerline: #f5cdaa;
+
+    --themecol-linkanchor:       #0a043c;
+    --themecol-linkanchor-hover: #62959c;
+
+    --themecol-button-background: #cfb495;
+    --themecol-button-foreground: #282828;
+    --themecol-button-border:     #000000;
+    --themecol-button-bg-hover:   #758184;
+
+    --themecol-dropdown-background:        #493323;
+    --themecol-dropdown-border:            #000000;
+    --themecol-dropdown-hover-background:  #f5cdaa;
+    --themecol-dropdown-hover-foreground:  #493323;
+    --themecol-dropdown-active-background: #cfb495;
+    --themecol-dropdown-active-foreground: #000000;
+
+    --themecol-toast-background: #f5cdaa;
+    --themecol-toast-foreground: #282828;
+    --themecol-toast-border:     #000000;
+
+    --themecol-table-border: #000000;
+
+    --themecol-detailed-tag-textcolor:          #350b40;
+    --themecol-detailed-description-background: #eeeeee;
+    --themecol-detailed-description-border:     #282828;
+}
+
+body
+{
+    background-color: var(--themecol-background);
+    
+    color: #DDD;
+    
+    font-family:"Helvetica","Arial",sans-serif;
+}
+
+header
+{
+    font-family:"Roboto","Courier",sans-serif;
+}
+
+header .apptitle 
+{
+    color: var(--themecol-header-textcolor);
+}
+
+footer
+{
+    color: var(--themecol-footerline);
+}
+
+footer hr {
+    background: var(--themecol-footerline);
+    background: -webkit-gradient(radial,50% 50%,0,50% 50%,350,from(var(--themecol-footerline)),to(#00000000));
+}
+
+footer a 
+{
+    color: var(--themecol-linkanchor);
+}
+footer a:hover
+{
+    color: var(--themecol-linkanchor-hover);
+}
+
+header 
+{
+    background: var(--themecol-header-background);
+    color: var(--themecol-header-textcolor);
+    border-bottom: 1px solid var(--themecol-header-border);
+}
+
+header .logo .apppath, #font_test_header
+{
+    font-style: italic;
+    font-family: "Courier New", monospace;
+}
+
+header .btn
+{
+    border: 1px solid var(--themecol-button-border);
+    background-color: var(--themecol-button-background);
+    color: var(--themecol-button-foreground);
+}
+header .btn:hover { background-color: var(--themecol-button-bg-hover); }
+
+header .logo .apppath.multiple
+{
+    font-weight: bold;
+    border: 1px solid var(--themecol-button-border);
+    background: var(--themecol-button-background);
+    color: var(--themecol-button-foreground);
+}
+header .logo .apppath.multiple:hover { background-color: var(--themecol-button-bg-hover); }
+
+#font_test_header { font-family: "Courier New",monospace; font-style: italic; font-weight: bold }
+
+#apppath_dropdown { background: var(--themecol-dropdown-background); border: 1px solid var(--themecol-dropdown-border); }
+#apppath_dropdown .row { border-bottom: 1px solid var(--themecol-dropdown-border); }
+#apppath_dropdown .row:hover { background: var(--themecol-dropdown-hover-background); color: var(--themecol-dropdown-hover-foreground); }
+
+#option_dropdown { background: var(--themecol-dropdown-background); border: 1px solid var(--themecol-dropdown-border); }
+#option_dropdown .row { border-bottom: 1px solid var(--themecol-dropdown-border); }
+#option_dropdown .row.active { background: var(--themecol-dropdown-active-background); color: var(--themecol-dropdown-active-foreground); }
+#option_dropdown .row:hover { background: var(--themecol-dropdown-hover-background); color: var(--themecol-dropdown-hover-foreground); }
+
+#toast
+{
+    background-color: var(--themecol-toast-background);
+    color: var(--themecol-toast-foreground);
+    
+    border: 1px solid var(--themecol-toast-border);
+    border-radius: 0;
+    box-shadow: none;
+
+    font-size: 16px;
+}
+
+/* ################ LIST-STYLE: COMPACT ################ */
+
+#content.lstyle_compact .video_entry
+{
+    background: var(--themecol-entry-background);
+    border: 1px solid var(--themecol-entry-border);
+    color: var(--themecol-entry-textcolor);
+}
+
+#content.lstyle_compact .video_entry:hover
+{
+    background: var(--themecol-entry-hover-background);
+    color: var(--themecol-entry-hover-textcolor);
+}
+
+/* ################ LIST-STYLE: DETAILED ################ */
+
+#content.lstyle_detailed .video_entry
+{
+    background: var(--themecol-entry-background);
+    border: 1px solid var(--themecol-entry-border);
+    color: var(--themecol-entry-textcolor);
+}
+
+#content.lstyle_detailed .video_entry:hover
+{
+    background: var(--themecol-entry-hover-background);
+    color: var(--themecol-entry-hover-textcolor);
+}
+#content.lstyle_detailed .video_entry .btn
+{
+    border: 1px solid var(--themecol-button-border);
+    background-color: var(--themecol-button-background);
+    color: var(--themecol-button-foreground);
+}
+
+#content.lstyle_detailed .video_entry .btn:hover
+{
+    background-color: var(--themecol-button-bg-hover);
+}
+
+#content.lstyle_detailed .video_entry.expanded .description
+{
+    background-color: var(--themecol-detailed-description-background);
+    border: 1px solid var(--themecol-detailed-description-border);
+}
+
+#content.lstyle_detailed .video_entry.expanded .taglist .tag
+{
+    color: var(--themecol-detailed-tag-textcolor);
+}
+
+#content.lstyle_detailed .video_entry .uploader 
+{
+    color: var(--themecol-linkanchor);
+}
+
+#content.lstyle_detailed .video_entry .uploader:hover
+{
+    color: var(--themecol-linkanchor-hover);
+}
+
+/* ################ LIST-STYLE: GRID ################ */
+
+#content.lstyle_grid .video_entry
+{
+    background: var(--themecol-entry-background);
+    border: 1px solid var(--themecol-entry-border);
+    color: var(--themecol-entry-textcolor);
+}
+
+#content.lstyle_grid .video_entry:hover
+{
+    background: var(--themecol-entry-hover-background);
+    color: var(--themecol-entry-hover-textcolor);
+}
+
+#content.lstyle_grid .video_entry .title
+{
+    font-family:"Roboto","Courier",sans-serif;
+    font-weight: bold;
+}
+
+#content.lstyle_grid .btn
+{
+    border: 1px solid var(--themecol-button-border);
+    background-color: var(--themecol-button-background);
+    color: var(--themecol-button-foreground);
+}
+#content.lstyle_grid .btn:hover { background-color: var(--themecol-button-bg-hover); }
+
+/* ################ LIST-STYLE: TABULAR ################ */
+
+#content.lstyle_tabular
+{
+    background: var(--themecol-entry-background);
+    border: 1px solid var(--themecol-table-border);
+    color: var(--themecol-entry-textcolor);
+}
+#content.lstyle_tabular .video_entry  > *,
+#content.lstyle_tabular .table_header > *
+{
+    border-bottom: 1px solid var(--themecol-table-border);
+    background: transparent;
+}
+
+#content.lstyle_tabular .video_entry:hover > *
+{
+    background-color: var(--themecol-entry-hover-background);
+    color: var(--themecol-entry-hover-textcolor);
+}
+
+#content.lstyle_tabular .video_entry  > *,
+#content.lstyle_tabular .table_header > * {
+    border-right: 1px solid var(--themecol-table-border);
+}
+
+#content.lstyle_tabular a {
+    color: var(--themecol-linkanchor) !important;
+}
+#content.lstyle_tabular a:hover {
+    color: var(--themecol-linkanchor-hover) !important;
+}
+
+/* ################ LIST-STYLE: TIMELINE ################ */
+
+#content.lstyle_timeline .video_entry
+{
+    background: var(--themecol-entry-background);
+    border: 1px solid var(--themecol-entry-border);
+    color: var(--themecol-entry-textcolor);
+}
+
+#content.lstyle_timeline .video_entry:hover
+{
+    background: var(--themecol-entry-hover-background);
+    color: var(--themecol-entry-hover-textcolor);
+}
+
+#content.lstyle_timeline .video_entry .title
+{
+    font-family:"Roboto","Courier",sans-serif;
+    font-weight: bold;
+}
