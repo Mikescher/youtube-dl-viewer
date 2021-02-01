@@ -74,9 +74,11 @@ namespace youtube_dl_viewer
 
             endpoints.MapJSEmbeddedBundle("/script_main.compiled.js", "youtube_dl_viewer.staticfiles", JS_MAIN);
             endpoints.MapJSEmbeddedBundle("/script_jobs.compiled.js", "youtube_dl_viewer.staticfiles", JS_JOBS);
+            endpoints.MapJSEmbeddedBundle("/script_config.compiled.js", "youtube_dl_viewer.staticfiles", JS_CONFIG);
             
             endpoints.MapCSSEmbeddedBundle("/style_main.combined.css", CSS_MAIN);
             endpoints.MapCSSEmbeddedBundle("/style_jobs.combined.css", CSS_JOBS);
+            endpoints.MapCSSEmbeddedBundle("/style_config.combined.css", CSS_CONFIG);
             
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
