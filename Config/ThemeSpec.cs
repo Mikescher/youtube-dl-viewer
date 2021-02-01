@@ -38,7 +38,7 @@ namespace youtube_dl_viewer.Config
 
         public string ReadCSS(HttpContext context)
         {
-            if (_cache != null) return _cache;
+            if (!Program.DEBUG && _cache != null) return _cache;
 
             // User Theme
             if (FullPath != null) return (_cache = File.ReadAllText(FullPath));

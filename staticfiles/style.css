@@ -253,6 +253,10 @@ main {
     user-select: none;
 }
 
+#option_dropdown .row:last-of-type {
+    border-bottom: none;
+}
+
 #option_dropdown .row.active {
     font-weight: bold;
     background-color: #AFA;
