@@ -100,7 +100,7 @@ namespace youtube_dl_viewer
             
             foreach (var vid in videos)
             {
-                if (!vid.ShouldCacheVideo()) continue;
+                if (!vid.ShouldTranscodeAndCacheVideo()) continue;
                 
                 var pathCache = VideoController.GetStreamCachePath(vid.PathVideo);
                 if (File.Exists(pathCache)) continue;

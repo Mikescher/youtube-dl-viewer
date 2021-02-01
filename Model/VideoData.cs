@@ -56,7 +56,7 @@ namespace youtube_dl_viewer.Model
             ((JValue)field.Aggregate((JToken)Data, (current, fe) => current[fe])).Value = value;
         }
 
-        public bool ShouldCacheVideo()
+        public bool ShouldTranscodeAndCacheVideo()
         {
             if (!Program.HasValidFFMPEG) return false;
             if (Program.Args.CacheDir == null) return false;

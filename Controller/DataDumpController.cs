@@ -59,7 +59,7 @@ namespace youtube_dl_viewer.Controller
                 vd.UID,
                 vd.FilenameBase,
                 vd.Title,
-                vd.ShouldCacheVideo().ToString(),
+                vd.ShouldTranscodeAndCacheVideo().ToString(),
                 vd.IsCachedVideo.ToString(),
                 vd.IsCachedPreview.ToString(),
                 vd.ExternalOrderIndex?.ToString() ?? "(null)", 

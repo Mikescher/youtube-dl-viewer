@@ -45,9 +45,9 @@ namespace youtube_dl_viewer.Controller
                         new JProperty("CountCachedPreviews", vidcache.Count(p => p.IsCachedPreview)),
                         
                         new JProperty("CountCachedVideosTotal",      vidcache.Count(p => p.IsCachedVideo)),
-                        new JProperty("CountCachedVideosCachable",   vidcache.Count(p => p.IsCachedVideo && p.ShouldCacheVideo())),
-                        new JProperty("CountCachedVideosAdditional", vidcache.Count(p => p.IsCachedVideo && !p.ShouldCacheVideo())),
-                        new JProperty("CountVideoCachable",          vidcache.Count(p => p.ShouldCacheVideo())),
+                        new JProperty("CountCachedVideosCachable",   vidcache.Count(p => p.IsCachedVideo && p.ShouldTranscodeAndCacheVideo())),
+                        new JProperty("CountCachedVideosAdditional", vidcache.Count(p => p.IsCachedVideo && !p.ShouldTranscodeAndCacheVideo())),
+                        new JProperty("CountVideoCachable",          vidcache.Count(p => p.ShouldTranscodeAndCacheVideo())),
                         
                         new JProperty("CountTotal",          vidcache.Count),
                         
@@ -146,7 +146,7 @@ namespace youtube_dl_viewer.Controller
             var count = 0;
             foreach (var vid in selection2)
             {
-                if (!vid.ShouldCacheVideo()) continue;
+                if (!vid.ShouldTranscodeAndCacheVideo()) continue;
                 
                 var pathVideo = vid.PathVideo;
                 

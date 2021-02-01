@@ -23,6 +23,7 @@ window.onload = async function () {
 };
 class JobController {
     static async refresh() {
+        var _a;
         const dom_html = $('html');
         const dom_root = $('#root');
         const dom_font_test = $('#font_test');
@@ -72,7 +73,7 @@ class JobController {
             //if (job.Error !== null) error_tt = "data-tooltip=\"" + escapeHtml(job.Error) + "\" data-attached=\"0\"";
             if (job.Error !== null)
                 error_tt = " title=\"" + escapeHtml(job.Error) + "\" ";
-            const col0 = (job.StartTimeStr).padEnd(22, ' ');
+            const col0 = ((_a = job.StartTimeStr) !== null && _a !== void 0 ? _a : "").padEnd(22, ' ');
             const col1 = (job.ManagerName).padEnd(14, ' ');
             const col2 = "<span class=\"maxlen\" style=\"max-width: 48ch\">" + escapeHtml(job.Name.padEnd(50, ' ')) + "</span>" + "  ";
             const col3 = (("" + job.ProxyCount).padStart(2, ' ') + " / " + ("" + job.ProxyRequests).padStart(2, ' ')).padEnd(10, ' ');
