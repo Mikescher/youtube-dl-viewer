@@ -1,4 +1,4 @@
-﻿body
+body
 {
     background-color:#eee;
     color:#333;
@@ -44,6 +44,10 @@ header .btn
     color: #EEE;
 }
 
+header .btn:hover {
+    background-color: #44A;
+}
+
 #toast
 {
     background-color: #666;
@@ -84,15 +88,14 @@ header .btn
     border: 1px solid #66F;
     background: #EEF;
 }
-#content.lstyle_detailed .video_entry .btn-expand,
-#content.lstyle_detailed .video_entry .btn-collapse
+#content.lstyle_detailed .video_entry .btn
 {
     border: 1px solid #888;
     background: #EEE;
+    color:#333;
 }
 
-#content.lstyle_detailed .video_entry .btn-expand:hover,
-#content.lstyle_detailed .video_entry .btn-collapse:hover
+#content.lstyle_detailed .video_entry .btn:hover
 {
     background: #CCF;
 }
@@ -126,6 +129,17 @@ header .btn
 {
     font-family:"Roboto","Courier",sans-serif;
     font-weight: bold;
+}
+
+#content.lstyle_grid .btn 
+{
+    border: 1px solid #000;
+    background-color: #666;
+    color: #EEE;
+}
+
+#content.lstyle_grid .btn:hover {
+    background-color: #44A;
 }
 
 /* ################ LIST-STYLE: TABULAR ################ */

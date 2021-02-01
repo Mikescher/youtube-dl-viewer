@@ -138,10 +138,6 @@ header {
     width: 1.5rem;
 }
 
-.header_div .btn:hover {
-    background-color: #44A;
-}
-
 main {
     display: flex;
     justify-content: center;

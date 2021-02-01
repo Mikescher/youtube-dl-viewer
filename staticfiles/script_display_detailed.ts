@@ -97,8 +97,14 @@ class DisplayDetailedRenderer implements DisplayRenderer
 
             if (vid.data['description'] !== null) html += '<div class="description">' + escapeHtml(vid.data['description']) + '</div>';
 
-            html += '<div class="btn-expand"><i class="fas fa-angle-down"></i></div>';
-            html += '<div class="btn-collapse"><i class="fas fa-angle-up"></i></div>';
+            if (vid.data.info.webpage_url != null)
+            {
+                html += '<a class="btn btn-source" href="' + escapeHtml(vid.data.info.webpage_url!) + '" target="_blank"><i class="fas fa-external-link-alt"></i></a>';
+            }
+            
+            html += '<div class="btn btn-expand"><i class="fas fa-angle-down"></i></div>';
+            html += '<div class="btn btn-collapse"><i class="fas fa-angle-up"></i></div>';
+
 
             html += '</div>';
             html += "\n\n";
@@ -141,6 +147,16 @@ class DisplayDetailedRenderer implements DisplayRenderer
         {
             tmb.addEventListener('mouseenter', () => { App.THUMBS.startAnimateThumbnail(tmb); });
             tmb.addEventListener('mouseleave', () => { App.THUMBS.stopAnimateThumbnail(tmb); });
+        }
+
+        for (const btn of $all('.video_entry .btn-source'))
+        {
+            btn.addEventListener('click', (e) =>
+            {
+                window.open(btn.getAttribute("href")!);
+                e.stopPropagation();
+                return false;
+            });
         }
     }
 

@@ -175,3 +175,27 @@
 {
   width: 6rem;
 }
+
+/* ----------------------------------------------------------------------------- */
+
+#content.lstyle_grid .video_entry { position: relative; }
+
+#content.lstyle_grid .video_entry:hover .btn-source
+{
+  min-width:  16px;
+  min-height: 16px;
+  font-size: 10px;
+  margin: 0;
+  border: 1px solid #000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  text-decoration: none;
+
+  position: absolute;
+  right:  2px;
+  bottom: 2px;
+}

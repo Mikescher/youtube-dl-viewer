@@ -112,15 +112,13 @@ header .logo .apppath.multiple
     background: #2d132c;
     color: #AAF;
 }
-#content.lstyle_detailed .video_entry .btn-expand,
-#content.lstyle_detailed .video_entry .btn-collapse
+#content.lstyle_detailed .video_entry .btn
 {
     background-color: #e94560;
     color: #222;
 }
 
-#content.lstyle_detailed .video_entry .btn-expand:hover,
-#content.lstyle_detailed .video_entry .btn-collapse:hover
+#content.lstyle_detailed .video_entry .btn:hover
 {
     background-color: #801336;
 }

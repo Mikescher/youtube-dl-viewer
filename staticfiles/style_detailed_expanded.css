@@ -14,6 +14,11 @@
   display: flex;
 }
 
+#content.lstyle_detailed .video_entry.expanded .btn-source {
+  grid-column: 4;
+  grid-row: 2/13;
+}
+
 #content.lstyle_detailed .video_entry.expanded .thumbnail {
   grid-column: 1/3;
   grid-row: 1/4;

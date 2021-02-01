@@ -19,6 +19,9 @@ class DisplayGridRenderer {
             }
             html += '</div>';
             html += '<div class="title">' + escapeHtml(vid.data.title) + '</div>';
+            if (vid.data.info.webpage_url != null) {
+                html += '<a class="btn btn-source" href="' + escapeHtml(vid.data.info.webpage_url) + '" target="_blank"><i class="fas fa-external-link-alt"></i></a>';
+            }
             html += '</div>';
             html += "\n\n";
         }
@@ -53,6 +56,13 @@ class DisplayGridRenderer {
         for (const tmb of $all('.video_entry .thumbnail')) {
             tmb.addEventListener('mouseenter', () => { App.THUMBS.startAnimateThumbnail(tmb); });
             tmb.addEventListener('mouseleave', () => { App.THUMBS.stopAnimateThumbnail(tmb); });
+        }
+        for (const btn of $all('.video_entry .btn-source')) {
+            btn.addEventListener('click', (e) => {
+                window.open(btn.getAttribute("href"));
+                e.stopPropagation();
+                return false;
+            });
         }
     }
 }
