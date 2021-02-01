@@ -42,5 +42,19 @@ namespace youtube_dl_viewer.Model
         {
             ((JValue)field.Aggregate((JToken)Data, (current, fe) => current[fe])).Value = value;
         }
+
+        public bool ShouldCacheVideo()
+        {
+            if (!Program.HasValidFFMPEG) return false;
+            if (Program.Args.CacheDir == null) return false;
+            
+            if ((DataDir.VideomodeOverride ?? Program.Args.OptVideoMode) != 3) return false;
+            
+            if (PathVideo == null) return false;
+            //if (PathVideo.ToLower().EndsWith(".webm")) return false;
+            //if (PathVideo.ToLower().EndsWith(".mp4"))  return false;
+
+            return true;
+        }
     }
 }

@@ -100,18 +100,12 @@ namespace youtube_dl_viewer
             
             foreach (var vid in videos)
             {
-                if ((vid.DataDir.VideomodeOverride ?? Program.Args.OptVideoMode) != 3) continue;
+                if (!vid.ShouldCacheVideo()) continue;
                 
-                var pathVideo = vid.PathVideo;
-                if (pathVideo == null) continue;
-                if (pathVideo.ToLower().EndsWith(".webm")) continue;
-                if (pathVideo.ToLower().EndsWith(".mp4"))  continue;
-                
-                var pathCache = VideoController.GetStreamCachePath(pathVideo);
-
+                var pathCache = VideoController.GetStreamCachePath(vid.PathVideo);
                 if (File.Exists(pathCache)) continue;
                 
-                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, pathVideo, pathCache, vid.DataDirIndex, vid.UID), false);
+                JobRegistry.ConvertJobs.StartOrQueue((man) => new ConvertJob(man, vid.PathVideo, pathCache, vid.DataDirIndex, vid.UID), false);
             }
         }
     }

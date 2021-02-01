@@ -43,7 +43,12 @@ namespace youtube_dl_viewer.Controller
                     new JProperty("Videos", new JObject
                     (
                         new JProperty("CountCachedPreviews", vidcache.Count(p => p.IsCachedPreview)),
-                        new JProperty("CountCachedVideos",   vidcache.Count(p => p.IsCachedVideo)),
+                        
+                        new JProperty("CountCachedVideosTotal",      vidcache.Count(p => p.IsCachedVideo)),
+                        new JProperty("CountCachedVideosCachable",   vidcache.Count(p => p.IsCachedVideo && p.ShouldCacheVideo())),
+                        new JProperty("CountCachedVideosAdditional", vidcache.Count(p => p.IsCachedVideo && !p.ShouldCacheVideo())),
+                        new JProperty("CountVideoCachable",          vidcache.Count(p => p.ShouldCacheVideo())),
+                        
                         new JProperty("CountTotal",          vidcache.Count),
                         
                         new JProperty("FilesizeCachedPreviews", vidcache.Sum(p => p.CachePreviewSize)),
@@ -141,10 +146,9 @@ namespace youtube_dl_viewer.Controller
             var count = 0;
             foreach (var vid in selection2)
             {
+                if (!vid.ShouldCacheVideo()) continue;
+                
                 var pathVideo = vid.PathVideo;
-                if (pathVideo == null) { continue; }
-                if (pathVideo.ToLower().EndsWith(".webm")) continue;
-                if (pathVideo.ToLower().EndsWith(".mp4"))  continue;
                 
                 var pathCache = VideoController.GetStreamCachePath(pathVideo);
 
