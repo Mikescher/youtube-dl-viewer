@@ -21,6 +21,7 @@ class VideoPlayerModel {
         this.dom_fullsizevideo = null;
         this.dom_headernormal.classList.remove('nodisplay');
         this.dom_headerplayer.classList.add('nodisplay');
+        App.VIDEOLIST.updateHash();
     }
     showVideo(id) {
         if (this.dom_fullsizevideo !== null)
@@ -31,10 +32,6 @@ class VideoPlayerModel {
         if (vid === null)
             return;
         App.VIDEOLIST.getCurrentVideoMode().play(vid);
-        this.dom_headertitle.innerText = vid.data.title;
-        this.dom_headerplaybackmode.innerText = App.VIDEOLIST.getCurrentVideoMode().text;
-        this.dom_headernormal.classList.add('nodisplay');
-        this.dom_headerplayer.classList.remove('nodisplay');
     }
     showStreamplayer(video, streamtype) {
         var _a;
@@ -54,6 +51,11 @@ class VideoPlayerModel {
         this.dom_root.insertBefore(htmlToElement(html), this.dom_root.firstChild);
         this.dom_fullsizevideo = $('#fullsizevideo');
         (_a = this.dom_fullsizevideo) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => this.removeVideo());
+        this.dom_headertitle.innerText = video.data.title;
+        this.dom_headerplaybackmode.innerText = App.VIDEOLIST.getCurrentVideoMode().text;
+        this.dom_headernormal.classList.add('nodisplay');
+        this.dom_headerplayer.classList.remove('nodisplay');
+        location.hash = 'play=' + App.VIDEOLIST.getCurrentDataDir().keys[0] + '::' + video.meta.uid;
     }
     openFile(video) {
         var _a;

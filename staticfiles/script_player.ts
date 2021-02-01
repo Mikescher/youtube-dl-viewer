@@ -41,6 +41,8 @@ class VideoPlayerModel
 
         this.dom_headernormal.classList.remove('nodisplay');
         this.dom_headerplayer.classList.add('nodisplay');
+        
+        App.VIDEOLIST.updateHash();
     }
 
     showVideo(id: string)
@@ -53,12 +55,6 @@ class VideoPlayerModel
         if (vid === null) return;
         
         App.VIDEOLIST.getCurrentVideoMode().play(vid);
-
-        this.dom_headertitle.innerText        = vid.data.title;
-        this.dom_headerplaybackmode.innerText = App.VIDEOLIST.getCurrentVideoMode().text;
-        
-        this.dom_headernormal.classList.add('nodisplay');
-        this.dom_headerplayer.classList.remove('nodisplay');
     }
 
     showStreamplayer(video: DataJSONVideo, streamtype: string) 
@@ -79,6 +75,14 @@ class VideoPlayerModel
         this.dom_fullsizevideo = $('#fullsizevideo');
 
         this.dom_fullsizevideo?.addEventListener('click', () => this.removeVideo());
+
+        this.dom_headertitle.innerText        = video.data.title;
+        this.dom_headerplaybackmode.innerText = App.VIDEOLIST.getCurrentVideoMode().text;
+
+        this.dom_headernormal.classList.add('nodisplay');
+        this.dom_headerplayer.classList.remove('nodisplay');
+
+        location.hash = 'play=' + App.VIDEOLIST.getCurrentDataDir().keys[0] + '::' + video.meta.uid;
     }
 
     openFile(video: DataJSONVideo) 

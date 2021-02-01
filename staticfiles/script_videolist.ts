@@ -200,6 +200,8 @@ class VideoListModel
 
     shuffle_seed: string = Math.random().toString().replace(/[.,]/g, '').substr(1);
 
+    startup_play: [number, string]|null = null;
+    
     current_data: DataJSON|null = null;
     current_videolist: Map<string, DataJSONVideo>|null = null;
     
@@ -247,14 +249,31 @@ class VideoListModel
             if (key === 'theme')     this.theme_current         = this.getIndexFromKey("Theme",         this.Values_Themes,        val, this.theme_default);
             if (key === 'dir')       this.datadir_current       = this.getIndexFromKey("DataDir",       this.Values_DataDirs,      val, this.datadir_default);
             if (key === 'seed')      this.shuffle_seed          = val;
+            if (key === 'play')      this.startup_play          = this.parsePlayValue(val);
         }
+        
+        if (this.startup_play != null) this.datadir_current = this.startup_play[0];
 
         this.updateThemeStylesheet();
         App.UI.initPathDropdownWidth();
         
-        this.loadData().then(()=>{});
+        this.loadData().then(() => { if (this.startup_play != null) App.PLAYER.showVideo(this.startup_play[1]); });
     }
 
+    parsePlayValue(v: string): [number, string]|null
+    {
+        const idx = v.indexOf('::');
+        if (idx < 0) return null;
+
+        const p1 = v.substr(0, idx);
+        const p2 = v.substr(idx+2);
+
+        const num = this.getIndexFromKey("DataDir", this.Values_DataDirs, p1, -1)
+        if (num === -1) return null;
+        
+        return [num, p2];
+    }
+    
     isLoaded()
     {
         return (this.current_data !== null);

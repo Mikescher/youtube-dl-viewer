@@ -114,6 +114,12 @@ namespace youtube_dl_viewer.Jobs
                 var id = jinfo.Value<string>("id");
                 var extrac = jinfo.Value<string>("extractor_key");
                 var uid = extrac + "::" + id;
+                uid = uid.Replace("$", "$X0024");
+                uid = uid.Replace("#", "$X0023");
+                uid = uid.Replace("&", "$X0026");
+                uid = uid.Replace("\r", "");
+                uid = uid.Replace("\n", "");
+                uid = uid.Replace("\t", "");
                 if (uid == null || idlist.Contains(uid))
                 {
                     idsAreUnique = false;
@@ -202,7 +208,7 @@ namespace youtube_dl_viewer.Jobs
             var filesVideo = datafiles.Except(processedFiles).Where(p => Program.ExtVideo.Any(q => string.Equals("." + q, Path.GetExtension(p), StringComparison.CurrentCultureIgnoreCase))).ToList();
             foreach (var pathVideo in filesVideo)
             {
-                var uid = "sha256::"+pathVideo.Sha256();
+                var uid = "SHA256"+pathVideo.Sha256().Substring(0, 18);
                 if (uid == null || idlist.Contains(uid))
                 {
                     idsAreUnique = false;
@@ -277,11 +283,10 @@ namespace youtube_dl_viewer.Jobs
 
             if (!idsAreUnique)
             {
-                var guid = Guid.NewGuid().ToString("N");
-                var uid = 10000;
+                var uid = 100000;
                 foreach (var rv in resultVideos)
                 {
-                    rv.Data["meta"]?["uid"]?.Replace(new JValue(guid + "_" + uid));
+                    rv.Data["meta"]?["uid"]?.Replace(new JValue(index + "_" + uid));
                     uid++;
                 }
             }

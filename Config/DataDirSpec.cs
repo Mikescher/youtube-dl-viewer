@@ -57,7 +57,7 @@ namespace youtube_dl_viewer.Config
             ThumbnailmodeOverride = thumbnailmode_override;
             ThemeOverride         = theme_override;
             
-            SelectorID = Regex.Replace(Name.ToLower().Replace(" ", "_"), @"[^A-Za-z0-9_\-.,;]", "_");
+            SelectorID = Regex.Replace(Name, @"[^A-Za-z0-9_\-.,;]", "_").ToLower();
             
             if (!Directory.Exists(Path)) throw new Exception($"Path not found: '{Path}'");
             
