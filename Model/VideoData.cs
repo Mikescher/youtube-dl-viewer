@@ -13,17 +13,17 @@ namespace youtube_dl_viewer.Model
         public JObject JSONMeta => (JObject)Data["meta"];
         public JObject JSONData => (JObject)Data["data"];
         
-        public string UID          => JSONMeta.Value<string>("uid");
+        public string UID       => JSONMeta.Value<string>("uid");
         public int DataDirIndex => JSONMeta.Value<int>("datadirindex");
         
         public string PathVideo     => JSONMeta.Value<string>("path_video");
         public string PathThumbnail => JSONMeta.Value<string>("path_thumbnail");
         
-        public bool IsCachedVideo     => JSONData.Value<bool>("cached");
+        public bool IsCachedVideo     => JSONMeta.Value<bool>("cached");
         public string CacheVideoFile  => JSONMeta.Value<string>("cache_file");
         public long CacheVideoSize    => JSONMeta.Value<long>("cached_video_fsize");
         
-        public bool IsCachedPreview     => JSONData.Value<bool>("cached_previews");
+        public bool IsCachedPreview     => JSONMeta.Value<bool>("cached_previews");
         public string CachePreviewFile  => JSONMeta.Value<string>("previewscache_file");
         public long CachePreviewSize    => JSONMeta.Value<long>("cached_preview_fsize");
         
