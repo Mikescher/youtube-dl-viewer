@@ -66,10 +66,11 @@ class UserInterfaceModel
     {
         $('.btn-adminlinks')!.addEventListener('click', () =>
         {
-            this.toggleActionDropDown($('.btn-adminlinks')!, 'AdminLinks', ["Jobs", "Config"], (idx, act) => 
+            this.toggleActionDropDown($('.btn-adminlinks')!, 'AdminLinks', ["Jobs", "Config", "Datadump"], (idx, act) => 
             {
-                if (idx == 0) window.open('/Jobs', '_blank')
+                if (idx == 0) window.open('/Jobs',   '_blank')
                 if (idx == 1) window.open('/Config', '_blank')
+                if (idx == 2) window.open('/Data',   '_blank')
             });
         });
         $('.btn-display')!.addEventListener('click', () =>

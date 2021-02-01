@@ -53,6 +53,7 @@ interface DataJSONVideo
         directory: string;
         ext_order_index: number|null;
         filename_base: string;
+        filesize: number,
         path_description: string|null;
         path_json: string|null;
         path_thumbnail: string|null;

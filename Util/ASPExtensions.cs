@@ -104,7 +104,7 @@ namespace youtube_dl_viewer.Util
             }
         }
 
-        public static void MapJSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, string baseResPath, IEnumerable<string> reslist)
+        public static void MapJSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, IEnumerable<(string,string)> reslist)
         {
             var ass = Assembly.GetExecutingAssembly();
 
@@ -120,8 +120,8 @@ namespace youtube_dl_viewer.Util
                 }
                 
                 var js = reslist
-                    .Select(p => (baseResPath + "." + p, p))
-                    .Select(p => (p, GetTextResource(ctxt, ass, p.Item1, baseResPath, p.Item2)))
+                    .Select(p => (p.Item1 + "." + p.Item2, p.Item2, p.Item1))
+                    .Select(p => (p, GetTextResource(ctxt, ass, p.Item1, p.Item3, p.Item2)))
                     .Select(p => $"/* -------- [{p.Item1}] ------ */\n\n" + p.Item2 + ";\n")
                     .Aggregate("", (a, b) => a + "\n\n" + b);
                 _resCacheText[path] = js;

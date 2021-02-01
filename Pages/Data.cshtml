@@ -1,0 +1,36 @@
+﻿@page
+@using youtube_dl_viewer
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>Datadump</title>
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var css in Router.CSS_DATA) { <link rel="stylesheet" type="text/css" href="/@css.Item2"> }
+    }
+    else
+    {
+        <link rel="stylesheet" type="text/css" href="/style_data.combined.css">
+    }
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var js in Router.JS_DATA) { <script src="/@js.Item2"></script> }
+    }
+    else
+    {
+        <script src="/script_data.compiled.js"></script>
+    }
+    
+</head>
+
+<body>
+
+<h1>All video data</h1>
+
+<div id="root">Loading...</div>
+</body>
+
+</html>

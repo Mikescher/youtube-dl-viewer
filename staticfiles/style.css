@@ -230,7 +230,6 @@ main {
     flex-direction: column;
     background: #FFF;
     border: 1px solid #000;
-    border-bottom: none;
 
     margin-top: -1px;
 

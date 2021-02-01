@@ -16,8 +16,12 @@ namespace youtube_dl_viewer.Model
         public string UID       => JSONMeta.Value<string>("uid");
         public int DataDirIndex => JSONMeta.Value<int>("datadirindex");
         
-        public string PathVideo     => JSONMeta.Value<string>("path_video");
-        public string PathThumbnail => JSONMeta.Value<string>("path_thumbnail");
+        public string PathVideo       => JSONMeta.Value<string>("path_video");
+        public string PathThumbnail   => JSONMeta.Value<string>("path_thumbnail");
+        public string PathDescription => JSONMeta.Value<string>("path_description");
+        public string PathJSON        => JSONMeta.Value<string>("path_json");
+        
+        public IEnumerable<string> PathSubtitles => JSONMeta["paths_subtitle"]!.Values<JProperty>().Select(p => p.Value.Value<string>());
         
         public bool IsCachedVideo     => JSONMeta.Value<bool>("cached");
         public string CacheVideoFile  => JSONMeta.Value<string>("cache_file");
@@ -27,9 +31,18 @@ namespace youtube_dl_viewer.Model
         public string CachePreviewFile  => JSONMeta.Value<string>("previewscache_file");
         public long CachePreviewSize    => JSONMeta.Value<long>("cached_preview_fsize");
         
+        public string FilenameBase     => JSONMeta.Value<string>("filename_base");
+        public int? ExternalOrderIndex => JSONMeta.Value<int?>("ext_order_index");
+        public long Filesize           => JSONMeta.Value<long>("filesize");
+        
+        public string UploadDate       => JSONInfo.Value<string>("upload_date");
+        public int? Duration           => JSONInfo.Value<int?>("duration");
+        public string WebpageURL       => JSONInfo.Value<string>("webpage_url");
+        public string Extractor        => JSONInfo.Value<string>("extractor_key");
+        
         public string Title       => JSONData.Value<string>("title");
         public string Description => JSONData.Value<string>("description");
-        public JObject Info       => JSONData.Value<JObject>("info");
+        public JObject JSONInfo   => JSONData.Value<JObject>("info");
 
         public VideoData(DataDirSpec dir, JObject data)
         {

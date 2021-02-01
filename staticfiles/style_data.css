@@ -1,0 +1,43 @@
+html,body
+{
+  margin:0;
+  padding:0;
+  height:100%;
+}
+
+body
+{
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  overflow: hidden;
+  
+  background: #EEE;
+}
+
+body > h1 {
+  flex-grow: 0;
+  font-size: 32px;
+  margin: 8px 16px;
+}
+
+body > #root {
+  flex-grow: 1;
+}
+
+#root {
+  width: calc(100vw - 32px);
+  margin: 0 16px;
+}
+
+.dt-scrollable {
+  height: calc(100vh - 110px) !important;
+  width: calc(100vw - 32px) !important;
+}
+
+
+
+
+
+

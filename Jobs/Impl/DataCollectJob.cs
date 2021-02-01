@@ -192,6 +192,8 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo)))),
                         new JProperty("cached_preview_fsize", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))) ? new FileInfo(ThumbnailController.GetPreviewCachePath(pathVideo)).Length : 0),
                         
+                        new JProperty("filesize", new FileInfo(pathVideo).Length),
+
                         new JProperty("ext_order_index", order_index)
                     )),
                     new JProperty("data", new JObject
@@ -268,6 +270,8 @@ namespace youtube_dl_viewer.Jobs
                         new JProperty("cached_previews", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo)))),
                         new JProperty("cached_preview_fsize", cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))) ? new FileInfo(ThumbnailController.GetPreviewCachePath(pathVideo)).Length : 0),
                         
+                        new JProperty("filesize", new FileInfo(pathVideo).Length),
+
                         new JProperty("ext_order_index", order_index)
                     )),
                     new JProperty("data", new JObject
