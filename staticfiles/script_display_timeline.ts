@@ -22,9 +22,9 @@ class DisplayTimelineRenderer implements DisplayRenderer
             for (let i=0; i<App.VIDEOLIST.preview_config_maxcount; i++)
             {
                 if (i===0)
-                    html += '<div class="thumbnail timeline_thumb timeline_first"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta.uid) + '/thumb" data-videoid="'+escapeHtml(vid.meta['uid'])+'" /></div></div>';
+                    html += '<div class="thumbnail timeline_thumb timeline_first"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" /></div></div>';
                 else
-                    html += '<div class="thumbnail timeline_thumb"><div class="thumbnail_img"><img src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta.uid) + '/prev/'+i+'" /></div></div>';
+                    html += '<div class="thumbnail timeline_thumb"><div class="thumbnail_img"><img src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" /></div></div>';
             }
             html += '</div>';
             

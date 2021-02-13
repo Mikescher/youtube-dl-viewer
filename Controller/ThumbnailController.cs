@@ -5,7 +5,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using ImageMagick;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using youtube_dl_viewer.Jobs;
 using youtube_dl_viewer.Util;
@@ -14,23 +16,186 @@ namespace youtube_dl_viewer.Controller
 {
     public static class ThumbnailController
     {
-        public static string GetPreviewCachePath(string pathVideo)
+        public static string GetThumbnailCachePath(string pathVideo)
         {
             if (pathVideo == null) return null;
             if (Program.Args.CacheDir == null) return null;
             
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return Path.Combine(Program.Args.CacheDir, "prev_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".dat");
+                return Path.Combine(Program.Args.CacheDir, "thumb_" + Path.GetRelativePath(Program.CurrentDir, pathVideo).ToLower().Sha256() + ".dat");
             else
-                return Path.Combine(Program.Args.CacheDir, "prev_" + pathVideo.Sha256() + ".dat");
+                return Path.Combine(Program.Args.CacheDir, "thumb_" + pathVideo.Sha256() + ".dat");
         }
         
-        public static async Task GetThumbnail(HttpContext context)
+        public static async Task GetThumbnailWait(HttpContext context)
+        {
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var id  = (string)context.Request.RouteValues["id"];
+            
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video not found"); return; }
+
+            if (!Program.Args.CreateResizedThumbnails) { context.Response.Headers.Add("ThumbSourceType", "DirectFallback_NoOpt");   await GetThumbnailDirect(context); return; }
+            if (Program.Args.CacheDir == null)         { context.Response.Headers.Add("ThumbSourceType", "DirectFallback_NoDir");   await GetThumbnailDirect(context); return; }
+            if (vid.PathThumbnail == null)             { context.Response.Headers.Add("ThumbSourceType", "DirectFallback_NoThumb"); await GetThumbnailDirect(context); return; }
+            
+            var tfile = GetThumbnailCachePath(vid.PathVideo);
+
+            var sizearg  = (string)context.Request.RouteValues["size"];
+            var insize = -1;
+            
+            if (sizearg == "xs")     insize = 0;
+            else if (sizearg == "s") insize = 1;
+            else if (sizearg == "m") insize = 2;
+            else if (sizearg == "o") insize = 3;
+            else throw new Exception("Invalid {size} value");
+            
+            if (!File.Exists(tfile))
+            {
+                using (var proxy = JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, tfile)))
+                {
+                    while (proxy.JobRunningOrWaiting) await Task.Delay(50);
+
+                    if (proxy.Killed) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
+                }
+                
+                context.Response.Headers.Add("ThumbSourceType", "FromTriggeredJob");
+                var (bin, fmt) = await GetThumbnailFromFile(tfile, insize);
+                context.Response.Headers.Add(HeaderNames.ContentType, MagickToContentType(fmt));
+                await context.Response.BodyWriter.WriteAsync(bin);
+            }
+            else
+            {
+                context.Response.Headers.Add("ThumbSourceType", "FromCache");
+                var (bin, fmt) = await GetThumbnailFromFile(tfile, insize);
+                context.Response.Headers.Add(HeaderNames.ContentType, MagickToContentType(fmt));
+                await context.Response.BodyWriter.WriteAsync(bin);
+            }
+            
+        }
+
+        public static async Task GetThumbnailFast(HttpContext context)
+        {
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var id  = (string)context.Request.RouteValues["id"];
+            
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video not found"); return; }
+
+            if (!Program.Args.CreateResizedThumbnails) { context.Response.Headers.Add("ThumbSourceType", "DirectFallback_NoOpt");   await GetThumbnailDirect(context); return; }
+            if (Program.Args.CacheDir == null)         { context.Response.Headers.Add("ThumbSourceType", "DirectFallback_NoDir");   await GetThumbnailDirect(context); return; }
+            if (vid.PathThumbnail == null)             { context.Response.Headers.Add("ThumbSourceType", "DirectFallback_NoThumb"); await GetThumbnailDirect(context); return; }
+            
+            var tfile = GetThumbnailCachePath(vid.PathVideo);
+
+            var sizearg  = (string)context.Request.RouteValues["size"];
+            var insize = -1;
+            
+            if (sizearg == "xs")     insize = 0;
+            else if (sizearg == "s") insize = 1;
+            else if (sizearg == "m") insize = 2;
+            else if (sizearg == "o") insize = 3;
+            else throw new Exception("Invalid {size} value");
+
+            if (File.Exists(tfile))
+            {
+                context.Response.Headers.Add("ThumbSourceType", "FromCache");
+                var (bin, fmt) = await GetThumbnailFromFile(tfile, insize);
+                context.Response.Headers.Add(HeaderNames.ContentType, MagickToContentType(fmt));
+                await context.Response.BodyWriter.WriteAsync(bin);
+            }
+            else
+            {
+                context.Response.Headers.Add("ThumbSourceType", "DirectButJobQueued");
+                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, tfile), false);
+                await GetThumbnailDirect(context); 
+            }
+        }
+
+        public static async Task GetThumbnailOriginal(HttpContext context)
+        {
+            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var id  = (string)context.Request.RouteValues["id"];
+            
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video not found"); return; }
+
+            var pathThumbnail = vid.PathThumbnail;
+            if (pathThumbnail == null)
+            {
+                context.Response.StatusCode = 404; 
+                await context.Response.WriteAsync("Thumbnail not found"); 
+                return;
+            }
+            
+            if (Path.GetExtension(pathThumbnail).Equals(".png",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/png");
+            if (Path.GetExtension(pathThumbnail).Equals(".svg",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/svg+xml");
+            if (Path.GetExtension(pathThumbnail).Equals(".jpg",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
+            if (Path.GetExtension(pathThumbnail).Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
+            if (Path.GetExtension(pathThumbnail).Equals(".webp", StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/webp");
+
+            await context.Response.SendFileAsync(pathThumbnail);
+        }
+        
+        private static StringValues MagickToContentType(MagickFormat fmt)
+        {
+            if (fmt == MagickFormat.Bmp)  return "image/bmp";
+            if (fmt == MagickFormat.Png)  return "image/png";
+            if (fmt == MagickFormat.WebP) return "image/webp";
+            if (fmt == MagickFormat.Jpeg) return "image/jpeg";
+            if (fmt == MagickFormat.Gif)  return "image/gif";
+            if (fmt == MagickFormat.Svg)  return "image/svg+xml";
+
+            throw new Exception("Unsuoported magick format: " + fmt);
+        }
+
+        private static async Task<(byte[], MagickFormat)> GetThumbnailFromFile(string path, int size)
+        {
+            await using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                int dataOffset;
+                int dataSize;
+                MagickFormat dataFormat;
+                
+                using (var br = new BinaryReader(fs, Encoding.UTF8, true))
+                {
+                    var pre1 = br.ReadByte();
+                    var pre2 = br.ReadByte();
+                    var pre3 = br.ReadByte();
+                    var vers = br.ReadByte();
+
+                    if (pre1 != 24) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
+                    if (pre2 != 34) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
+                    if (pre3 != 52) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
+                    
+                    if (vers != 1) throw new Exception($"Thumbnail cache file {path} cannot be read (unknown version)");
+
+                    br.ReadInt64();
+
+                    for (var i = 0; i < size; i++)
+                    {
+                        br.ReadInt32();
+                        br.ReadInt32();
+                        br.ReadInt16();
+                    }
+                    
+                    dataOffset = br.ReadInt32();
+                    dataSize   = br.ReadInt32();
+                    dataFormat = (MagickFormat)br.ReadInt16();
+                }
+
+                fs.Seek(dataOffset, SeekOrigin.Begin);
+
+                var databin = new byte[dataSize];
+                fs.Read(databin, 0, dataSize);
+
+                return (databin, dataFormat);
+            }
+        }
+        
+        public static async Task GetThumbnailDirect(HttpContext context)
         {
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
             var id  = (string)context.Request.RouteValues["id"];
 
-            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
+            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video not found"); return; }
 
             var pathVideo = vid.PathVideo;
             
@@ -39,17 +204,8 @@ namespace youtube_dl_viewer.Controller
             {
                 if (pathVideo == null) { context.Response.StatusCode = 404; await context.Response.WriteAsync("Video file not found"); return; }
 
-                await GetPreviewImage(context, pathVideo, idx, id, 1);
+                await PreviewController.GetPreviewImage(context, pathVideo, idx, id, 1);
                 return;
-            }
-
-            
-            var pathCache = GetPreviewCachePath(pathVideo);
-            if (Program.Args.AutoPreviewGen && pathCache != null && Program.HasValidFFMPEG && !File.Exists(pathCache))
-            {
-                // ensure that for all videos the previews are pre-generated
-                // so we don't have to start ffmpeg when we first hover
-                JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, idx, id), false); // runs as background job
             }
             
             var data = await File.ReadAllBytesAsync(pathThumbnail);
@@ -57,105 +213,13 @@ namespace youtube_dl_viewer.Controller
             context.Response.Headers.Add(HeaderNames.ContentLength, WebUtility.UrlEncode(data.Length.ToString()));
             context.Response.Headers.Add(HeaderNames.ContentDisposition, "attachment;filename=\"" + WebUtility.UrlEncode(Path.GetFileName(pathThumbnail))+"\"");
 
-            if (Path.GetExtension(pathThumbnail).Equals(".png",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/png");
-            if (Path.GetExtension(pathThumbnail).Equals(".svg",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/svg+xml");
-            if (Path.GetExtension(pathThumbnail).Equals(".jpg",  StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
-            if (Path.GetExtension(pathThumbnail).Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
-            if (Path.GetExtension(pathThumbnail).Equals(".webp", StringComparison.InvariantCultureIgnoreCase)) context.Response.Headers.Add(HeaderNames.ContentType, "image/webp");
+            if (Path.GetExtension(pathThumbnail).EqualsIgnoreCase(".png"))  context.Response.Headers.Add(HeaderNames.ContentType, "image/png");
+            if (Path.GetExtension(pathThumbnail).EqualsIgnoreCase(".svg"))  context.Response.Headers.Add(HeaderNames.ContentType, "image/svg+xml");
+            if (Path.GetExtension(pathThumbnail).EqualsIgnoreCase(".jpg"))  context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
+            if (Path.GetExtension(pathThumbnail).EqualsIgnoreCase(".jpeg")) context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
+            if (Path.GetExtension(pathThumbnail).EqualsIgnoreCase(".webp")) context.Response.Headers.Add(HeaderNames.ContentType, "image/webp");
             
             await context.Response.BodyWriter.WriteAsync(data);
-        }
-
-        public static async Task GetAutoThumbnail(HttpContext context)
-        {
-            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
-            var id  = (string)context.Request.RouteValues["id"];
-
-            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
-
-            await GetPreviewImage(context, vid.PathVideo, idx, id, 1);
-        }
-
-        public static async Task GetPreview(HttpContext context)
-        {
-            if (Program.Args.CacheDir == null) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No cache directory specified"); return; }
-            
-            var idx = int.Parse((string)context.Request.RouteValues["idx"]);
-            var id  = (string)context.Request.RouteValues["id"];
-            var img = int.Parse((string)context.Request.RouteValues["img"]);
-
-            if (!(await Program.GetData(idx)).Videos.TryGetValue(id, out var vid)) { context.Response.StatusCode = 404; await context.Response.WriteAsync("DataDirIndex not found"); return; }
-
-            await GetPreviewImage(context, vid.PathVideo, idx, id, img);
-        }
-        
-        private static async Task GetPreviewImage(HttpContext context, string videopath, int datadirindex, string videouid, int imageIndex)
-        {
-            if (!Program.HasValidFFMPEG) { context.Response.StatusCode = 400; await context.Response.WriteAsync("No ffmpeg installation found"); return; }
-            
-            context.Response.Headers.Add(HeaderNames.ContentType, "image/jpeg");
-
-            var pathCache = GetPreviewCachePath(videopath);
-
-            if (pathCache == null)
-            {
-                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, null, imageIndex, datadirindex, videouid)))
-                {
-                    while (proxy.JobRunningOrWaiting) await Task.Delay(50);
-
-                    if (proxy.Killed)                            { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job was killed prematurely"); return; }
-                    
-                    if (proxy.Job.ImageData == null)             { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no image data (1)"); return; }
-                    if (proxy.Job.ImageCount == null)            { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job returned no image data (2)"); return; }
-
-                    context.Response.Headers.Add("PreviewImageCount", WebUtility.UrlEncode(proxy.Job.ImageCount.Value.ToString()));
-                    context.Response.Headers.Add("PathCache", WebUtility.UrlEncode("null"));
-                    context.Response.Headers.Add("PathVideo", WebUtility.UrlEncode(videopath));
-                    await context.Response.BodyWriter.WriteAsync(proxy.Job.ImageData);
-                    return;
-                }
-            }
-            
-            if (!File.Exists(pathCache))
-            {
-                using (var proxy = JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, videopath, pathCache, null, datadirindex, videouid)))
-                {
-                    while (proxy.JobRunningOrWaiting) await Task.Delay(50);
-                }
-            }
-            
-            if (!File.Exists(pathCache)) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Job did not output cache file"); return; }
-
-            long dataoffset = int.MinValue;
-            int  datalength = int.MinValue;
-            int prevcount;
-            byte[] databin;
-            
-            await using (var fs = new FileStream(pathCache, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                using (var br = new BinaryReader(fs, Encoding.UTF8, true))
-                {
-                    prevcount = br.ReadByte();
-            
-                    if (prevcount <= imageIndex) { context.Response.StatusCode = 500; await context.Response.WriteAsync("Index not found in preview gallery"); return; }
-
-                    for (var i = 0; i < imageIndex+1; i++)
-                    {
-                        dataoffset = br.ReadInt64();
-                        datalength = br.ReadInt32();
-                    }
-                }
-
-                fs.Seek(dataoffset, SeekOrigin.Begin);
-
-                databin = new byte[datalength];
-                fs.Read(databin, 0, datalength);
-            }
-            
-            context.Response.Headers.Add("PreviewImageCount", WebUtility.UrlEncode(prevcount.ToString()));
-            context.Response.Headers.Add("PathCache", WebUtility.UrlEncode(pathCache));
-            context.Response.Headers.Add("PathVideo", WebUtility.UrlEncode(videopath));
-            await context.Response.BodyWriter.WriteAsync(databin);
         }
     }
 }

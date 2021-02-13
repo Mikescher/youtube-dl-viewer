@@ -183,10 +183,14 @@ namespace youtube_dl_viewer.Model
                     new JProperty("cached", _cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo)))),
                     new JProperty("cached_video_fsize", _cacheFiles.Contains(Path.GetFileName(VideoController.GetStreamCachePath(pathVideo))) ? new FileInfo(VideoController.GetStreamCachePath(pathVideo)).Length : 0),
 
-                    new JProperty("previewscache_file", ThumbnailController.GetPreviewCachePath(pathVideo)),
-                    new JProperty("cached_previews", _cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo)))),
-                    new JProperty("cached_preview_fsize", _cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetPreviewCachePath(pathVideo))) ? new FileInfo(ThumbnailController.GetPreviewCachePath(pathVideo)).Length : 0),
+                    new JProperty("previewscache_file", PreviewController.GetPreviewCachePath(pathVideo)),
+                    new JProperty("cached_previews", _cacheFiles.Contains(Path.GetFileName(PreviewController.GetPreviewCachePath(pathVideo)))),
+                    new JProperty("cached_preview_fsize", _cacheFiles.Contains(Path.GetFileName(PreviewController.GetPreviewCachePath(pathVideo))) ? new FileInfo(PreviewController.GetPreviewCachePath(pathVideo)).Length : 0),
                     
+                    new JProperty("thumbnailcache_file", ThumbnailController.GetThumbnailCachePath(pathVideo)),
+                    new JProperty("cached_thumbnail", _cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetThumbnailCachePath(pathVideo)))),
+                    new JProperty("cached_thumbnail_fsize", _cacheFiles.Contains(Path.GetFileName(ThumbnailController.GetThumbnailCachePath(pathVideo))) ? new FileInfo(ThumbnailController.GetThumbnailCachePath(pathVideo)).Length : 0),
+
                     new JProperty("filesize", new FileInfo(pathVideo).Length)
                 )),
                 new JProperty("data", new JObject

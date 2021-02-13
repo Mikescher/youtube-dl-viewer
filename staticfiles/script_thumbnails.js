@@ -121,7 +121,7 @@ class ThumbnailModel {
         this.currentAnimatedVideo = video.meta.uid;
         this.animateThumbnail(App.VIDEOLIST.getCurrentDataDir(), video, img).then(() => { });
     }
-    async animateThumbnail(dir, video, img) {
+    async animateThumbnail(dir, video, thumb) {
         const responseZero = await $ajax('GET', '/data/' + dir.index + '/video/' + video.meta.uid + '/prev/' + 0);
         if (this.currentAnimatedVideo !== video.meta.uid)
             return;
@@ -135,7 +135,7 @@ class ThumbnailModel {
             if (this.currentAnimatedVideo !== video.meta.uid)
                 return;
             const t = performance.now();
-            await setImageSource(img, '/data/' + dir.index + '/video/' + video.meta.uid + '/prev/' + (i % max));
+            await setImageSource(thumb, '/data/' + dir.index + '/video/' + video.meta.uid + '/prev/' + (i % max));
             await sleepAsync(Math.max(0, 333 - (performance.now() - t)));
             if (((i + 1) % max) === 0)
                 await sleepAsync(666);
@@ -151,6 +151,6 @@ class ThumbnailModel {
         if (video.meta.uid !== this.currentAnimatedVideo)
             return;
         this.currentAnimatedVideo = null;
-        img.src = img.getAttribute('data-realurl');
+        img.src = img.getAttribute('data-realurl-cache');
     }
 }

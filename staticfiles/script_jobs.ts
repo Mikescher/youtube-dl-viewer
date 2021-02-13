@@ -57,10 +57,11 @@ class JobController
     
         let text_head = "";
     
-        text_head += ("Active Jobs: " + data.Meta.Jobs.CountActive).padEnd(linelen - 34, ' ') + " <span id=\"btnForceGenPreviews\" class=\"btn btn-action\">[Force generate missing previews]</span>" + "\n";
-        text_head += ("Queued Jobs: " + data.Meta.Jobs.CountQueued).padEnd(linelen - 33, ' ') + " <span id=\"btnForceTranscode\" class=\"btn btn-action\">[Force transcode missing videos]</span>"    + "\n";
-        text_head += (("Cached Previews:                " + (data.Meta.Videos.CountCachedPreviews+"   "+"   "                                                                    ).padStart(12, " ") + " / " + data.Meta.Videos.CountTotal        ).padEnd(51, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedPreviews).padStart(8, ' ') + " )").padEnd(linelen - 22, ' ') + " <span id=\"btnClearFinished\" class=\"btn btn-action\">[Clear finished jobs]</span>" + "\n";
-        text_head += (("Cached Videos (webm transcode): " + (data.Meta.Videos.CountCachedVideosTotal  +" (+"+(data.Meta.Videos.CountCachedVideosAdditional+")").padEnd(3, " ")+"").padStart(12, " ") + " / " + data.Meta.Videos.CountVideoCachable).padEnd(51, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedVideos).padStart(8, ' ')   + " )").padEnd(linelen - 17, ' ') + " <span id=\"btnAbortAll\" class=\"btn btn-danger\">[Abort all jobs]</span>"           + "\n";
+        text_head += ("Active Jobs: " + data.Meta.Jobs.CountActive).padEnd(linelen - 34, ' ')                                                                                                                                                                                                                                                                                          + " <span id=\"btnForceGenPreviews\" class=\"btn btn-action\">[Force generate missing previews]</span>"    + "\n";
+        text_head += ("Queued Jobs: " + data.Meta.Jobs.CountQueued).padEnd(linelen - 36, ' ')                                                                                                                                                                                                                                                                                          + " <span id=\"btnForceGenThumbs\"   class=\"btn btn-action\">[Force generate missing thumbnails]</span>"  + "\n";
+        text_head += (("Cached Previews:                " + (data.Meta.Videos.CountCachedPreviews   +"   "+"   "                                                                 ).padStart(12, " ") + " / " + data.Meta.Videos.CountTotal        ).padEnd(51, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedPreviews).padStart(8, ' ') + " )").padEnd(linelen - 33, ' ')   + " <span id=\"btnForceTranscode\"   class=\"btn btn-action\">[Force transcode missing videos]</span>"     + "\n";
+        text_head += (("Cached Thumbnails:              " + (data.Meta.Videos.CountCachedThumbnails +"   "+"   "                                                                 ).padStart(12, " ") + " / " + data.Meta.Videos.CountThumbCachable).padEnd(51, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedThumbnails).padStart(8, ' ') + " )").padEnd(linelen - 22, ' ') + " <span id=\"btnClearFinished\"    class=\"btn btn-action\">[Clear finished jobs]</span>"                + "\n";
+        text_head += (("Cached Videos (webm transcode): " + (data.Meta.Videos.CountCachedVideosTotal  +" (+"+(data.Meta.Videos.CountCachedVideosAdditional+")").padEnd(3, " ")+"").padStart(12, " ") + " / " + data.Meta.Videos.CountVideoCachable).padEnd(51, ' ') + "( " + formatBytes(data.Meta.Videos.FilesizeCachedVideos).padStart(8, ' ')   + " )").padEnd(linelen - 17, ' ')   + " <span id=\"btnAbortAll\"         class=\"btn btn-danger\">[Abort all jobs]</span>"                     + "\n";
         text_head += "\n";
         text_head += "<span class=\"header\">" + ("Timestamp (Start)").padEnd(22, ' ') + ("Type").padEnd(14, ' ') + ("Name").padEnd(50, ' ') + ("Proxies").padEnd(10, ' ') + ("State").padEnd(10, ' ') + ("Progress").padEnd(progressLen, ' ') + ("Time").padEnd(8, ' ') + ("Actions").padEnd(7, ' ') + "</span>" + "\n";
     
@@ -124,6 +125,12 @@ class JobController
         {
             if ($('#root')!.classList.contains('unfresh')) return;
             await $ajax('GET', '/jobmanager/start/generatePreviews/*/*')
+        });
+
+        $('#btnForceGenThumbs')!.addEventListener('click', async _ =>
+        {
+            if ($('#root')!.classList.contains('unfresh')) return;
+            await $ajax('GET', '/jobmanager/start/generateThumbnails/*/*')
         });
     
         $('#btnForceTranscode')!.addEventListener('click', async _ =>

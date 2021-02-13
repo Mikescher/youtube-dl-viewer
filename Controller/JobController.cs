@@ -42,17 +42,20 @@ namespace youtube_dl_viewer.Controller
                     
                     new JProperty("Videos", new JObject
                     (
-                        new JProperty("CountCachedPreviews", vidcache.Count(p => p.IsCachedPreview)),
+                        new JProperty("CountCachedPreviews",   vidcache.Count(p => p.IsCachedPreview)),
+                        new JProperty("CountCachedThumbnails", vidcache.Count(p => p.IsCachedThumbnail)),
                         
                         new JProperty("CountCachedVideosTotal",      vidcache.Count(p => p.IsCachedVideo)),
                         new JProperty("CountCachedVideosCachable",   vidcache.Count(p => p.IsCachedVideo && p.ShouldTranscodeAndCacheVideo())),
                         new JProperty("CountCachedVideosAdditional", vidcache.Count(p => p.IsCachedVideo && !p.ShouldTranscodeAndCacheVideo())),
                         new JProperty("CountVideoCachable",          vidcache.Count(p => p.ShouldTranscodeAndCacheVideo())),
+                        new JProperty("CountThumbCachable",          vidcache.Count(p => p.PathThumbnail != null && Program.Args.CreateResizedThumbnails)),
                         
                         new JProperty("CountTotal",          vidcache.Count),
                         
-                        new JProperty("FilesizeCachedPreviews", vidcache.Sum(p => p.CachePreviewSize)),
-                        new JProperty("FilesizeCachedVideos",   vidcache.Sum(p => p.CacheVideoSize))
+                        new JProperty("FilesizeCachedPreviews",   vidcache.Sum(p => p.CachePreviewSize)),
+                        new JProperty("FilesizeCachedThumbnails", vidcache.Sum(p => p.CacheThumbnailSize)),
+                        new JProperty("FilesizeCachedVideos",     vidcache.Sum(p => p.CacheVideoSize))
                     )),
                     
                     new JProperty("CountActive", JobRegistry.Managers.Sum(p => p.CountActive)),
@@ -102,12 +105,58 @@ namespace youtube_dl_viewer.Controller
                 var pathVideo = vid.PathVideo;
                 if (pathVideo == null) { continue; }
                 
-                var pathCache = ThumbnailController.GetPreviewCachePath(pathVideo);
+                var pathCache = PreviewController.GetPreviewCachePath(pathVideo);
 
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
                 JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, vid.DataDirIndex, vid.UID), false);
+            }
+            
+            await context.Response.WriteAsync($"Started/Attached {count} new jobs");
+        }
+
+        public static async Task ManuallyForceThumbnailJobs(HttpContext context)
+        {
+            context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");
+            
+            if (!Program.Args.CreateResizedThumbnails)  { context.Response.StatusCode = 500; await context.Response.WriteAsync("Thumbnail generation is disabled"); return; }
+            if (Program.Args.CacheDir == null) { context.Response.StatusCode = 500; await context.Response.WriteAsync("No cache directory specified"); return; }
+
+            var selector1 = (string)context.Request.RouteValues["selector1"];
+            var selector2 = (string)context.Request.RouteValues["selector2"];
+
+            List<DataDirData> selection1;
+            if (selector1.ToLower() == "all" || selector1.ToLower() == "*")
+            {
+                selection1 = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
+            }
+            else
+            {
+                selection1 = new[]{ (await Program.GetData(int.Parse(selector1))) }.ToList();
+            }
+            
+            List<VideoData> selection2;
+            if (selector2.ToLower() == "all" || selector2.ToLower() == "*")
+            {
+                selection2 = selection1.SelectMany(p => p.Videos.Values).ToList();
+            }
+            else
+            {
+                selection2 = selection1.SelectMany(p => p.Videos).Where(p => p.Key == selector2).Select(p => p.Value).ToList();
+            }
+
+            var count = 0;
+            foreach (var vid in selection2)
+            {
+                if (vid.PathVideo     == null) { continue; }
+                if (vid.PathThumbnail == null) { continue; }
+                
+                var pathCache = ThumbnailController.GetThumbnailCachePath(vid.PathVideo);
+                if (File.Exists(pathCache)) continue;
+                
+                count++;
+                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, pathCache), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");

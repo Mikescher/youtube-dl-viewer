@@ -1,5 +1,8 @@
 "use strict";
 class DisplayGridRenderer {
+    constructor(css) {
+        this.csstype = css;
+    }
     render(videos, dir) {
         let html = '';
         for (const vid of videos) {
@@ -10,7 +13,7 @@ class DisplayGridRenderer {
                 ve_cls += ' preview-cached';
             html += '<div class="' + ve_cls + '" data-id="' + escapeHtml(vid.meta.uid) + '">';
             html += '<i class="icon_cached fas fa-cloud"></i>';
-            html += '<div class="thumbnail animatable"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta.uid) + '/thumb" data-videoid="' + escapeHtml(vid.meta['uid']) + '" /></div>';
+            html += '<div class="thumbnail animatable"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-dirindex="' + dir.index + '" data-videoid="' + escapeHtml(vid.meta['uid']) + '" /></div>';
             if (vid.data.info.hasNonNull('like_count') && vid.data.info.hasNonNull('dislike_count')) {
                 html += '<div class="likedislikebar">';
                 html += '  <div class="like_bar" style="width: ' + (100 * vid.data.info.like_count / (vid.data.info.like_count + vid.data.info.dislike_count)) + '%"><div class="like_bar_count">' + vid.data.info.like_count + '</div></div>';
@@ -34,7 +37,11 @@ class DisplayGridRenderer {
     async setThumbnail(thumb) {
         if (thumb.getAttribute('data-loaded') === '1')
             return true;
-        const src = thumb.getAttribute('data-realurl');
+        let dirindex = thumb.getAttribute('data-dirindex');
+        let videoid = thumb.getAttribute('data-videoid');
+        let size = (this.csstype === "gridx2") ? "m" : "s";
+        const src = "/data/" + dirindex + "/video/" + escapeHtml(videoid) + "/thumb/" + size + "/fast";
+        thumb.setAttribute('data-realurl-cache', src);
         if (thumb.getAttribute('src') === src)
             return true;
         return await setImageSource(thumb, src).then(ok => {

@@ -17,7 +17,7 @@ class DisplayDetailedRenderer implements DisplayRenderer
             html += '<i class="icon_cached fas fa-cloud"></i>';
 
             {
-                html += '<div class="thumbnail animatable"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta.uid) + '/thumb" data-videoid="'+escapeHtml(vid.meta.uid)+'" /></div>';
+                html += '<div class="thumbnail animatable"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-dirindex="' + dir.index + '" data-videoid="'+escapeHtml(vid.meta.uid)+'" /></div>';
 
                 if (vid.data.info.hasNonNull('like_count') && vid.data.info.hasNonNull('dislike_count'))
                 {
@@ -116,8 +116,12 @@ class DisplayDetailedRenderer implements DisplayRenderer
     async setThumbnail(thumb: HTMLImageElement): Promise<boolean>
     {
         if (thumb.getAttribute('data-loaded') === '1') return true;
-        
-        const src = thumb.getAttribute('data-realurl')!;
+
+        let dirindex = thumb.getAttribute('data-dirindex')!;
+        let videoid  = thumb.getAttribute('data-videoid')!;
+
+        const src = "/data/" + dirindex + "/video/" + escapeHtml(videoid) + "/thumb/s/fast";
+        thumb.setAttribute('data-realurl-cache', src);
         if (thumb.getAttribute('src') === src) return true;
 
         return await setImageSource(thumb, src).then(ok =>

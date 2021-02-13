@@ -32,6 +32,10 @@ namespace youtube_dl_viewer.Model
         public string CachePreviewFile  => JSONMeta.Value<string>("previewscache_file");
         public long CachePreviewSize    => JSONMeta.Value<long>("cached_preview_fsize");
         
+        public bool IsCachedThumbnail     => JSONMeta.Value<bool>("cached_thumbnail");
+        public string CacheThumbnailFile  => JSONMeta.Value<string>("thumbnailcache_file");
+        public long CacheThumbnailSize    => JSONMeta.Value<long>("cached_thumbnail_fsize");
+
         public string FilenameBase     => JSONMeta.Value<string>("filename_base");
         public int? ExternalOrderIndex => JSONMeta.Value<int?>("ext_order_index");
         public long Filesize           => JSONMeta.Value<long>("filesize");
@@ -54,7 +58,11 @@ namespace youtube_dl_viewer.Model
                 if (PathDescription != null) yield return PathDescription;
                 if (PathJSON        != null) yield return PathJSON;
                 if (PathTOML        != null) yield return PathTOML;
-                
+
+                if (CachePreviewFile   != null) yield return CachePreviewFile;
+                if (CacheThumbnailFile != null) yield return CacheThumbnailFile;
+                if (CacheVideoFile     != null) yield return CacheVideoFile;
+
                 foreach (var ps in PathSubtitles) yield return ps;
             }
         }

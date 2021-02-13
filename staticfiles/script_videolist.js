@@ -3,12 +3,12 @@ class VideoListModel {
     // ----------------------------------------
     constructor(optionsource) {
         this.Values_DisplayMode = [
-            { index: 0, text: "ListStyle: Grid", keys: ['grid', '0'], enabled: true, css: ['lstyle_grid'], renderer: new DisplayGridRenderer() },
+            { index: 0, text: "ListStyle: Grid", keys: ['grid', '0'], enabled: true, css: ['lstyle_grid'], renderer: new DisplayGridRenderer('grid') },
             { index: 1, text: "ListStyle: Compact", keys: ['compact', '1'], enabled: true, css: ['lstyle_compact'], renderer: new DisplayCompactRenderer() },
             { index: 2, text: "ListStyle: Tabular", keys: ['tabular', '2'], enabled: true, css: ['lstyle_tabular'], renderer: new DisplayTabularRenderer() },
             { index: 3, text: "ListStyle: Detailed", keys: ['detailed', '3'], enabled: true, css: ['lstyle_detailed'], renderer: new DisplayDetailedRenderer() },
-            { index: 4, text: "ListStyle: Grid (x2)", keys: ['gridx2', '4'], enabled: true, css: ['lstyle_grid', 'lstyle_x2'], renderer: new DisplayGridRenderer() },
-            { index: 5, text: "ListStyle: Grid (1/2)", keys: ['grid_half', '5'], enabled: true, css: ['lstyle_grid', 'lstyle_half'], renderer: new DisplayGridRenderer() },
+            { index: 4, text: "ListStyle: Grid (x2)", keys: ['gridx2', '4'], enabled: true, css: ['lstyle_grid', 'lstyle_x2'], renderer: new DisplayGridRenderer('gridx2') },
+            { index: 5, text: "ListStyle: Grid (1/2)", keys: ['grid_half', '5'], enabled: true, css: ['lstyle_grid', 'lstyle_half'], renderer: new DisplayGridRenderer('grid_half') },
             { index: 6, text: "ListStyle: Timeline", keys: ['timeline', '6'], enabled: false, css: ['lstyle_timeline'], renderer: new DisplayTimelineRenderer() },
         ];
         this.Values_WidthMode = [

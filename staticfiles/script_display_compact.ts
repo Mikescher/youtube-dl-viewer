@@ -14,7 +14,7 @@ class DisplayCompactRenderer implements DisplayRenderer
 
             html += '<div class="' + ve_cls + '" data-id="'+escapeHtml(vid.meta.uid)+'">';
 
-            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-realurl="/data/' + dir.index + '/video/' + escapeHtml(vid.meta.uid) + '/thumb" data-videoid="'+escapeHtml(vid.meta['uid'])+'" /></div></div>';
+            html += '<div class="thumbnail"><div class="thumbnail_img"><img class="thumb_img_loadable" src="/thumb_empty.svg" alt="thumbnail" data-loaded="0" data-dirindex="' + dir.index + '" data-videoid="'+escapeHtml(vid.meta['uid'])+'" /></div></div>';
 
             html += '<div class="title">' + escapeHtml(vid.data.title) + '</div>';
 
@@ -31,7 +31,11 @@ class DisplayCompactRenderer implements DisplayRenderer
     {
         if (thumb.getAttribute('data-loaded') === '1') return true;
 
-        const src = thumb.getAttribute('data-realurl')!;
+        let dirindex = thumb.getAttribute('data-dirindex')!;
+        let videoid  = thumb.getAttribute('data-videoid')!;
+        
+        const src = "/data/" + dirindex + "/video/" + escapeHtml(videoid) + "/thumb/s/fast";
+        thumb.setAttribute('data-realurl-cache', src);
         if (thumb.getAttribute('src') === src) return true;
         
         return await setImageSource(thumb, src).then(ok =>

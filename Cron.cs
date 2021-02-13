@@ -37,14 +37,15 @@ namespace youtube_dl_viewer
 
                     if (!Program.Initialized) continue;
                     
-                    if (Program.Args.CronDoRefresh)          await RefreshData(interval);
+                    if (Program.Args.CronDoRefresh) await RefreshData(interval);
 
                     if (DateTime.Now - lastCron > interval)
                     {
                         lastCron = DateTime.Now;
                         
-                        if (Program.Args.CronDoGeneratePreviews) await GeneratePreviews();
-                        if (Program.Args.CronDoConvertVideos)    await ConvertVideos();
+                        if (Program.Args.CronDoGenerateThumbnails) await GenerateThumbnails();
+                        if (Program.Args.CronDoGeneratePreviews)   await GeneratePreviews();
+                        if (Program.Args.CronDoConvertVideos)      await ConvertVideos();
                     }
                 }
                 catch (Exception e)
@@ -82,11 +83,31 @@ namespace youtube_dl_viewer
                 var pathVideo = vid.PathVideo;
                 if (pathVideo == null) { continue; }
                 
-                var pathCache = ThumbnailController.GetPreviewCachePath(pathVideo);
+                var pathCache = PreviewController.GetPreviewCachePath(pathVideo);
 
                 if (File.Exists(pathCache)) continue;
                 
                 JobRegistry.PreviewGenJobs.StartOrQueue((man) => new PreviewGenJob(man, pathVideo, pathCache, null, vid.DataDirIndex, vid.UID), false);
+            }
+        }
+
+        private static async Task GenerateThumbnails()
+        {
+            if (!Program.Args.CreateResizedThumbnails)  { Console.WriteLine("Could not [GenerateThumbnails] in cron - Resized thumbnails are disabled"); return; }
+            if (Program.Args.CacheDir == null) { Console.WriteLine("Could not [GenerateThumbnails] in cron - No cache directory specified"); return; }
+
+            var dirs = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
+            var videos = dirs.SelectMany(p => p.Videos.Values).ToList();
+            
+            foreach (var vid in videos)
+            {
+                if (vid.PathVideo     == null) { continue; }
+                if (vid.PathThumbnail == null) { continue; }
+                
+                var pathCache = ThumbnailController.GetThumbnailCachePath(vid.PathVideo);
+                if (File.Exists(pathCache)) continue;
+                
+                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, pathCache), false);
             }
         }
 

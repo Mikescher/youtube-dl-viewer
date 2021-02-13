@@ -147,9 +147,12 @@ namespace youtube_dl_viewer
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
 
-            endpoints.MapGet("/data/{idx:int}/video/{id}/thumb",      ThumbnailController.GetThumbnail);
-            endpoints.MapGet("/data/{idx:int}/video/{id}/thumbframe", ThumbnailController.GetAutoThumbnail);
-            endpoints.MapGet("/data/{idx:int}/video/{id}/prev/{img}", ThumbnailController.GetPreview);
+            endpoints.MapGet("/data/{idx:int}/video/{id}/thumb/original",    ThumbnailController.GetThumbnailOriginal);
+            endpoints.MapGet("/data/{idx:int}/video/{id}/thumb/{size}/fast", ThumbnailController.GetThumbnailFast);
+            endpoints.MapGet("/data/{idx:int}/video/{id}/thumb/{size}/wait", ThumbnailController.GetThumbnailWait);
+            
+            endpoints.MapGet("/data/{idx:int}/video/{id}/thumbframe", PreviewController.GetAutoThumbnail);
+            endpoints.MapGet("/data/{idx:int}/video/{id}/prev/{img}", PreviewController.GetPreview);
                 
             endpoints.MapGet("/data/{idx:int}/video/{id}/seek",   VideoController.GetVideoSeek);
             endpoints.MapGet("/data/{idx:int}/video/{id}/file",   VideoController.GetVideoFile);
@@ -157,12 +160,13 @@ namespace youtube_dl_viewer
             
             endpoints.MapGet("/data/dump", DataDumpController.ListData);
                 
-            endpoints.MapGet("/jobmanager/list",                                            JobController.List);
-            endpoints.MapGet("/jobmanager/start/generatePreviews/{selector1}/{selector2}",  JobController.ManuallyForcePreviewJobs);
-            endpoints.MapGet("/jobmanager/start/generateTranscode/{selector1}/{selector2}", JobController.ManuallyForceTranscodeJobs);
-            endpoints.MapGet("/jobmanager/start/collectData/{idx}",                         JobController.ManuallyForceCollectData);
-            endpoints.MapGet("/jobmanager/abort/{jobid}",                                   JobController.AbortJob);
-            endpoints.MapGet("/jobmanager/clearFinished",                                   JobController.ClearFinishedJobs);
+            endpoints.MapGet("/jobmanager/list",                                             JobController.List);
+            endpoints.MapGet("/jobmanager/start/generatePreviews/{selector1}/{selector2}",   JobController.ManuallyForcePreviewJobs);
+            endpoints.MapGet("/jobmanager/start/generateThumbnails/{selector1}/{selector2}", JobController.ManuallyForceThumbnailJobs);
+            endpoints.MapGet("/jobmanager/start/generateTranscode/{selector1}/{selector2}",  JobController.ManuallyForceTranscodeJobs);
+            endpoints.MapGet("/jobmanager/start/collectData/{idx}",                          JobController.ManuallyForceCollectData);
+            endpoints.MapGet("/jobmanager/abort/{jobid}",                                    JobController.AbortJob);
+            endpoints.MapGet("/jobmanager/clearFinished",                                    JobController.ClearFinishedJobs);
                 
             endpoints.MapGet("/themes/{idx:int}",        ThemeController.GetTheme);
             endpoints.MapGet("/themes/{idx:int}/{name}", ThemeController.GetTheme);
