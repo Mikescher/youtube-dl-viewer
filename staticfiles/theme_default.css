@@ -36,6 +36,10 @@ header .logo .apppath.multiple {
     background: #FFF;
 }
 
+#apppath_dropdown .row:last-of-type {
+    border-bottom: 1px solid #000;
+}
+
 #font_test_header { font-family: "Courier New",monospace; font-style: italic; font-weight: bold }
 
 header .btn
