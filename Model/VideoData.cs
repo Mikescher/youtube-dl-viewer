@@ -20,6 +20,7 @@ namespace youtube_dl_viewer.Model
         public string PathThumbnail   => JSONMeta.Value<string>("path_thumbnail");
         public string PathDescription => JSONMeta.Value<string>("path_description");
         public string PathJSON        => JSONMeta.Value<string>("path_json");
+        public string PathTOML        => JSONMeta.Value<string>("path_toml");
         
         public IEnumerable<string> PathSubtitles => JSONMeta["paths_subtitle"]!.Values<JProperty>().Select(p => p.Value.Value<string>());
         
@@ -44,12 +45,25 @@ namespace youtube_dl_viewer.Model
         public string Description => JSONData.Value<string>("description");
         public JObject JSONInfo   => JSONData.Value<JObject>("info");
 
+        public IEnumerable<string> AllReferencedFiles
+        {
+            get
+            {
+                if (PathVideo       != null) yield return PathVideo;
+                if (PathThumbnail   != null) yield return PathThumbnail;
+                if (PathDescription != null) yield return PathDescription;
+                if (PathJSON        != null) yield return PathJSON;
+                if (PathTOML        != null) yield return PathTOML;
+                
+                foreach (var ps in PathSubtitles) yield return ps;
+            }
+        }
+
         public VideoData(DataDirSpec dir, JObject data)
         {
             DataDir = dir;
             Data = data;
         }
-
 
         public void PatchData(IEnumerable<string> field, object value)
         {

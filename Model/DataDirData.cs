@@ -27,16 +27,12 @@ namespace youtube_dl_viewer.Model
         //   - "theme_override"
         public readonly JObject Meta;
         
-        // Missing paths
-        public readonly IReadOnlyList<string> Missing;
-        
         public string JsonString;
 
-        public DataDirData(DataDirSpec dir, JObject meta, IReadOnlyList<string> missing, IReadOnlyDictionary<string, VideoData> videos)
+        public DataDirData(DataDirSpec dir, JObject meta, IReadOnlyDictionary<string, VideoData> videos)
         {
             DataDir = dir;
             Meta    = meta;
-            Missing = missing;
             Videos  = videos;
 
             RecreateJSON();
@@ -47,8 +43,7 @@ namespace youtube_dl_viewer.Model
             var json = new JObject
             (
                 new JProperty("meta", Meta),
-                new JProperty("videos", new JArray(Videos.Select(p => p.Value.Data).ToArray<object>())),
-                new JProperty("missing", new JArray(Missing.ToArray<object>()))
+                new JProperty("videos", new JArray(Videos.Select(p => p.Value.Data).ToArray<object>()))
             );
 
             JsonString = json.ToString(Program.DEBUG ? Formatting.Indented : Formatting.None);

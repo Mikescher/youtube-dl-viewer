@@ -69,7 +69,7 @@ namespace youtube_dl_viewer.Config
             {
                 if (_data[i].IsMatch(sha256, filename1, filename2, ekey, id))
                 {
-                    if (result != null) Console.Error.WriteLine($"For the file '{path}' exit multiple matching lines ({result} & {i}) in the ext_order file");
+                    if (result != null) Console.Error.WriteLine($"For the file '{path}' exist multiple matching lines ({result} & {i}) in the ext_order file");
                     result = i;
                 }
             }
@@ -77,7 +77,7 @@ namespace youtube_dl_viewer.Config
             if (result != null) return result;
             
             OrderEntry d;
-            if ((ekey == null || id == null) && filename1 != title) 
+            if ((ekey == null || id == null) && title != null && filename1 != title) 
                 d = new OrderEntry(OrderEntry.EKEY_FILENAME, filename1, $"{DateTime.Now:yyyy-MM-dd HH:mm}", $"(auto-add) {title}");
             else if (ekey == null || id == null) 
                 d = new OrderEntry(OrderEntry.EKEY_FILENAME, filename1, $"{DateTime.Now:yyyy-MM-dd HH:mm}", $"(auto-add)");
