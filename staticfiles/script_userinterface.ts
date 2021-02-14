@@ -100,7 +100,7 @@ class UserInterfaceModel
         
         $('.btn-refresh')!.addEventListener('click', async () =>
         {
-            await App.VIDEOLIST.loadData();
+            await App.VIDEOLIST.refreshAndLoadData();
         });
 
         $('.btn-close-videoplayer')!.addEventListener('click', () =>

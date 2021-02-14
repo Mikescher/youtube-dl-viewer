@@ -258,7 +258,7 @@ class VideoListModel
         this.updateThemeStylesheet();
         App.UI.initPathDropdownWidth();
         
-        this.loadData().then(() => { if (this.startup_play != null) App.PLAYER.showVideo(this.startup_play[1]); });
+        this.loadData(true).then(() => { if (this.startup_play != null) App.PLAYER.showVideo(this.startup_play[1]); });
     }
 
     parsePlayValue(v: string): [number, string]|null
@@ -280,7 +280,7 @@ class VideoListModel
         return (this.current_data !== null);
     }
     
-    async loadData()
+    async loadData(preclear: boolean)
     {
         this.current_data = null;
         this.current_videolist = null;
@@ -292,6 +292,8 @@ class VideoListModel
 
         try 
         {
+            if (preclear) this.dom_content.innerHTML = '';
+            
             const response = await $ajax('GET', '/data/' + this.datadir_current + '/json');
             if (!response.success)
             {
@@ -301,43 +303,7 @@ class VideoListModel
             const json = JSON.parse(response.body!) as DataJSON;
             if (this.current_data_loadid !== loadid) { console.warn("Abort no longer valid loadData Task ("+this.current_data_loadid+" <> "+loadid+")"); return; }
 
-            let vlist = new Map<string, DataJSONVideo>();
-            for (const vid of json.videos) 
-            {
-                vid.has                = function(key) { return Object.hasOwnProperty.call(this, key); };
-                vid.hasNonNull         = function(key) { return this.has(key) && (this as any)[key] != null; };
-                vid.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call((this as any)[key], 'length') && (this as any)[key].length > 0; };
-
-                vid.data.info.has                = function(key) { return Object.hasOwnProperty.call(this, key); };
-                vid.data.info.hasNonNull         = function(key) { return this.has(key) && (this as any)[key] != null; };
-                vid.data.info.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call((this as any)[key], 'length') && (this as any)[key].length > 0; };
-
-                vlist.set(vid.meta.uid, vid);
-            }
-            
-            this.current_data = json;
-            this.current_videolist = vlist;
-
-            this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
-            this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
-
-            if (json.meta.display_override   !== null) this.displaymode_current   = json.meta.display_override;
-            if (json.meta.width_override     !== null) this.widthmode_current     = json.meta.width_override;
-            if (json.meta.order_override     !== null) this.ordermode_current     = json.meta.order_override;
-            if (json.meta.thumbnail_override !== null) this.thumbnailmode_current = json.meta.thumbnail_override;
-            if (json.meta.videomode_override !== null) this.videomode_current     = json.meta.videomode_override;
-            if (json.meta.theme_override     !== null) this.theme_current         = json.meta.theme_override;
-
-            if (!this.getCurrentDisplayMode().enabled)   this.displaymode_current   = this.displaymode_default;
-            if (!this.getCurrentWidthMode().enabled)     this.widthmode_current     = this.widthmode_default;
-            if (!this.getCurrentOrderMode().enabled)     this.ordermode_current     = this.ordermode_default;
-            if (!this.getCurrentThumbnailMode().enabled) this.thumbnailmode_current = this.thumbnailmode_default;
-            if (!this.getCurrentVideoMode().enabled)     this.videomode_current     = this.videomode_default;
-            if (!this.getCurrentTheme().enabled)         this.theme_current         = this.theme_default;
-
-            await this.recreateDOM();
-            
-            this.updateHash();
+            await this.applyData(json, preclear);
         } 
         catch (e) 
         {
@@ -346,13 +312,94 @@ class VideoListModel
         }
     }
 
-    async recreateDOM()
+    async refreshAndLoadData()
+    {
+        const loadid = this.data_loadid_counter++;
+        this.current_data_loadid = loadid;
+
+        const btnRefreshIcon = $('.btn-refresh i')!;
+        
+        try
+        {
+            btnRefreshIcon.classList.add('fa-spin');
+            
+            const ts = Date.now()
+            const response = await $ajax('GET', '/data/' + this.datadir_current + '/refresh');
+            if (Date.now() - ts < 1000) await sleepAsync(Math.max(1000 - (Date.now() - ts), 0));
+            
+            if (!response.success)
+            {
+                App.showToast('Could not refresh data');
+                return;
+            }
+            const json = JSON.parse(response.body!) as DataJSON;
+            if (this.current_data_loadid !== loadid) { console.warn("Abort no longer valid refreshAndLoadData Task ("+this.current_data_loadid+" <> "+loadid+")"); return; }
+
+            await this.applyData(json, true);
+            App.showToast('Data reloaded from filesystem');
+        }
+        catch (e)
+        {
+            App.showToast('Could not refresh data');
+            console.error(e);
+        }
+        finally
+        {
+            btnRefreshIcon.classList.remove('fa-spin');
+        }
+    }
+
+    async applyData(json: DataJSON, preclear: boolean)
+    {
+        this.current_data = null;
+        this.current_videolist = null;
+        
+        let vlist = new Map<string, DataJSONVideo>();
+        for (const vid of json.videos)
+        {
+            vid.has                = function(key) { return Object.hasOwnProperty.call(this, key); };
+            vid.hasNonNull         = function(key) { return this.has(key) && (this as any)[key] != null; };
+            vid.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call((this as any)[key], 'length') && (this as any)[key].length > 0; };
+
+            vid.data.info.has                = function(key) { return Object.hasOwnProperty.call(this, key); };
+            vid.data.info.hasNonNull         = function(key) { return this.has(key) && (this as any)[key] != null; };
+            vid.data.info.hasArrayWithValues = function(key) { return this.hasNonNull(key) && Object.hasOwnProperty.call((this as any)[key], 'length') && (this as any)[key].length > 0; };
+
+            vlist.set(vid.meta.uid, vid);
+        }
+
+        this.current_data = json;
+        this.current_videolist = vlist;
+
+        this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
+        this.Values_OrderMode[7].enabled = json.meta.has_ext_order;
+
+        if (json.meta.display_override   !== null) this.displaymode_current   = json.meta.display_override;
+        if (json.meta.width_override     !== null) this.widthmode_current     = json.meta.width_override;
+        if (json.meta.order_override     !== null) this.ordermode_current     = json.meta.order_override;
+        if (json.meta.thumbnail_override !== null) this.thumbnailmode_current = json.meta.thumbnail_override;
+        if (json.meta.videomode_override !== null) this.videomode_current     = json.meta.videomode_override;
+        if (json.meta.theme_override     !== null) this.theme_current         = json.meta.theme_override;
+
+        if (!this.getCurrentDisplayMode().enabled)   this.displaymode_current   = this.displaymode_default;
+        if (!this.getCurrentWidthMode().enabled)     this.widthmode_current     = this.widthmode_default;
+        if (!this.getCurrentOrderMode().enabled)     this.ordermode_current     = this.ordermode_default;
+        if (!this.getCurrentThumbnailMode().enabled) this.thumbnailmode_current = this.thumbnailmode_default;
+        if (!this.getCurrentVideoMode().enabled)     this.videomode_current     = this.videomode_default;
+        if (!this.getCurrentTheme().enabled)         this.theme_current         = this.theme_default;
+
+        await this.recreateDOM(preclear);
+
+        this.updateHash();
+    }
+
+    async recreateDOM(preclear: boolean)
     {
         if (this.current_data === null) { this.dom_content.innerHTML = ''; App.THUMBS.stop(); return; }
 
         App.THUMBS.stop();
 
-        this.dom_content.innerHTML = '';
+        if (preclear) this.dom_content.innerHTML = '';
         
         await sleepAsync(0);
         
@@ -426,7 +473,7 @@ class VideoListModel
         if (showtoast) App.showToast(this.getCurrentDisplayMode().text);
         
         this.updateHash();
-        this.recreateDOM().then(()=>{});
+        this.recreateDOM(false).then(()=>{});
     }
 
     setWidthMode(key: number|string, showtoast: boolean = false)
@@ -459,7 +506,7 @@ class VideoListModel
         if (showtoast) App.showToast(this.getCurrentOrderMode().text);
 
         this.updateHash();
-        this.recreateDOM().then(()=>{});
+        this.recreateDOM(false).then(()=>{});
     }
 
     setThumbnailMode(key: number|string, showtoast: boolean = false)
@@ -521,7 +568,7 @@ class VideoListModel
         App.UI.refreshPathCombobox();
         
         this.updateHash();
-        this.loadData().then(() => { });
+        this.loadData(true).then(() => { });
     }
 
     updateThemeStylesheet()

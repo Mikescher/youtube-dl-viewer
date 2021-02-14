@@ -130,8 +130,7 @@ namespace youtube_dl_viewer
         
         public static void Build(IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapGet("/data/{idx:int}/json", DataController.GetData);
-
+            endpoints.MapGet("/data/{idx:int}/json",    DataController.GetData);
             endpoints.MapGet("/data/{idx:int}/refresh", DataController.RefreshData);
 
             endpoints.MapJSEmbeddedBundle("/script_main.compiled.js",   JS_MAIN);

@@ -69,7 +69,7 @@ class UserInterfaceModel {
             this.toggleOptionDropDown($('.btn-theme'), 'Theme', App.VIDEOLIST.Values_Themes, App.VIDEOLIST.theme_current, v => { App.VIDEOLIST.setTheme(v, true); });
         });
         $('.btn-refresh').addEventListener('click', async () => {
-            await App.VIDEOLIST.loadData();
+            await App.VIDEOLIST.refreshAndLoadData();
         });
         $('.btn-close-videoplayer').addEventListener('click', () => {
             App.PLAYER.removeVideo();
