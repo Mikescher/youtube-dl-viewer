@@ -173,6 +173,7 @@ namespace youtube_dl_viewer.Model
                     new JProperty("filename_base", filenameBase),
                     
                     new JProperty("path_json", (object)null),
+                    new JProperty("path_toml", (object)null),
                     new JProperty("path_description", pathDesc),
                     new JProperty("path_video", pathVideo),
                     new JProperty("path_video_abs", Path.GetFullPath(pathVideo)),
@@ -297,7 +298,6 @@ namespace youtube_dl_viewer.Model
 
             var meta = new JProperty("meta", new JObject
             (
-                new JProperty("uid", uid),
                 new JProperty("path_toml", pathToml)
             ));
             if (uid != null) meta.Value["uid"] = uid;
