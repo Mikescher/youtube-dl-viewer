@@ -156,7 +156,7 @@ namespace youtube_dl_viewer.Controller
                 if (File.Exists(pathCache)) continue;
                 
                 count++;
-                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, pathCache), false);
+                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid, pathCache), false);
             }
             
             await context.Response.WriteAsync($"Started/Attached {count} new jobs");

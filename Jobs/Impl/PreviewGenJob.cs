@@ -216,8 +216,6 @@ namespace youtube_dl_viewer.Jobs
                 }
                 
                 ChangeState(JobState.Success);
-
-                
             }
             finally
             {

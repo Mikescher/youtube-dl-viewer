@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using ImageMagick;
 using Newtonsoft.Json.Linq;
+using youtube_dl_viewer.Model;
 
 namespace youtube_dl_viewer.Jobs
 {
@@ -13,14 +14,17 @@ namespace youtube_dl_viewer.Jobs
         public readonly string TempDir;
         public readonly MagickFormat Format;
         
+        public readonly VideoData Data;
+        
         private (int, int) _progress = (0, 5);
         public override (int, int) Progress => _progress;
         
-        public ThumbnailGenJob(AbsJobManager man, string src, string dst) : base(man, src)
+        public ThumbnailGenJob(AbsJobManager man, VideoData data, string dst) : base(man, data.PathThumbnail)
         {
             Destination      = dst;
             TempDir          = Path.Combine(Path.GetTempPath(), "yt_dl_t_" + Guid.NewGuid().ToString("B"));
             Format           = Program.Args.ThumbnailFormat;
+            Data             = data;
             Directory.CreateDirectory(TempDir);
         }
 
@@ -128,6 +132,10 @@ namespace youtube_dl_viewer.Jobs
                             ms.CopyTo(fs);
                         }
                     }
+                    
+                    Program.PatchDataCache(Data.DataDirIndex, Data.UID, new[]{"meta", "cached_thumbnail"}, true);
+                    Program.PatchDataCache(Data.DataDirIndex, Data.UID, new[]{"meta", "cached_thumbnail_fsize"}, new FileInfo(Destination).Length);
+                    Program.PatchDataCache(Data.DataDirIndex, Data.UID, new[]{"meta", "thumbnailcache_file"}, Destination);
                     
                     _progress = (6, 6);
                 

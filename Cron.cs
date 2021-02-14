@@ -107,7 +107,7 @@ namespace youtube_dl_viewer
                 var pathCache = ThumbnailController.GetThumbnailCachePath(vid.PathVideo);
                 if (File.Exists(pathCache)) continue;
                 
-                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, pathCache), false);
+                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid, pathCache), false);
             }
         }
 

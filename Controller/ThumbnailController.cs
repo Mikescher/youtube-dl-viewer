@@ -51,7 +51,7 @@ namespace youtube_dl_viewer.Controller
             
             if (!File.Exists(tfile))
             {
-                using (var proxy = JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, tfile)))
+                using (var proxy = JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid, tfile)))
                 {
                     while (proxy.JobRunningOrWaiting) await Task.Delay(50);
 
@@ -105,7 +105,7 @@ namespace youtube_dl_viewer.Controller
             else
             {
                 context.Response.Headers.Add("ThumbSourceType", "DirectButJobQueued");
-                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid.PathThumbnail, tfile), false);
+                JobRegistry.ThumbGenJobs.StartOrQueue((man) => new ThumbnailGenJob(man, vid, tfile), false);
                 await GetThumbnailDirect(context); 
             }
         }
