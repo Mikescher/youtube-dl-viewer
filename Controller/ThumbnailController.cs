@@ -59,16 +59,12 @@ namespace youtube_dl_viewer.Controller
                 }
                 
                 context.Response.Headers.Add("ThumbSourceType", "FromTriggeredJob");
-                var (bin, fmt) = await GetThumbnailFromFile(tfile, insize);
-                context.Response.Headers.Add(HeaderNames.ContentType, MagickToContentType(fmt));
-                await context.Response.BodyWriter.WriteAsync(bin);
+                await GetThumbnailFromFile(tfile, insize, context.Response);
             }
             else
             {
                 context.Response.Headers.Add("ThumbSourceType", "FromCache");
-                var (bin, fmt) = await GetThumbnailFromFile(tfile, insize);
-                context.Response.Headers.Add(HeaderNames.ContentType, MagickToContentType(fmt));
-                await context.Response.BodyWriter.WriteAsync(bin);
+                await GetThumbnailFromFile(tfile, insize, context.Response);
             }
             
         }
@@ -98,9 +94,7 @@ namespace youtube_dl_viewer.Controller
             if (File.Exists(tfile))
             {
                 context.Response.Headers.Add("ThumbSourceType", "FromCache");
-                var (bin, fmt) = await GetThumbnailFromFile(tfile, insize);
-                context.Response.Headers.Add(HeaderNames.ContentType, MagickToContentType(fmt));
-                await context.Response.BodyWriter.WriteAsync(bin);
+                await GetThumbnailFromFile(tfile, insize, context.Response);
             }
             else
             {
@@ -146,48 +140,46 @@ namespace youtube_dl_viewer.Controller
             throw new Exception("Unsuoported magick format: " + fmt);
         }
 
-        private static async Task<(byte[], MagickFormat)> GetThumbnailFromFile(string path, int size)
+        private static async Task GetThumbnailFromFile(string path, int size, HttpResponse resp)
         {
-            await using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                int dataOffset;
-                int dataSize;
-                MagickFormat dataFormat;
+            await using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            
+            int dataOffset;
+            int dataSize;
+            MagickFormat dataFormat;
                 
-                using (var br = new BinaryReader(fs, Encoding.UTF8, true))
+            using (var br = new BinaryReader(fs, Encoding.UTF8, true))
+            {
+                var pre1 = br.ReadByte();
+                var pre2 = br.ReadByte();
+                var pre3 = br.ReadByte();
+                var vers = br.ReadByte();
+
+                if (pre1 != 24) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
+                if (pre2 != 34) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
+                if (pre3 != 52) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
+                    
+                if (vers != 1) throw new Exception($"Thumbnail cache file {path} cannot be read (unknown version)");
+
+                br.ReadInt64();
+
+                for (var i = 0; i < size; i++)
                 {
-                    var pre1 = br.ReadByte();
-                    var pre2 = br.ReadByte();
-                    var pre3 = br.ReadByte();
-                    var vers = br.ReadByte();
-
-                    if (pre1 != 24) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
-                    if (pre2 != 34) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
-                    if (pre3 != 52) throw new Exception($"Thumbnail cache file {path} is damaged (invalid fheader)");
-                    
-                    if (vers != 1) throw new Exception($"Thumbnail cache file {path} cannot be read (unknown version)");
-
-                    br.ReadInt64();
-
-                    for (var i = 0; i < size; i++)
-                    {
-                        br.ReadInt32();
-                        br.ReadInt32();
-                        br.ReadInt16();
-                    }
-                    
-                    dataOffset = br.ReadInt32();
-                    dataSize   = br.ReadInt32();
-                    dataFormat = (MagickFormat)br.ReadInt16();
+                    br.ReadInt32();
+                    br.ReadInt32();
+                    br.ReadInt16();
                 }
-
-                fs.Seek(dataOffset, SeekOrigin.Begin);
-
-                var databin = new byte[dataSize];
-                fs.Read(databin, 0, dataSize);
-
-                return (databin, dataFormat);
+                    
+                dataOffset = br.ReadInt32();
+                dataSize   = br.ReadInt32();
+                dataFormat = (MagickFormat)br.ReadInt16();
+                
+                resp.Headers.Add(HeaderNames.ContentType, MagickToContentType(dataFormat));
             }
+
+            fs.Seek(dataOffset, SeekOrigin.Begin);
+
+            await fs.CopyToAsync(resp.Body, dataSize);
         }
         
         public static async Task GetThumbnailDirect(HttpContext context)
