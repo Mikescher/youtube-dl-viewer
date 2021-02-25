@@ -132,7 +132,8 @@ namespace youtube_dl_viewer.Model
             var extrac = jobj["data"]?["info"]?.Value<string>("extractor_key");
             var vtitle = jobj["data"]?.Value<string>("title");
 
-            _orderIndizes?.GetOrderingOrInsert(pathVideo, extrac, oid, vtitle);
+            var ordering = _orderIndizes?.GetOrderingOrInsert(pathVideo, extrac, oid, vtitle);
+            jobj["meta"]["ext_order_index"] = ordering;
             
             return jobj;
         }
