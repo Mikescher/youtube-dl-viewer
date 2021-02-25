@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,18 +12,23 @@ namespace youtube_dl_viewer
 {
     public static class Cron
     {
+        public static readonly Dictionary<int, DateTime?> LastCronRefreshData        = new Dictionary<int, DateTime?>();
+        public static          DateTime?                  LastCronGenerateThumbnails = null;
+        public static          DateTime?                  LastCronGeneratePreviews   = null;
+        public static          DateTime?                  LastCronConvertVideos      = null;
+        
         private static Thread _thread;
         public static void Start()
         {
-            if (Program.Args.AutoRefreshInterval <= 0) return;
+            if (Program.Args.CronRefreshInterval <= 0) return;
             
-            _thread = new Thread(ThreadRun) { IsBackground = true };
-            _thread.Start("CRON");
+            _thread = new Thread(ThreadRun) { IsBackground = true, Name = "CRON" };
+            _thread.Start();
         }
 
         private static async void ThreadRun()
         {
-            if (Program.Args.AutoRefreshInterval <= 0) return;
+            if (Program.Args.CronRefreshInterval <= 0) return;
             
             var interval = TimeSpan.FromSeconds(Program.Args.CronRefreshInterval);
 
@@ -33,6 +39,8 @@ namespace youtube_dl_viewer
             {
                 try
                 {
+                    for (var i = 0; i < Program.Args.DataDirs.Count; i++) LastCronRefreshData.TryAdd(i, null);
+                    
                     await Task.Delay(sleep * 1000);
 
                     if (!Program.Initialized) continue;
@@ -65,6 +73,7 @@ namespace youtube_dl_viewer
                 
                 var ddidx = i;
                 
+                LastCronRefreshData[ddidx] = DateTime.Now;
                 await Console.Out.WriteLineAsync($"Start data refresh of [{ddidx}] by cron interval ({interval:g})");
                 JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, ddidx, false), false);
             }
@@ -75,6 +84,8 @@ namespace youtube_dl_viewer
             if (!Program.HasValidFFMPEG)  { Console.WriteLine("Could not [GeneratePreviews] in cron - No ffmpeg installation found"); return; }
             if (Program.Args.CacheDir == null) { Console.WriteLine("Could not [GeneratePreviews] in cron - No cache directory specified"); return; }
 
+            LastCronGeneratePreviews = DateTime.Now;
+            
             var dirs = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
             var videos = dirs.SelectMany(p => p.Videos.Values).ToList();
             
@@ -96,6 +107,8 @@ namespace youtube_dl_viewer
             if (!Program.Args.CreateResizedThumbnails)  { Console.WriteLine("Could not [GenerateThumbnails] in cron - Resized thumbnails are disabled"); return; }
             if (Program.Args.CacheDir == null) { Console.WriteLine("Could not [GenerateThumbnails] in cron - No cache directory specified"); return; }
 
+            LastCronGenerateThumbnails = DateTime.Now;
+
             var dirs = (await Task.WhenAll(Program.Args.DataDirs.Select(async (_, i) => await Program.GetData(i)))).ToList();
             var videos = dirs.SelectMany(p => p.Videos.Values).ToList();
             
@@ -115,6 +128,8 @@ namespace youtube_dl_viewer
         {
             if (!Program.HasValidFFMPEG)  { Console.WriteLine("Could not [GeneratePreviews] in cron - No ffmpeg installation found"); return; }
             if (Program.Args.CacheDir == null) { Console.WriteLine("Could not [GeneratePreviews] in cron - No cache directory specified"); return; }
+
+            LastCronConvertVideos = DateTime.Now;
 
             var dirs = (await Task.WhenAll(Program.Args.DataDirs.Select(async (s, i) => await Program.GetData(i)))).ToList();
             var videos = dirs.SelectMany(p => p.Videos.Values).ToList();

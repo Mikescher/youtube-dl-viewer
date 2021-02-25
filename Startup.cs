@@ -53,7 +53,7 @@ namespace youtube_dl_viewer
 
             app.UseRouting();
             
-            app.UseMiddleware<CronMiddleware>();
+            app.UseMiddleware<AutoRefreshMiddleware>();
 
             app.UseEndpoints(Router.Build);
         }
