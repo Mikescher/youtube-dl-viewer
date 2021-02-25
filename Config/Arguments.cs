@@ -129,7 +129,7 @@ namespace youtube_dl_viewer.Config
         [BoolConfig("--resized-thumbs", "--no-resized-thumbs")]
         public bool CreateResizedThumbnails = true;
 
-        [StringConfig("--scaled-thumbnail-format")]
+        [EnumConfig("--scaled-thumbnail-format")]
         public MagickFormat ThumbnailFormat = MagickFormat.WebP;
 
         [StringConfig("--config-location")]

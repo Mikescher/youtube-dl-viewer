@@ -89,4 +89,18 @@ namespace youtube_dl_viewer.Config
             return v.ToString();
         }
     }
+    
+    public class EnumConfigAttribute: ConfigAttribute
+    {
+        public readonly string ParameterKey;
+
+        public override IEnumerable<string> Keys => new[]{ParameterKey};
+
+        public EnumConfigAttribute(string key)
+        {
+            ParameterKey = key;
+        }
+
+        public override string FormatValue(object value) => value?.ToString();
+    }
 }
