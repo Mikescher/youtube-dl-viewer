@@ -41,13 +41,15 @@ class UserInterfaceModel {
     initHeaderEvents() {
         var _a;
         $('.btn-adminlinks').addEventListener('click', () => {
-            this.toggleActionDropDown($('.btn-adminlinks'), 'AdminLinks', ["Jobs", "Config", "Datadump"], (idx, act) => {
+            this.toggleActionDropDown($('.btn-adminlinks'), 'AdminLinks', ["Jobs", "Config", "Datadump", "Status"], (idx, _) => {
                 if (idx == 0)
                     window.open('/Jobs', '_blank');
                 if (idx == 1)
                     window.open('/Config', '_blank');
                 if (idx == 2)
                     window.open('/Data', '_blank');
+                if (idx == 3)
+                    window.open('/Status', '_blank');
             });
         });
         $('.btn-display').addEventListener('click', () => {

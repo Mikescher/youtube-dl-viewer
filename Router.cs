@@ -54,6 +54,12 @@ namespace youtube_dl_viewer
             ("youtube_dl_viewer.staticfiles", "script_data.js"),
         };
         
+        public static readonly (string,string)[] JS_STATUS =
+        {
+            ("youtube_dl_viewer.staticfiles", "script_util.js"), 
+            ("youtube_dl_viewer.staticfiles", "script_status.js"),
+        };
+
         public static readonly (string,string)[] CSS_MAIN =
         {
 #if DEBUG
@@ -128,6 +134,21 @@ namespace youtube_dl_viewer
             ("youtube_dl_viewer.staticfiles", "style_data.css"), 
         };
         
+        public static readonly (string,string)[] CSS_STATUS =
+        {
+#if DEBUG
+            ("youtube_dl_viewer.staticexternal", "fontawesome.css"),
+            ("youtube_dl_viewer.staticexternal", "solid.css"),
+            ("youtube_dl_viewer.staticexternal", "regular.css"),
+#else
+            ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
+            ("youtube_dl_viewer.staticexternal", "solid.min.css"),
+            ("youtube_dl_viewer.staticexternal", "regular.min.css"),
+#endif
+                
+            ("youtube_dl_viewer.staticfiles", "style_status.css"), 
+        };
+
         public static void Build(IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGet("/data/{idx:int}/json",    DataController.GetData);
@@ -137,11 +158,13 @@ namespace youtube_dl_viewer
             endpoints.MapJSEmbeddedBundle("/script_jobs.compiled.js",   JS_JOBS);
             endpoints.MapJSEmbeddedBundle("/script_config.compiled.js", JS_CONFIG);
             endpoints.MapJSEmbeddedBundle("/script_data.compiled.js",   JS_DATA);
+            endpoints.MapJSEmbeddedBundle("/script_status.compiled.js", JS_STATUS);
             
             endpoints.MapCSSEmbeddedBundle("/style_main.combined.css",   CSS_MAIN);
             endpoints.MapCSSEmbeddedBundle("/style_jobs.combined.css",   CSS_JOBS);
             endpoints.MapCSSEmbeddedBundle("/style_config.combined.css", CSS_CONFIG);
             endpoints.MapCSSEmbeddedBundle("/style_data.combined.css",   CSS_DATA);
+            endpoints.MapCSSEmbeddedBundle("/style_status.combined.css", CSS_STATUS);
             
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
@@ -170,8 +193,9 @@ namespace youtube_dl_viewer
             endpoints.MapGet("/themes/{idx:int}",        ThemeController.GetTheme);
             endpoints.MapGet("/themes/{idx:int}/{name}", ThemeController.GetTheme);
             
-            endpoints.MapGet("/config/list", ConfigController.ListConfig);
-
+            endpoints.MapGet("/config/list",   ConfigController.ListConfig);
+            endpoints.MapGet("/config/status", StatusController.GetStatus);
+            
 
             endpoints.MapRazorPages();
 

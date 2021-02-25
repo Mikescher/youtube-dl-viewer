@@ -1,0 +1,97 @@
+html,body
+{
+  margin:0;
+  padding:0;
+  height:100%;
+  width: 100%;
+
+  font-family: Consolas, monospace;
+}
+
+html
+{
+  display: flex;
+  justify-content: center;
+}
+
+body  {
+  max-width: 1200px;
+}
+
+html {
+  background-color: #e8e8e8;
+}
+
+html.error {
+  background-color: #ff6666;
+}
+
+html.loading {
+  background-color: #ee9;
+}
+
+h1 {
+  text-align: center;
+  color: #800;
+  font-weight: bold;
+  font-size: 3rem;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+h2 {
+ margin: 0;
+ margin-bottom: 2rem;
+}
+
+.card {
+  background-color: #bbb;
+  padding: 1rem;
+  margin: 0 8px 24px 8px;
+  border: 1px solid #222;
+}
+
+
+table {
+  border: 1px solid #555;
+  border-collapse: collapse;
+  margin: 8px 4px;
+  width: calc(100% - 8px);
+  overflow-wrap: break-word;
+  
+  margin-bottom: 1em;
+}
+th, td {
+  border: 1px solid #555;
+}
+th {
+  text-align: left;
+  background-color: #888;
+  padding-left: 4px;
+}
+td {
+  word-wrap: anywhere;
+  word-break: break-all;
+  white-space: pre-wrap;
+  padding: 0 4px;
+}
+
+table         tr td:nth-child(1) { width: 400px; }
+
+table.table-3 tr td:nth-child(1) { width: 400px; }
+table.table-3 tr td:nth-child(2) { width: 300px; }
+
+table tr:hover {
+  background-color: #DDB;
+}
+
+*[data-jsonlink]:not(.okay) {
+  opacity: 0.3;
+}
+
+
+
+
+
+
+

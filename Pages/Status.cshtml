@@ -1,0 +1,188 @@
+﻿@page
+@using youtube_dl_viewer
+@using youtube_dl_viewer.Jobs
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>youtube-dl Viewer [Status] v@(Program.Version)</title>
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var css in Router.CSS_STATUS) { <link rel="stylesheet" type="text/css" href="/@css.Item2?v=@Program.Version"> }
+    }
+    else
+    {
+        <link rel="stylesheet" type="text/css" href="/style_status.combined.css?v=@Program.Version">
+    }
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var js in Router.JS_STATUS) { <script src="/@js.Item2?v=@Program.Version"></script> }
+    }
+    else
+    {
+        <script src="/script_status.compiled.js?v=@Program.Version"></script>
+    }
+    
+</head>
+
+<body>
+
+<h1>Status</h1>
+
+<div id="root">
+    <div class="card card-table">
+        <h2>Cron Status</h2>
+        <table>
+            <tbody>
+            @for (var i = 0; i < Program.Args.DataDirs.Count; i++)
+            {
+                <tr><td>LastCronRefreshData[@i]</td><td data-jsonlink="cron.LastCronRefreshData.@(i).format">...</td></tr>
+            }
+            </tbody>
+        </table>
+        
+        <table>
+            <tbody>
+            @for (var i = 0; i < Program.Args.DataDirs.Count; i++)
+            {
+                <tr><td>LastAutoRefreshData[@i]</td><td data-jsonlink="cron.LastAutoRefreshData.@(i).format">...</td></tr>
+            }
+            </tbody>
+        </table>
+        
+        <table>
+            <tbody>
+            <tr><td>LastCronConvertVideos</td><td data-jsonlink="cron.LastCronConvertVideos.format">...</td></tr>
+            <tr><td>LastCronGeneratePreviews</td><td data-jsonlink="cron.LastCronGeneratePreviews.format">...</td></tr>
+            <tr><td>LastCronGenerateThumbnails</td><td data-jsonlink="cron.LastCronGenerateThumbnails.format">...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card card-table">
+        <h2>Job Status</h2>
+        <table>
+            <tbody>
+            <tr><td>Active Jobs</td><td data-jsonlink="jobs.CountActiveTotal">...</td></tr>
+            <tr><td>Queued Jobs</td><td data-jsonlink="jobs.CountQueuedTotal">...</td></tr>
+            <tr><td>Finished Jobs</td><td data-jsonlink="jobs.CountFinishedTotal">...</td></tr>
+            </tbody>
+        </table>
+        <table>
+            <thead>
+            <tr>
+                <th>Manager</th>
+                <th>CountActive</th>
+                <th>CountQueued</th>
+                <th>CountFinished</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var man in JobRegistry.Managers)
+            {
+                <tr>
+                    <td>@man.Name</td>
+                    <td data-jsonlink="jobs.CountActive.@man.Name">...</td>
+                    <td data-jsonlink="jobs.CountQueued.@man.Name">...</td>
+                    <td data-jsonlink="jobs.CountFinished.@man.Name">...</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card card-table">
+        <h2>Video Status</h2>
+        <table>
+            <tbody>
+            <tr><td>CountCachedPreviews</td><td data-jsonlink="videos.CountCachedPreviews">...</td></tr>
+            <tr><td>CountCachedThumbnails</td><td data-jsonlink="videos.CountCachedThumbnails">...</td></tr>
+            </tbody>
+        </table>
+            
+        <table>
+            <tbody>
+            <tr><td>CountCachedVideosTotal</td><td data-jsonlink="videos.CountCachedVideosTotal">...</td></tr>
+            <tr><td>CountCachedVideosCachable</td><td data-jsonlink="videos.CountCachedVideosCachable">...</td></tr>
+            <tr><td>CountCachedVideosAdditional</td><td data-jsonlink="videos.CountCachedVideosAdditional">...</td></tr>
+            <tr><td>CountVideoCachable</td><td data-jsonlink="videos.CountVideoCachable">...</td></tr>
+            <tr><td>CountThumbCachable</td><td data-jsonlink="videos.CountThumbCachable">...</td></tr>
+            </tbody>
+        </table>
+            
+        <table>
+            <tbody>
+            <tr><td>CountTotal</td><td data-jsonlink="videos.CountTotal">...</td></tr>
+            </tbody>
+        </table>
+            
+        <table class="table-3">
+            <tbody>
+            <tr><td>FilesizeCachedPreviews</td><td data-jsonlink="videos.FilesizeCachedPreviews.format">...</td><td data-jsonlink="videos.FilesizeCachedPreviews.raw">...</td></tr>
+            <tr><td>FilesizeCachedThumbnails</td><td data-jsonlink="videos.FilesizeCachedThumbnails.format">...</td><td data-jsonlink="videos.FilesizeCachedThumbnails.raw">...</td></tr>
+            <tr><td>FilesizeCachedVideos</td><td data-jsonlink="videos.FilesizeCachedVideos.format">...</td><td data-jsonlink="videos.FilesizeCachedVideos.raw">...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card card-table">
+        <h2>Process Status</h2>
+        
+        <table>
+            <tbody>
+            <tr><td>Handle</td><td data-jsonlink="process.Handle">...</td></tr>
+            <tr><td>Id</td><td data-jsonlink="process.Id">...</td></tr>
+            <tr><td>ProcessName</td><td data-jsonlink="process.ProcessName">...</td></tr>
+            </tbody>
+        </table>
+        
+        <table class="table-3">
+            <tbody>
+            <tr><td>PrivateMemorySize</td       ><td data-jsonlink="process.PrivateMemorySize.format"       >...</td><td data-jsonlink="process.PrivateMemorySize.raw"       >...</td></tr>
+            <tr><td>PagedMemorySize</td         ><td data-jsonlink="process.PagedMemorySize.format"         >...</td><td data-jsonlink="process.PagedMemorySize.raw"         >...</td></tr>
+            <tr><td>PeakPagedMemorySize</td     ><td data-jsonlink="process.PeakPagedMemorySize.format"     >...</td><td data-jsonlink="process.PeakPagedMemorySize.raw"     >...</td></tr>
+            <tr><td>NonpagedSystemMemorySize</td><td data-jsonlink="process.NonpagedSystemMemorySize.format">...</td><td data-jsonlink="process.NonpagedSystemMemorySize.raw">...</td></tr>
+            <tr><td>VirtualMemorySize</td       ><td data-jsonlink="process.VirtualMemorySize.format"       >...</td><td data-jsonlink="process.VirtualMemorySize.raw"       >...</td></tr>
+            <tr><td>PeakVirtualMemorySize</td   ><td data-jsonlink="process.PeakVirtualMemorySize.format"   >...</td><td data-jsonlink="process.PeakVirtualMemorySize.raw"   >...</td></tr>
+            <tr><td>PagedSystemMemorySize</td   ><td data-jsonlink="process.PagedSystemMemorySize.format"   >...</td><td data-jsonlink="process.PagedSystemMemorySize.raw"   >...</td></tr>
+            <tr><td>GCTotalMemory</td           ><td data-jsonlink="process.GCTotalMemory.format"           >...</td><td data-jsonlink="process.GCTotalMemory.raw"           >...</td></tr>
+            <tr><td>WorkingSet</td              ><td data-jsonlink="process.WorkingSet.format"              >...</td><td data-jsonlink="process.WorkingSet.raw"              >...</td></tr>
+            </tbody>
+        </table>
+        
+        <table class="table-3">
+            <tbody>
+            <tr><td>PrivilegedProcessorTime</td><td data-jsonlink="process.PrivilegedProcessorTime.format">...</td><td data-jsonlink="process.PrivilegedProcessorTime.raw.TotalMilliseconds">...</td></tr>
+            <tr><td>UserProcessorTime</td      ><td data-jsonlink="process.UserProcessorTime.format"      >...</td><td data-jsonlink="process.UserProcessorTime.raw.TotalMilliseconds"      >...</td></tr>
+            <tr><td>TotalProcessorTime</td     ><td data-jsonlink="process.TotalProcessorTime.format"     >...</td><td data-jsonlink="process.TotalProcessorTime.raw.TotalMilliseconds"     >...</td></tr>
+            </tbody>
+        </table>
+        
+        <table>
+            <tbody>
+            <tr><td>StartTime</td><td data-jsonlink="process.StartTime">...</td></tr>
+            <tr><td>UpTime</td><td data-jsonlink="process.UpTime.format">...</td></tr>
+            <tr><td>TickCount</td><td data-jsonlink="process.TickCount.format">...</td></tr>
+            </tbody>
+        </table>
+        
+        <table>
+            <tbody>
+            <tr><td>BasePriority</td><td data-jsonlink="process.BasePriority">...</td></tr>
+            </tbody>
+        </table>
+        
+        <table>
+            <tbody>
+            <tr><td>ThreadCount</td><td data-jsonlink="process.ThreadCount">...</td></tr>
+            <tr><td>HandleCount</td><td data-jsonlink="process.HandleCount">...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+
+</html>
