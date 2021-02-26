@@ -7,6 +7,8 @@ namespace youtube_dl_viewer.Config
 {
     public class DataDirSpec
     {
+        public readonly int Index;
+        
         public readonly string InputSpec;
         
         public readonly string Path;
@@ -36,10 +38,12 @@ namespace youtube_dl_viewer.Config
             }
         }
 
-        public DataDirSpec(string spec, string path, string name, 
+        private DataDirSpec(int index, string spec, string path, string name, 
             bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, bool updateOrderfile, string htmltitle,
             int? display_override, int? width_override, int? order_override, int? videomode_override, int? thumbnailmode_override, string theme_override)
         {
+            Index = index;
+            
             InputSpec          = spec;
             Path               = path?.Replace("/", System.IO.Path.DirectorySeparatorChar.ToString());
             Name               = name;
@@ -69,9 +73,9 @@ namespace youtube_dl_viewer.Config
             return OrderFilename != null ? OrderingList.ParseFromFile(FullOrderFilename, UpdateOrderFile) : null;
         }
         
-        public static DataDirSpec Parse(string spec)
+        public static DataDirSpec Parse(int index, string spec)
         {
-            if (!spec.Trim().StartsWith("{")) return FromPath(spec);
+            if (!spec.Trim().StartsWith("{")) return FromPath(index, spec);
 
             var json = JObject.Parse(spec);
 
@@ -106,12 +110,12 @@ namespace youtube_dl_viewer.Config
 
             var htmltitle = json.GetValue("htmltitle")?.Value<string>()?.Replace("{version}", Program.Version);
 
-            return new DataDirSpec(spec, path, name, useFilename, recDepth, filter, order, updateorderfile, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_thumbnailmode, ovr_theme);
+            return new DataDirSpec(index, spec, path, name, useFilename, recDepth, filter, order, updateorderfile, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_thumbnailmode, ovr_theme);
         }
 
-        public static DataDirSpec FromPath(string dir)
+        public static DataDirSpec FromPath(int index, string dir)
         {
-            return new DataDirSpec(dir, dir, dir, false, 0, "*", null, false, null, null, null, null, null, null, null);
+            return new DataDirSpec(index, dir, dir, dir, false, 0, "*", null, false, null, null, null, null, null, null, null);
         }
     }
 }

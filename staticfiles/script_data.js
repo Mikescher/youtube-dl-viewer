@@ -5,7 +5,7 @@ window.onload = async function () {
 class DataDumpController {
     static async refresh() {
         const dom_root = $('#root');
-        const response = await $ajax('GET', '/data/dump');
+        const response = await $ajax('GET', '/state/data');
         if (!response.success || !(response.status >= 200 && response.status < 400)) {
             console.error('Could not refresh');
             dom_root.innerHTML = '(ERROR)';

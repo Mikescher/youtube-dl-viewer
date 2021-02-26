@@ -1,0 +1,36 @@
+﻿@page
+@using youtube_dl_viewer
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>youtube-dl Viewer [Cache Status] v@(Program.Version)</title>
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var css in Router.CSS_CACHE) { <link rel="stylesheet" type="text/css" href="/@css.Item2?v=@Program.Version"> }
+    }
+    else
+    {
+        <link rel="stylesheet" type="text/css" href="/style_cache.combined.css?v=@Program.Version">
+    }
+    
+    @if (Program.DEBUG)
+    {
+        @foreach (var js in Router.JS_CACHE) { <script src="/@js.Item2?v=@Program.Version"></script> }
+    }
+    else
+    {
+        <script src="/script_cache.compiled.js?v=@Program.Version"></script>
+    }
+    
+</head>
+
+<body>
+
+<h1>youtube-dl-viewer Cache<span id="h1more1" class="h1more"></span><span id="h1more2" class="h1more"></span><span id="h1more3" class="h1more"></span></h1>
+
+<div id="root"><div class="lds-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+</body>
+
+</html>

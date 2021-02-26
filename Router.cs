@@ -59,6 +59,22 @@ namespace youtube_dl_viewer
             ("youtube_dl_viewer.staticfiles", "script_util.js"), 
             ("youtube_dl_viewer.staticfiles", "script_status.js"),
         };
+        
+        public static readonly (string,string)[] JS_CACHE =
+        {
+            ("youtube_dl_viewer.staticexternal", "lodash.js"), 
+            ("youtube_dl_viewer.staticexternal", "hyperlist.js"), 
+#if DEBUG
+            ("youtube_dl_viewer.staticexternal", "Sortable.js"), 
+            ("youtube_dl_viewer.staticexternal", "frappe-datatable.js"), 
+#else
+            ("youtube_dl_viewer.staticexternal", "Sortable.min.js"), 
+            ("youtube_dl_viewer.staticexternal", "frappe-datatable.min.js"), 
+#endif
+            
+            ("youtube_dl_viewer.staticfiles", "script_util.js"), 
+            ("youtube_dl_viewer.staticfiles", "script_cache.js"),
+        };
 
         public static readonly (string,string)[] CSS_MAIN =
         {
@@ -148,6 +164,27 @@ namespace youtube_dl_viewer
                 
             ("youtube_dl_viewer.staticfiles", "style_status.css"), 
         };
+        
+        public static readonly (string,string)[] CSS_CACHE =
+        {
+#if DEBUG
+            ("youtube_dl_viewer.staticexternal", "fontawesome.css"),
+            ("youtube_dl_viewer.staticexternal", "solid.css"),
+            ("youtube_dl_viewer.staticexternal", "regular.css"),
+            
+            ("youtube_dl_viewer.staticexternal", "frappe-datatable.css"),
+#else
+            ("youtube_dl_viewer.staticexternal", "fontawesome.min.css"),
+            ("youtube_dl_viewer.staticexternal", "solid.min.css"),
+            ("youtube_dl_viewer.staticexternal", "regular.min.css"),
+            
+            ("youtube_dl_viewer.staticexternal", "frappe-datatable.min.css"),
+#endif
+                
+            ("youtube_dl_viewer.staticfiles", "style_animation.css"), 
+            
+            ("youtube_dl_viewer.staticfiles", "style_cache.css"), 
+        };
 
         public static void Build(IEndpointRouteBuilder endpoints)
         {
@@ -159,12 +196,14 @@ namespace youtube_dl_viewer
             endpoints.MapJSEmbeddedBundle("/script_config.compiled.js", JS_CONFIG);
             endpoints.MapJSEmbeddedBundle("/script_data.compiled.js",   JS_DATA);
             endpoints.MapJSEmbeddedBundle("/script_status.compiled.js", JS_STATUS);
+            endpoints.MapJSEmbeddedBundle("/script_cache.compiled.js",  JS_CACHE);
             
             endpoints.MapCSSEmbeddedBundle("/style_main.combined.css",   CSS_MAIN);
             endpoints.MapCSSEmbeddedBundle("/style_jobs.combined.css",   CSS_JOBS);
             endpoints.MapCSSEmbeddedBundle("/style_config.combined.css", CSS_CONFIG);
             endpoints.MapCSSEmbeddedBundle("/style_data.combined.css",   CSS_DATA);
             endpoints.MapCSSEmbeddedBundle("/style_status.combined.css", CSS_STATUS);
+            endpoints.MapCSSEmbeddedBundle("/style_cache.combined.css",  CSS_CACHE);
             
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticfiles");
             endpoints.MapEmbeddedResources("/", "youtube_dl_viewer.staticexternal");
@@ -179,8 +218,6 @@ namespace youtube_dl_viewer
             endpoints.MapGet("/data/{idx:int}/video/{id}/seek",   VideoController.GetVideoSeek);
             endpoints.MapGet("/data/{idx:int}/video/{id}/file",   VideoController.GetVideoFile);
             endpoints.MapGet("/data/{idx:int}/video/{id}/stream", VideoController.GetVideoStream);
-            
-            endpoints.MapGet("/data/dump", DataDumpController.ListData);
                 
             endpoints.MapGet("/jobmanager/list",                                             JobController.List);
             endpoints.MapGet("/jobmanager/start/generatePreviews/{selector1}/{selector2}",   JobController.ManuallyForcePreviewJobs);
@@ -193,9 +230,10 @@ namespace youtube_dl_viewer
             endpoints.MapGet("/themes/{idx:int}",        ThemeController.GetTheme);
             endpoints.MapGet("/themes/{idx:int}/{name}", ThemeController.GetTheme);
             
-            endpoints.MapGet("/config/list",   ConfigController.ListConfig);
-            endpoints.MapGet("/config/status", StatusController.GetStatus);
-            
+            endpoints.MapGet("/state/data",   DataDumpController.ListData);
+            endpoints.MapGet("/state/config", ConfigController.ListConfig);
+            endpoints.MapGet("/state/system", StatusController.GetStatus);
+            endpoints.MapGet("/state/cache",  CacheController.GetStatus);
 
             endpoints.MapRazorPages();
 

@@ -21,7 +21,7 @@ class StatusController
         
         try 
         {
-            const response = await $ajax('GET', '/config/status');
+            const response = await $ajax('GET', '/state/system');
 
             if (!response.success || !(response.status! >= 200 && response.status! < 400)) { console.error('Could not refresh (statuscode)'); dom_html.classList.add("error"); return; }
             dom_html.classList.remove("error");

@@ -67,7 +67,7 @@ class ConfigController
     {
         const dom_root = $('#root')!
     
-        const response = await $ajax('GET', '/config/list');
+        const response = await $ajax('GET', '/state/config');
 
         if (!response.success || !(response.status! >= 200 && response.status! < 400)) { console.error('Could not refresh'); dom_root.innerHTML = '(ERROR)'; return; }
 

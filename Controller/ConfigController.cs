@@ -88,6 +88,7 @@ namespace youtube_dl_viewer.Controller
                 yield return new JObject
                 (
                     new JProperty("index",               idx),
+                    new JProperty("index2",              ddir.Index),
                     new JProperty("spec",                ddir.InputSpec),
                     new JProperty("selector_id",         ddir.SelectorID),
                     new JProperty("full_order_filename", ddir.FullOrderFilename),

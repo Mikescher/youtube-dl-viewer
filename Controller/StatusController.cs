@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using youtube_dl_viewer.Config;
 using youtube_dl_viewer.Jobs;
+using youtube_dl_viewer.Util;
 
 namespace youtube_dl_viewer.Controller
 {
@@ -107,23 +108,13 @@ namespace youtube_dl_viewer.Controller
             yield return new JProperty("TickCount", FormatTimeSpan(TimeSpan.FromMilliseconds(Environment.TickCount64)));
         }
 
-        private static string BytesToStr(long byteCount)
-        {
-            string[] suf = { "byte", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
-            if (byteCount == 0) return "0" + " " + suf[0];
-            var bytes = Math.Abs(byteCount);
-            var place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            var num = Math.Round(bytes / Math.Pow(1024, place), 1);
-            return (Math.Sign(byteCount) * num) + " " + suf[place];
-        }
-        
         private static JObject FormatBytes(long bytes)
         {
             return new JObject
             (
                 new JProperty("raw", bytes),
                 new JProperty("type", "bytes"),
-                new JProperty("format", BytesToStr(bytes))
+                new JProperty("format", FilesizeUtil.BytesToString(bytes))
             );
         }
         

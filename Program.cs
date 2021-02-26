@@ -209,6 +209,8 @@ namespace youtube_dl_viewer
                 });
         }
 
+        public static async Task<DataDirData> GetData(DataDirSpec spec) => await GetData(spec.Index);
+        
         public static async Task<DataDirData> GetData(int idx)
         {
             DataDirData data;

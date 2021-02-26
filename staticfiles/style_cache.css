@@ -1,0 +1,62 @@
+html,body
+{
+  margin:0;
+  padding:0;
+  height:100%;
+}
+
+body
+{
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  overflow: hidden;
+  
+  background: #EEE;
+}
+
+body > h1 {
+  flex-grow: 0;
+  font-size: 32px;
+  margin: 8px 16px;
+}
+
+body > #root {
+  flex-grow: 1;
+}
+
+#root {
+  width: calc(100vw - 32px);
+  margin: 0 16px;
+  
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+}
+
+.dt-scrollable {
+  height: calc(100vh - 90px) !important;
+  width:  calc(100vw - 32px) !important;
+}
+
+.dt-cell__content {
+  padding: 2px 2px 0 2px !important;
+}
+
+.h1more {
+  opacity: 0.5;
+  font-size: 0.7em;
+  vertical-align: top;
+  margin-left: 1em;
+}
+
+.dt-cell--col-0 { text-align: left   !important; }
+.dt-cell--col-1 { text-align: center !important; }
+.dt-cell--col-2 { text-align: left   !important; }
+.dt-cell--col-3 { text-align: left   !important; }
+.dt-cell--col-4 { text-align: right  !important; }
+.dt-cell--col-5 { text-align: center !important; }
+.dt-cell--col-6 { text-align: left   !important; }
+.dt-cell--col-7 { text-align: left   !important; }
+
+.dt-cell--header { text-align: left   !important; }

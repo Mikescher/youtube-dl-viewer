@@ -141,7 +141,7 @@ namespace youtube_dl_viewer.Config
         {
             foreach (var arg in args) ParseSingleArgument(arg, true);
             
-            if (!DataDirs.Any()) DataDirs = new List<DataDirSpec>{ DataDirSpec.FromPath(Environment.CurrentDirectory) };
+            if (!DataDirs.Any()) DataDirs = new List<DataDirSpec>{ DataDirSpec.FromPath(0, Environment.CurrentDirectory) };
 
             if (Port == -1) Port = FindFreePort();
         }
@@ -188,8 +188,8 @@ namespace youtube_dl_viewer.Config
                 return;
             }
             
-            if (key == "path")      { DataDirs.Add(DataDirSpec.Parse(value));           return; }
-            if (key == "usertheme") { Themes.Add(ThemeSpec.Parse(value, Themes.Count)); return; }
+            if (key == "path")      { DataDirs.Add(DataDirSpec.Parse(DataDirs.Count, value)); return; }
+            if (key == "usertheme") { Themes.Add(ThemeSpec.Parse(value, Themes.Count));       return; }
             
             if (key == "display")                 { OptDisplayMode              = ParseDisplayMode(value);                                               return; }
             if (key == "order")                   { OptOrderMode                = ParseOrderMode(value);                                                 return; }
