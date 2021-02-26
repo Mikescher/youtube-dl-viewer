@@ -100,21 +100,23 @@
   grid-row: 1;
 
   justify-self: right;
-  align-self: start;
+  align-self: end;
 
   background-color: rgba(255, 255, 255, 0.75);
   padding: 0 4px;
-  margin: 0;
+  margin: 0 2px calc(6px + 2px) 0;
 
   font-size: 0.8rem;
   font-family: "Courier New",monospace;
-}
-
-#content.lstyle_grid .video_entry:hover .duration {
+  
   display: inherit;
 }
 
-#content.lstyle_grid.lstyle_videomode_3 .video_entry.webm-cached .icon_cached {
+#content.lstyle_grid .video_entry.no_like_bar .duration {
+  margin-bottom: 2px;
+}
+
+#content.lstyle_grid .video_entry .icon_cached {
   grid-column: 1;
   grid-row: 1;
 
@@ -134,6 +136,9 @@
 
   z-index: 1;
 }
+
+#content.lstyle_grid .video_entry:hover .duration    { display: none; }
+#content.lstyle_grid .video_entry:hover .icon_cached { display: none; }
 
 /* ----------------------------------------------------------------------------- */
 

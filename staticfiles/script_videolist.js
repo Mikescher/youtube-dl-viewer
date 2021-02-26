@@ -247,8 +247,9 @@ class VideoListModel {
             this.dom_content.innerHTML = '';
         await sleepAsync(0);
         let videos = this.current_data.videos;
+        let meta = this.current_data.meta;
         videos = this.getCurrentOrderMode().sort(videos);
-        let html = this.getCurrentDisplayMode().renderer.render(videos, this.getCurrentDataDir());
+        let html = this.getCurrentDisplayMode().renderer.render(videos, meta, this.getCurrentDataDir());
         this.dom_content.classList.value = ''; // clear all classes
         this.dom_content.classList.add(...this.getCurrentVideoMode().css);
         this.dom_content.classList.add(...this.getCurrentDisplayMode().css);

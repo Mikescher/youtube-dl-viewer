@@ -65,29 +65,32 @@ interface DataJSONVideo
     }
 }
 
+interface DataJSONMeta
+{
+    htmltitle: string;
+    has_ext_order: boolean;
+    all_cached: boolean;
+    count_total: number;
+    count_info: number;
+    count_raw: number;
+    display_override: number|null;
+    order_override: number|null;
+    width_override: number|null;
+    thumbnail_override: number|null;
+    videomode_override: number|null;
+    theme_override: number|null;
+}
+
 interface DataJSON 
 {
-    meta: 
-    { 
-        htmltitle: string; 
-        has_ext_order: boolean; 
-        count_total: number; 
-        count_info: number; 
-        count_raw: number; 
-        display_override: number|null;
-        order_override: number|null;
-        width_override: number|null;
-        thumbnail_override: number|null;
-        videomode_override: number|null; 
-        theme_override: number|null;  
-    };
+    meta: DataJSONMeta;
     videos: DataJSONVideo[];
     missing: string[];
 }
 
 interface DisplayRenderer 
-{ 
-    render(videos: DataJSONVideo[], dir: DataDirDef): string; 
+{
+    render(videos: DataJSONVideo[], meta: DataJSONMeta, dir: DataDirDef): string; 
     setThumbnail(thumb: HTMLImageElement): Promise<boolean>;
     unsetThumbnail(thumb: HTMLElement): Promise<void>;
     initEvents(): void;
@@ -402,12 +405,13 @@ class VideoListModel
         if (preclear) this.dom_content.innerHTML = '';
         
         await sleepAsync(0);
-        
+
         let videos = this.current_data.videos;
+        let meta   = this.current_data.meta;
 
         videos = this.getCurrentOrderMode().sort(videos);
 
-        let html = this.getCurrentDisplayMode().renderer.render(videos, this.getCurrentDataDir());
+        let html = this.getCurrentDisplayMode().renderer.render(videos, meta, this.getCurrentDataDir());
 
         this.dom_content.classList.value = ''; // clear all classes
 

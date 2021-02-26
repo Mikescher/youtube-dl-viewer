@@ -1,7 +1,7 @@
 ﻿
 class DisplayTimelineRenderer implements DisplayRenderer
 {
-    render(videos: DataJSONVideo[], dir: DataDirDef): string
+    render(videos: DataJSONVideo[], meta: DataJSONMeta, dir: DataDirDef): string
     {
         let html = '';
 

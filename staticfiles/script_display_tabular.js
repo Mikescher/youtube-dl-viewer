@@ -1,6 +1,6 @@
 "use strict";
 class DisplayTabularRenderer {
-    render(videos, dir) {
+    render(videos, meta, dir) {
         let html = '';
         html += '<div class="table_header">';
         html += '    <div class="title">Titel</div>';

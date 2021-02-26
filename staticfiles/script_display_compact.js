@@ -1,6 +1,6 @@
 "use strict";
 class DisplayCompactRenderer {
-    render(videos, dir) {
+    render(videos, meta, dir) {
         let html = '';
         for (const vid of videos) {
             let ve_cls = 'video_entry';

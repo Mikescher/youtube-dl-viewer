@@ -97,6 +97,8 @@ namespace youtube_dl_viewer.Model
                 new JProperty("count_total",   resultVideos.Count),
                 new JProperty("count_info",    resultVideos.Count(p => p.PathJSON != null)),
                 new JProperty("count_raw",     resultVideos.Count(p => p.PathJSON == null)),
+                
+                new JProperty("all_cached", resultVideos.All(v => v.IsCachedVideo || !v.ShouldTranscodeAndCacheVideo())),
                     
                 new JProperty("display_override",   _spec.DisplayOverride),
                 new JProperty("width_override",     _spec.WidthOverride),
@@ -274,18 +276,18 @@ namespace youtube_dl_viewer.Model
                 throw new Exception($"Could not parse file: '{pathToml}'", e);
             }
             
-            var uid           = tinfo.HasKey("id")            ? tinfo["id"].AsString.Value                   : null;
-            var title         = tinfo.HasKey("title")         ? tinfo["title"].AsString.Value                : null;
-            var extrac        = tinfo.HasKey("extractor_key") ? tinfo["extractor_key"].AsString.Value        : null;
-            var upload_date   = tinfo.HasKey("upload_date")   ? tinfo["upload_date"].AsString.Value          : null;
-            var like_count    = tinfo.HasKey("like_count")    ? (int?)tinfo["like_count"].AsInteger.Value    : null;
-            var dislike_count = tinfo.HasKey("dislike_count") ? (int?)tinfo["dislike_count"].AsInteger.Value : null;
-            var uploader      = tinfo.HasKey("uploader")      ? tinfo["uploader"].AsString.Value             : null;
-            var duration      = tinfo.HasKey("duration")      ? tinfo["duration"].AsString.Value             : null;
-            var webpage_url   = tinfo.HasKey("webpage_url")   ? tinfo["webpage_url"].AsString.Value          : null;
-            var view_count    = tinfo.HasKey("view_count")    ? (int?)tinfo["view_count"].AsInteger.Value    : null;
-            var width         = tinfo.HasKey("width")         ? (int?)tinfo["width"].AsInteger.Value         : null;
-            var height        = tinfo.HasKey("height")        ? (int?)tinfo["height"].AsInteger.Value        : null;
+            var uid           = tinfo.HasKey("id")            ? tinfo["id"].AsString.Value                                                        : null;
+            var title         = tinfo.HasKey("title")         ? tinfo["title"].AsString.Value                                                     : null;
+            var extrac        = tinfo.HasKey("extractor_key") ? tinfo["extractor_key"].AsString.Value                                             : null;
+            var upload_date   = tinfo.HasKey("upload_date")   ? tinfo["upload_date"].AsString.Value                                               : null;
+            var like_count    = tinfo.HasKey("like_count")    ? (int?)tinfo["like_count"].AsInteger.Value                                         : null;
+            var dislike_count = tinfo.HasKey("dislike_count") ? (int?)tinfo["dislike_count"].AsInteger.Value                                      : null;
+            var uploader      = tinfo.HasKey("uploader")      ? tinfo["uploader"].AsString.Value                                                  : null;
+            var duration      = tinfo.HasKey("duration")      ? (int?)tinfo["duration"].AsFloat?.Value ?? (int?)tinfo["duration"].AsInteger.Value : null;
+            var webpage_url   = tinfo.HasKey("webpage_url")   ? tinfo["webpage_url"].AsString.Value                                               : null;
+            var view_count    = tinfo.HasKey("view_count")    ? (int?)tinfo["view_count"].AsInteger.Value                                         : null;
+            var width         = tinfo.HasKey("width")         ? (int?)tinfo["width"].AsInteger.Value                                              : null;
+            var height        = tinfo.HasKey("height")        ? (int?)tinfo["height"].AsInteger.Value                                             : null;
 
             var dir = Path.GetDirectoryName(pathToml);
             if (dir == null) return null;

@@ -87,6 +87,10 @@
   font-family: "Courier New",monospace;
 }
 
+#content.lstyle_detailed .video_entry.no_like_bar .duration {
+  margin-bottom: 2px;
+}
+
 #content.lstyle_detailed .video_entry .title {
   grid-column: 2/5;
   grid-row: 1;
@@ -182,8 +186,7 @@
   /**/ 
 }
 
-#content.lstyle_detailed .icon_cached { display: none; }
-#content.lstyle_detailed.lstyle_videomode_3 .video_entry.webm-cached .icon_cached {
+#content.lstyle_detailed .video_entry .icon_cached {
   grid-column: 1;
   grid-row: 1;
 
@@ -204,4 +207,7 @@
   z-index: 1;
 }
 
+
+#content.lstyle_detailed .video_entry:hover .duration    { display: none; }
+#content.lstyle_detailed .video_entry:hover .icon_cached { display: none; }
 
