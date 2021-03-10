@@ -152,7 +152,7 @@ namespace youtube_dl_viewer.Controller
                     new JProperty("TotalDays",         ts.TotalDays)
                 )),
                 new JProperty("type", "TimeSpan"),
-                new JProperty("format", FormatMilliseconds((int)ts.TotalMilliseconds))
+                new JProperty("format", FormatMilliseconds((long)ts.TotalMilliseconds))
             );
         }
         
