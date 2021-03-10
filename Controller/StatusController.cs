@@ -118,25 +118,40 @@ namespace youtube_dl_viewer.Controller
             );
         }
         
-        private static string FormatMilliseconds(long v)
+        private static string FormatMilliseconds(long v, bool showMillis = true)
         {
             if (v < 0) return string.Empty; 
 
             var days    = (int)(v / 1000f / 60f / 60f / 24f);
-            var hours   = (int)((v-days * 1000 * 60 * 60 * 24) / 1000f / 60f / 60f);
-            var minutes = (int)((v-hours * 1000 * 60 * 60) / 1000f / 60f);
-            var seconds = (int)((v - minutes * 1000 * 60) / 1000f);
-            var millis  = v - minutes * 1000 * 60 - seconds * 1000;
-
-            if (days    > 0) return $"{days} days {hours:00}h {minutes:00}m {seconds:00}s {millis}ms";
-
-            if (hours   > 0) return $"{hours}h {minutes:00}m {seconds:00}s {millis}ms";
-
-            if (minutes > 0) return $"{minutes}m {seconds:00}s {millis}ms";
+            v -= days * 1000 * 60 * 60 * 24;
             
-            if (seconds > 0) return $"{seconds}s {millis}ms";
-                
-            return $"{millis}ms";
+            var hours   = (int)(v / 1000f / 60f / 60f);
+            v -= hours * 1000 * 60 * 60;
+            
+            var minutes = (int)(v / 1000f / 60f);
+            v -= minutes * 1000 * 60;
+            
+            var seconds = (int)(v / 1000f);
+            v -= minutes * 1000;
+            
+            var millis  = v;
+
+            if (showMillis)
+            {
+                if (days    > 0) return $"{days} days {hours:00}h {minutes:00}m {seconds:00}s {millis}ms";
+                if (hours   > 0) return $"{hours}h {minutes:00}m {seconds:00}s {millis}ms";
+                if (minutes > 0) return $"{minutes}m {seconds:00}s {millis}ms";
+                if (seconds > 0) return $"{seconds}s {millis}ms";
+                return $"{millis}ms";
+            }
+            else
+            {
+                if (days    > 0) return $"{days} days {hours:00}h {minutes:00}m {seconds:00}s";
+                if (hours   > 0) return $"{hours}h {minutes:00}m {seconds:00}s";
+                if (minutes > 0) return $"{minutes}m {seconds:00}s";
+                if (seconds > 0) return $"{seconds}s";
+                return $"{millis}ms";
+            }
         }
         
         private static JObject FormatTimeSpan(TimeSpan ts)
@@ -152,7 +167,7 @@ namespace youtube_dl_viewer.Controller
                     new JProperty("TotalDays",         ts.TotalDays)
                 )),
                 new JProperty("type", "TimeSpan"),
-                new JProperty("format", FormatMilliseconds((long)ts.TotalMilliseconds))
+                new JProperty("format", FormatMilliseconds((long)ts.TotalMilliseconds, false))
             );
         }
         
@@ -164,10 +179,10 @@ namespace youtube_dl_viewer.Controller
                 new JProperty("delta", new JObject
                 (
                     new JProperty("TotalMilliseconds", ts!=null ? (DateTime.Now-ts.Value).TotalMilliseconds : 0),
-                    new JProperty("format", FormatMilliseconds((long)(ts!=null ?  (DateTime.Now-ts.Value).TotalMilliseconds : 0)))
+                    new JProperty("format", FormatMilliseconds((long)(ts!=null ?  (DateTime.Now-ts.Value).TotalMilliseconds : 0), false))
                 )),
                 new JProperty("type", "DateTime"),
-                new JProperty("format", ts==null ? "NULL" : $"{ts:yyyy-MM-dd HH:mm:ss} ({FormatMilliseconds((long)(DateTime.Now-ts.Value).TotalMilliseconds)} ago)"   )
+                new JProperty("format", ts==null ? "NULL" : $"{ts:yyyy-MM-dd HH:mm:ss} ({FormatMilliseconds((long)(DateTime.Now-ts.Value).TotalMilliseconds, false)} ago)"   )
             );
         }
     }
