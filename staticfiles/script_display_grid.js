@@ -75,6 +75,7 @@ class DisplayGridRenderer {
             btn.addEventListener('click', (e) => {
                 window.open(btn.getAttribute("href"));
                 e.stopPropagation();
+                e.preventDefault();
                 return false;
             });
         }

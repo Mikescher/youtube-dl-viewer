@@ -107,6 +107,7 @@ class DisplayGridRenderer implements DisplayRenderer
             {
                 window.open(btn.getAttribute("href")!);
                 e.stopPropagation();
+                e.preventDefault();
                 return false;
             });
         }
