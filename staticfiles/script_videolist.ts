@@ -166,22 +166,22 @@ class VideoListModel
     
     // ----------------------------------------
     
-    displaymode_default: number = -1;
+    displaymode_globdefault: number = -1;
     displaymode_current: number = -1;
 
-    widthmode_default: number = -1;
+    widthmode_globdefault: number = -1;
     widthmode_current: number = -1;
 
-    ordermode_default: number = -1;
+    ordermode_globdefault: number = -1;
     ordermode_current: number = -1;
 
-    thumbnailmode_default: number = -1;
+    thumbnailmode_globdefault: number = -1;
     thumbnailmode_current: number = -1;
 
-    videomode_default: number = -1;
+    videomode_globdefault: number = -1;
     videomode_current: number = -1;
 
-    theme_default: number = -1;
+    theme_globdefault: number = -1;
     theme_current: number = -1;
 
     datadir_default: number = -1;
@@ -230,13 +230,13 @@ class VideoListModel
         this.Values_VideoMode[3].enabled   = this.hasFFMPEG;
         this.Values_DisplayMode[6].enabled = this.hasFFMPEG && this.hasCache;
         
-        this.displaymode_current   = this.displaymode_default   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   optionsource.getAttribute('data-displaymode')!,   0);
-        this.widthmode_current     = this.widthmode_default     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     optionsource.getAttribute('data-widthmode')!,     0);
-        this.ordermode_current     = this.ordermode_default     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     optionsource.getAttribute('data-ordermode')!,     0);
-        this.thumbnailmode_current = this.thumbnailmode_default = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, optionsource.getAttribute('data-thumbnailmode')!, 0);
-        this.videomode_current     = this.videomode_default     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     optionsource.getAttribute('data-videomode')!,     0);
-        this.theme_current         = this.theme_default         = this.getIndexFromKey("Theme",         this.Values_Themes,        optionsource.getAttribute('data-theme')!,         0);
-        this.datadir_current       = this.datadir_default       = this.getIndexFromKey("DataDir",       this.Values_DataDirs,      optionsource.getAttribute('data-dir')!,           0);
+        this.displaymode_current   = this.displaymode_globdefault   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   optionsource.getAttribute('data-displaymode')!,   null);
+        this.widthmode_current     = this.widthmode_globdefault     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     optionsource.getAttribute('data-widthmode')!,     null);
+        this.ordermode_current     = this.ordermode_globdefault     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     optionsource.getAttribute('data-ordermode')!,     null);
+        this.thumbnailmode_current = this.thumbnailmode_globdefault = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, optionsource.getAttribute('data-thumbnailmode')!, null);
+        this.videomode_current     = this.videomode_globdefault     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     optionsource.getAttribute('data-videomode')!,     null);
+        this.theme_current         = this.theme_globdefault         = this.getIndexFromKey("Theme",         this.Values_Themes,        optionsource.getAttribute('data-theme')!,         null);
+        this.datadir_current       = this.datadir_default           = this.getIndexFromKey("DataDir",       this.Values_DataDirs,      optionsource.getAttribute('data-dir')!,           null);
     }
     
     init()
@@ -245,13 +245,13 @@ class VideoListModel
         {
             const [key, val] = e.split('=');
 
-            if (key === 'display')   this.displaymode_current   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   val, this.displaymode_default);
-            if (key === 'width')     this.widthmode_current     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     val, this.widthmode_default);
-            if (key === 'order')     this.ordermode_current     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     val, this.ordermode_default);
-            if (key === 'thumb')     this.thumbnailmode_current = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, val, this.thumbnailmode_default);
-            if (key === 'videomode') this.videomode_current     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     val, this.videomode_default);
-            if (key === 'theme')     this.theme_current         = this.getIndexFromKey("Theme",         this.Values_Themes,        val, this.theme_default);
-            if (key === 'dir')       this.datadir_current       = this.getIndexFromKey("DataDir",       this.Values_DataDirs,      val, this.datadir_default);
+            if (key === 'display')   this.displaymode_current   = this.getIndexFromKey("DisplayMode",   this.Values_DisplayMode,   val, this.getDefaultDisplayMode());
+            if (key === 'width')     this.widthmode_current     = this.getIndexFromKey("WidthMode",     this.Values_WidthMode,     val, this.getDefaultWidthMode());
+            if (key === 'order')     this.ordermode_current     = this.getIndexFromKey("OrderMode",     this.Values_OrderMode,     val, this.getDefaultOrderMode());
+            if (key === 'thumb')     this.thumbnailmode_current = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, val, this.getDefaultThumbnailMode());
+            if (key === 'videomode') this.videomode_current     = this.getIndexFromKey("VideoMode",     this.Values_VideoMode,     val, this.getDefaultVideoMode());
+            if (key === 'theme')     this.theme_current         = this.getIndexFromKey("Theme",         this.Values_Themes,        val, this.getDefaultTheme());
+            if (key === 'dir')       this.datadir_current       = this.getIndexFromKey("DataDir",       this.Values_DataDirs,      val, this.getDefaultDataDir());
             if (key === 'seed')      this.shuffle_seed          = val;
             if (key === 'play')      this.startup_play          = this.parsePlayValue(val);
         }
@@ -272,7 +272,7 @@ class VideoListModel
         const p1 = v.substr(0, idx);
         const p2 = v.substr(idx+2);
 
-        const num = this.getIndexFromKey("DataDir", this.Values_DataDirs, p1, -1)
+        const num = this.getIndexFromKey("DataDir", this.Values_DataDirs, p1, null)
         if (num === -1) return null;
         
         return [num, p2];
@@ -384,12 +384,12 @@ class VideoListModel
         if (json.meta.videomode_override !== null) this.videomode_current     = json.meta.videomode_override;
         if (json.meta.theme_override     !== null) this.theme_current         = json.meta.theme_override;
 
-        if (!this.getCurrentDisplayMode().enabled)   this.displaymode_current   = this.displaymode_default;
-        if (!this.getCurrentWidthMode().enabled)     this.widthmode_current     = this.widthmode_default;
-        if (!this.getCurrentOrderMode().enabled)     this.ordermode_current     = this.ordermode_default;
-        if (!this.getCurrentThumbnailMode().enabled) this.thumbnailmode_current = this.thumbnailmode_default;
-        if (!this.getCurrentVideoMode().enabled)     this.videomode_current     = this.videomode_default;
-        if (!this.getCurrentTheme().enabled)         this.theme_current         = this.theme_default;
+        if (!this.getCurrentDisplayMode().enabled)   this.displaymode_current   = this.getDefaultDisplayMode().index;
+        if (!this.getCurrentWidthMode().enabled)     this.widthmode_current     = this.getDefaultWidthMode().index;
+        if (!this.getCurrentOrderMode().enabled)     this.ordermode_current     = this.getDefaultOrderMode().index;
+        if (!this.getCurrentThumbnailMode().enabled) this.thumbnailmode_current = this.getDefaultThumbnailMode().index;
+        if (!this.getCurrentVideoMode().enabled)     this.videomode_current     = this.getDefaultVideoMode().index;
+        if (!this.getCurrentTheme().enabled)         this.theme_current         = this.getDefaultTheme().index;
 
         await this.recreateDOM(preclear);
 
@@ -433,19 +433,54 @@ class VideoListModel
         if (this.current_videolist === null) return null;
         return this.current_videolist.get(id) ?? null;
     }
+
+    getDefaultDisplayMode(): DisplayModeDef
+    {
+        return this.Values_DisplayMode[this.current_data?.meta?.display_override ?? this.displaymode_globdefault];
+    }
+
+    getDefaultWidthMode(): WidthModeDef
+    {
+        return this.Values_WidthMode[this.current_data?.meta?.width_override ?? this.widthmode_globdefault];
+    }
+
+    getDefaultOrderMode(): OrderModeDef
+    {
+        return this.Values_OrderMode[this.current_data?.meta?.order_override ?? this.ordermode_globdefault];
+    }
+
+    getDefaultThumbnailMode(): ThumbnailModeDef
+    {
+        return this.Values_ThumbnailMode[this.current_data?.meta?.thumbnail_override ?? this.thumbnailmode_globdefault];
+    }
+
+    getDefaultVideoMode(): VideoModeDef
+    {
+        return this.Values_VideoMode[this.current_data?.meta?.videomode_override ?? this.videomode_globdefault];
+    }
+
+    getDefaultTheme(): ThemeDef
+    {
+        return this.Values_Themes[this.current_data?.meta?.theme_override ?? this.theme_globdefault];
+    }
+
+    getDefaultDataDir(): DataDirDef
+    {
+        return this.Values_DataDirs[this.datadir_default];
+    }
     
     updateHash()
     {
         let hash = [];
 
-        if (this.displaymode_current   !== this.displaymode_default)   hash.push('display='   + this.getCurrentDisplayMode().keys[0]);
-        if (this.widthmode_current     !== this.widthmode_default)     hash.push('width='     + this.getCurrentWidthMode().keys[0]);
-        if (this.ordermode_current     !== this.ordermode_default)     hash.push('order='     + this.getCurrentOrderMode().keys[0]);
-        if (this.thumbnailmode_current !== this.thumbnailmode_default) hash.push('thumb='     + this.getCurrentThumbnailMode().keys[0]);
-        if (this.videomode_current     !== this.videomode_default)     hash.push('videomode=' + this.getCurrentVideoMode().keys[0]);
-        if (this.theme_current         !== this.theme_default)         hash.push('theme='     + this.getCurrentTheme().keys[0]);
-        if (this.datadir_current       !== this.datadir_default)       hash.push('dir='       + this.getCurrentDataDir().keys[0]);
-        if (this.ordermode_current     === 9)                          hash.push('seed='      + this.shuffle_seed);
+        if (this.displaymode_current   !== this.getDefaultDisplayMode().index)   hash.push('display='   + this.getCurrentDisplayMode().keys[0]);
+        if (this.widthmode_current     !== this.getDefaultWidthMode().index)     hash.push('width='     + this.getCurrentWidthMode().keys[0]);
+        if (this.ordermode_current     !== this.getDefaultOrderMode().index)     hash.push('order='     + this.getCurrentOrderMode().keys[0]);
+        if (this.thumbnailmode_current !== this.getDefaultThumbnailMode().index) hash.push('thumb='     + this.getCurrentThumbnailMode().keys[0]);
+        if (this.videomode_current     !== this.getDefaultVideoMode().index)     hash.push('videomode=' + this.getCurrentVideoMode().keys[0]);
+        if (this.theme_current         !== this.getDefaultTheme().index)         hash.push('theme='     + this.getCurrentTheme().keys[0]);
+        if (this.datadir_current       !== this.getDefaultDataDir().index)       hash.push('dir='       + this.getCurrentDataDir().keys[0]);
+        if (this.ordermode_current     === 9)                                    hash.push('seed='      + this.shuffle_seed);
 
         let strhash = hash.join('&');
         if (strhash === '')
@@ -478,12 +513,12 @@ class VideoListModel
         const err = "Invalid value '"+key+"' for type '"+type+"' using fallback '"+fallback+"'";
         console.warn(err)
         App.showToast(err)
-        return fallback;
+        return fallback?.index ?? 0;
     }
     
     setDisplayMode(key: number|string, showtoast: boolean = false)
     {
-        const value = this.getIndexFromKey("DisplayMode", this.Values_DisplayMode, key.toString(), this.displaymode_default); 
+        const value = this.getIndexFromKey("DisplayMode", this.Values_DisplayMode, key.toString(), this.getDefaultDisplayMode()); 
         
         if (value === this.displaymode_current) return;
         
@@ -500,7 +535,7 @@ class VideoListModel
 
     setWidthMode(key: number|string, showtoast: boolean = false)
     {
-        const value = this.getIndexFromKey("WidthMode", this.Values_WidthMode, key.toString(), this.widthmode_default);
+        const value = this.getIndexFromKey("WidthMode", this.Values_WidthMode, key.toString(), this.getDefaultWidthMode());
 
         if (value === this.widthmode_current) return;
 
@@ -518,7 +553,7 @@ class VideoListModel
 
     setOrderMode(key: number|string, showtoast: boolean = false, reshuffle: boolean = false)
     {
-        const value = this.getIndexFromKey("OrderMode", this.Values_OrderMode, key.toString(), this.ordermode_default);
+        const value = this.getIndexFromKey("OrderMode", this.Values_OrderMode, key.toString(), this.getDefaultOrderMode());
 
         if (value === this.ordermode_current && !(reshuffle && value === 9)) return;
 
@@ -533,7 +568,7 @@ class VideoListModel
 
     setThumbnailMode(key: number|string, showtoast: boolean = false)
     {
-        const value = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, key.toString(), this.thumbnailmode_default);
+        const value = this.getIndexFromKey("ThumbnailMode", this.Values_ThumbnailMode, key.toString(), this.getDefaultThumbnailMode());
 
         if (value === this.thumbnailmode_current) return;
 
@@ -548,7 +583,7 @@ class VideoListModel
 
     setVideoMode(key: number|string, showtoast: boolean = false)
     {
-        const value = this.getIndexFromKey("VideoMode", this.Values_VideoMode, key.toString(), this.videomode_default);
+        const value = this.getIndexFromKey("VideoMode", this.Values_VideoMode, key.toString(), this.getDefaultVideoMode());
 
         if (value === this.videomode_current) return;
 
@@ -564,7 +599,7 @@ class VideoListModel
 
     setTheme(key: number|string, showtoast: boolean = false)
     {
-        const value = this.getIndexFromKey("Theme", this.Values_Themes, key.toString(), this.theme_default);
+        const value = this.getIndexFromKey("Theme", this.Values_Themes, key.toString(), this.getDefaultTheme());
 
         if (value === this.theme_current) return;
 
@@ -579,7 +614,7 @@ class VideoListModel
 
     setDataDir(key: number|string, showtoast: boolean = false)
     {
-        const value = this.getIndexFromKey("DataDir", this.Values_DataDirs, key.toString(), this.datadir_default);
+        const value = this.getIndexFromKey("DataDir", this.Values_DataDirs, key.toString(), this.getDefaultDataDir());
 
         if (value === this.datadir_current) return;
 

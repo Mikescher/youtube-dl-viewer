@@ -7,7 +7,6 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace youtube_dl_viewer.Util
@@ -104,7 +103,7 @@ namespace youtube_dl_viewer.Util
             }
         }
 
-        public static void MapJSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, IEnumerable<(string,string)> reslist)
+        public static void MapJSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, ICollection<(string,string)> reslist)
         {
             var ass = Assembly.GetExecutingAssembly();
 
@@ -122,8 +121,16 @@ namespace youtube_dl_viewer.Util
                 var js = reslist
                     .Select(p => (p.Item1 + "." + p.Item2, p.Item2, p.Item1))
                     .Select(p => (p, GetTextResource(ctxt, ass, p.Item1, p.Item3, p.Item2)))
-                    .Select(p => $"/* -------- [{p.Item1}] ------ */\n\n" + p.Item2 + ";\n")
+                    .Select(p => $"/* -------- [{p.Item1.Item3} :: {p.Item1.Item2}] ------ */\n\n" + p.Item2 + ";\n")
                     .Aggregate("", (a, b) => a + "\n\n" + b);
+
+                var header = $"/* ======== {path} ======== */\n" +
+                             $"/* v{Program.Version} {(Program.DEBUG ? "(debug)" : "")} */\n" +
+                             $"/* {DateTime.Now:yyyy-MM-dd HH:mm:ss} */\n" + 
+                             $"/* */\n";
+                foreach (var (scope,file) in reslist) header += $"/* - {scope} :: {file} */\n";
+                
+                js = header + js;
                 _resCacheText[path] = js;
                 
                 ctxt.Response.Headers.Add("X-CACHED", "false");
@@ -131,7 +138,7 @@ namespace youtube_dl_viewer.Util
             });
         }
 
-        public static void MapCSSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, IEnumerable<(string, string)> reslist)
+        public static void MapCSSEmbeddedBundle(this IEndpointRouteBuilder endpoints, string path, ICollection<(string, string)> reslist)
         {
             var ass = Assembly.GetExecutingAssembly();
 
@@ -149,16 +156,24 @@ namespace youtube_dl_viewer.Util
                 var css = reslist
                     .Select(p => (p.Item1 + "." + p.Item2, p.Item2, p.Item1))
                     .Select(p => (p, GetTextResource(ctxt, ass, p.Item1, p.Item3, p.Item2)))
-                    .Select(p => $"/* -------- [{p.Item1}] ------ */\n\n" + p.Item2 + "\n")
+                    .Select(p => $"/* -------- [{p.Item1.Item3} :: {p.Item1.Item2}] ------ */\n\n" + p.Item2 + "\n")
                     .Aggregate("", (a, b) => a + "\n\n" + b);
+                
+                var header = $"/* ======== {path} ======== */\n" +
+                             $"/* v{Program.Version} {(Program.DEBUG ? "(debug)" : "")} */\n" +
+                             $"/* {DateTime.Now:yyyy-MM-dd HH:mm:ss} */\n" + 
+                             $"/* */\n";
+                foreach (var (scope,file) in reslist) header += $"/* - {scope} :: {file} */\n";
+                
+                css = header + css;
                 _resCacheText[path] = css;
                 
                 ctxt.Response.Headers.Add("X-CACHED", "false");
                 await ctxt.Response.WriteAsync(css);
             });
         }
-        
-        public static byte[] GetBinResource(HttpContext ctxt, Assembly ass, string resourceName, string resourcePath, string resourceFilename)
+
+        private static byte[] GetBinResource(HttpContext ctxt, Assembly ass, string resourceName, string resourcePath, string resourceFilename)
         {
             using var stream = ass.GetManifestResourceStream(resourceName);
             if (stream == null) throw new ArgumentException();
