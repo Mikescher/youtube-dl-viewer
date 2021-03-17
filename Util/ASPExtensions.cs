@@ -185,7 +185,7 @@ namespace youtube_dl_viewer.Util
 #if DEBUG
             if (!_reloadCacheBin.ContainsKey((resourcePath, resourceFilename))) _reloadCacheBin[(resourcePath, resourceFilename)] = result;
             
-            var resultReload = File.ReadAllBytes(GetFilesystemResourcePath(resourcePath, resourceFilename));
+            var resultReload = GetFilesystemResourceAllBytes(resourcePath, resourceFilename);
             if (resultReload == null)
             {
                 ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
@@ -216,7 +216,7 @@ namespace youtube_dl_viewer.Util
 #if DEBUG
             if (!_reloadCacheText.ContainsKey((resourcePath, resourceFilename))) _reloadCacheText[(resourcePath, resourceFilename)] = result;
             
-            var resultReload = File.ReadAllText(GetFilesystemResourcePath(resourcePath, resourceFilename));
+            var resultReload = GetFilesystemResourceAllText(resourcePath, resourceFilename);
             if (resultReload == null)
             {
                 if (ctxt != null) ctxt.Response.Headers["X-LIVE_RELOADED"] = "false";
@@ -249,6 +249,17 @@ namespace youtube_dl_viewer.Util
             
             return Path.Combine(dir, rpath.Replace('.', Path.DirectorySeparatorChar), resourceFilename);
         }
-        
+
+        private static string GetFilesystemResourceAllText(string resourcePath, string resourceFilename)
+        {
+            var rpath = GetFilesystemResourcePath(resourcePath, resourceFilename);
+            return rpath == null ? null : File.ReadAllText(rpath);
+        }
+
+        private static byte[] GetFilesystemResourceAllBytes(string resourcePath, string resourceFilename)
+        {
+            var rpath = GetFilesystemResourcePath(resourcePath, resourceFilename);
+            return rpath == null ? null : File.ReadAllBytes(rpath);
+        }
     }
 }

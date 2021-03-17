@@ -22,8 +22,9 @@ namespace youtube_dl_viewer.Controller
         public static async Task RefreshData(HttpContext context)
         {
             var idx = int.Parse((string)context.Request.RouteValues["idx"]);
+            var async = context.Request.Query.ContainsKey("async");
             
-            using (var proxy = JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx, true)))
+            using (var proxy = JobRegistry.DataCollectJobs.StartOrQueue((man) => new DataCollectJob(man, idx, !async)))
             {
                 while (proxy.JobRunningOrWaiting) await Task.Delay(50);
 
