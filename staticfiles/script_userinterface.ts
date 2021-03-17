@@ -66,13 +66,13 @@ class UserInterfaceModel
     {
         $('.btn-adminlinks')!.addEventListener('click', () =>
         {
-            this.toggleActionDropDown($('.btn-adminlinks')!, 'AdminLinks', ["Jobs", "Config", "Datadump", "System Status", "Cache Status"], (idx, _) => 
+            this.toggleActionDropDown($('.btn-adminlinks')!, 'AdminLinks', ["Jobs", "Config", "Datadump", "System Status", "Cache Status"], (idx, _, mid) => 
             {
-                if (idx == 0) window.open('/Jobs',   '_blank')
-                if (idx == 1) window.open('/Config', '_blank')
-                if (idx == 2) window.open('/Data',   '_blank')
-                if (idx == 3) window.open('/Status', '_blank')
-                if (idx == 4) window.open('/Cache',  '_blank')
+                if (idx == 0) window.open('/Jobs',   mid ? '_blank' : '_self')
+                if (idx == 1) window.open('/Config', mid ? '_blank' : '_self')
+                if (idx == 2) window.open('/Data',   mid ? '_blank' : '_self')
+                if (idx == 3) window.open('/Status', mid ? '_blank' : '_self')
+                if (idx == 4) window.open('/Cache',  mid ? '_blank' : '_self')
             });
         });
         $('.btn-display')!.addEventListener('click', () =>
@@ -144,7 +144,7 @@ class UserInterfaceModel
             this.showOptionDropDown(src, type, options, current, evt);
     }
 
-    toggleActionDropDown(src: HTMLElement, type: string, options: string[], action: (idx:number, val:string) => void)
+    toggleActionDropDown(src: HTMLElement, type: string, options: string[], action: (idx:number, val:string, mid:boolean) => void)
     {
         if (type === this.currentDropdownType)
             this.hideDropDown();
@@ -203,7 +203,7 @@ class UserInterfaceModel
         this.dom_dropdown_background.classList.remove('hidden');
     }
 
-    showActionDropDown(src: HTMLElement, type: string, options: string[], action: (idx:number, val:string) => void)
+    showActionDropDown(src: HTMLElement, type: string, options: string[], action: (idx:number, val:string, middle:boolean) => void)
     {
         if (this.currentDropdownType !== null) this.hideDropDown();
 
@@ -242,10 +242,29 @@ class UserInterfaceModel
 
         for (const [idx, act, id] of ids)
         {
-            $('#' + id)?.addEventListener('click', () =>
+            const dombtn = $('#' + id)!;
+            dombtn.addEventListener('click', e =>
             {
                 this.hideDropDown();
-                action(idx, act);
+                action(idx, act, e.button == 1);
+            });
+            dombtn.addEventListener('mousedown', e =>
+            {
+                if (e.button == 1) { e.preventDefault(); e.stopPropagation(); }
+            });
+            dombtn.addEventListener('mouseup', e =>
+            {
+                if (e.button == 1) { e.preventDefault(); e.stopPropagation(); }
+            });
+            dombtn.addEventListener('auxclick', e =>
+            {
+                if (e.button == 1)
+                {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.hideDropDown();
+                    action(idx, act, e.button == 1);
+                }
             });
         }
 

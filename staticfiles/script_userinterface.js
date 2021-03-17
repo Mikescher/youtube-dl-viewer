@@ -41,17 +41,17 @@ class UserInterfaceModel {
     initHeaderEvents() {
         var _a;
         $('.btn-adminlinks').addEventListener('click', () => {
-            this.toggleActionDropDown($('.btn-adminlinks'), 'AdminLinks', ["Jobs", "Config", "Datadump", "System Status", "Cache Status"], (idx, _) => {
+            this.toggleActionDropDown($('.btn-adminlinks'), 'AdminLinks', ["Jobs", "Config", "Datadump", "System Status", "Cache Status"], (idx, _, mid) => {
                 if (idx == 0)
-                    window.open('/Jobs', '_blank');
+                    window.open('/Jobs', mid ? '_blank' : '_self');
                 if (idx == 1)
-                    window.open('/Config', '_blank');
+                    window.open('/Config', mid ? '_blank' : '_self');
                 if (idx == 2)
-                    window.open('/Data', '_blank');
+                    window.open('/Data', mid ? '_blank' : '_self');
                 if (idx == 3)
-                    window.open('/Status', '_blank');
+                    window.open('/Status', mid ? '_blank' : '_self');
                 if (idx == 4)
-                    window.open('/Cache', '_blank');
+                    window.open('/Cache', mid ? '_blank' : '_self');
             });
         });
         $('.btn-display').addEventListener('click', () => {
@@ -148,7 +148,6 @@ class UserInterfaceModel {
         this.dom_dropdown_background.classList.remove('hidden');
     }
     showActionDropDown(src, type, options, action) {
-        var _a;
         if (this.currentDropdownType !== null)
             this.hideDropDown();
         this.currentDropdownType = type;
@@ -175,9 +174,30 @@ class UserInterfaceModel {
             this.dom_option_dropdown.style.right = '';
         }
         for (const [idx, act, id] of ids) {
-            (_a = $('#' + id)) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
+            const dombtn = $('#' + id);
+            dombtn.addEventListener('click', e => {
                 this.hideDropDown();
-                action(idx, act);
+                action(idx, act, e.button == 1);
+            });
+            dombtn.addEventListener('mousedown', e => {
+                if (e.button == 1) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+            dombtn.addEventListener('mouseup', e => {
+                if (e.button == 1) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+            dombtn.addEventListener('auxclick', e => {
+                if (e.button == 1) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.hideDropDown();
+                    action(idx, act, e.button == 1);
+                }
             });
         }
         this.dom_dropdown_background.classList.remove('hidden');
