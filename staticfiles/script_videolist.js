@@ -283,7 +283,21 @@ class VideoListModel {
             hash.push('dir=' + this.getCurrentDataDir().keys[0]);
         if (this.ordermode_current === 9)
             hash.push('seed=' + this.shuffle_seed);
-        location.hash = hash.join('&');
+        let strhash = hash.join('&');
+        if (strhash === '') {
+            // prevent jump to top when "clearing" hash
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState('', '', window.location.pathname);
+            }
+            else {
+                let [scrollV, scrollH] = [document.body.scrollTop, document.body.scrollLeft];
+                location.hash = strhash;
+                [document.body.scrollTop, document.body.scrollLeft] = [scrollV, scrollH];
+            }
+        }
+        else {
+            location.hash = strhash;
+        }
     }
     getIndexFromKey(type, values, key, fallback) {
         for (const elem of values) {
