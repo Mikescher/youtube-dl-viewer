@@ -84,6 +84,8 @@ namespace youtube_dl_viewer.Model
             if (Program.Args.CacheDir == null) return false;
             
             if ((DataDir.VideomodeOverride ?? Program.Args.OptVideoMode) != 3) return false;
+
+            if (DataDir.DisabledVideomodes.Contains(3)) return false;
             
             if (PathVideo == null) return false;
             //if (PathVideo.ToLower().EndsWith(".webm")) return false;

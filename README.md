@@ -240,10 +240,31 @@ Every path json object *must* have a `path` property, and can have the following
  - `update_ext_order`: Automatically add missing files to the end of the `ext_order` file (default = **true**).  
  - `htmltitle`: Specify a custom title for the webpage when this path is selected
  - `display`: Override the default display value (from `--display=<v>`) for this path
- - `width`: Override the default display value (from `--width=<v>`) for this path
+ - `width`: Override the default list width value (from `--width=<v>`) for this path
  - `order`: Override the default order (from `--order=<v>`) for this path
- - `theme`: Override the default theme (from `--theme=<v>`) for this path
  - `videomode`: Override the default playback mode (from `--videomode=<v>`) for this path
+ - `thumbnailmode`: Override the default thumbnail loading mode (from `--thumbnailmode=<v>`) for this path
+ - `theme`: Override the default theme (from `--theme=<v>`) for this path
+ - `display_disabled`: Disable some display modes for this path
+ - `width_disabled`: Disable some list widths for this path
+ - `order_disabled`: Disable some ordering modes for this path
+ - `videomode_disabled`: Disable some playback modes for this path
+ - `thumbnailmode_disabled`: Disable some thumbnail modes for this path
+ - `theme_disabled`: Disable some themes for this path 
+
+Example configuration:
+~~~
+--path="{
+  path:'/media/youtube-dl/Talks',     
+  order:'title',                
+  name:'Talks',
+  ext_order:'/media/order_talks.txt',
+  htmltitle: 'Playlist: Talks',                
+  videomode:'transcoded',
+  videomode_disabled: ['raw-seekable', 'raw', 'vlc-local']
+}" 
+
+~~~
 
 > **[!] Note**  
 > Under windows (and linux if there are any) do not forget to escape your backslashes:  

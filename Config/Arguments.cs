@@ -78,6 +78,25 @@ namespace youtube_dl_viewer.Config
         public string OptThemeMode  = "default";
         public int OptThemeModeInt => (Themes.FirstOrDefault(p => p.Name == OptThemeMode))?.Index ?? 0;
 
+        [MultiIntEnumConfig("--disable-display", new[]{"grid", "compact", "tabular", "detailed", "gridx2", "grid_half", "timeline"})]
+        public HashSet<int> OptDisabledDisplayModes = new HashSet<int>();
+        
+        [MultiIntEnumConfig("--disable-width", new[]{"small", "medium", "wide", "full"})]
+        public HashSet<int> OptDisabledWidthModes = new HashSet<int>();
+        
+        [MultiIntEnumConfig("--disable-order", new[]{"date-desc", "date-asc", "title", "category", "views", "rating", "uploader", "external-desc", "external-asc", "random", "filename-asc", "filename-desc"})]
+        public HashSet<int> OptDisabledOrderModes = new HashSet<int>();
+        
+        [MultiIntEnumConfig("--disable-thumbnailmode", new[]{"off", "intelligent", "sequential", "parallel"})]
+        public HashSet<int> OptDisabledThumbnailModes = new HashSet<int>();
+        
+        [MultiIntEnumConfig("--disable-videomode", new[]{"disabled", "raw-seekable", "raw", "transcoded", "download", "vlc-stream", "vlc-local", "url"})]
+        public HashSet<int> OptDisabledVideoModes = new HashSet<int>();
+
+        [MultiStringConfig("--disable-videomode")]
+        public HashSet<string> OptDisabledThemes = new HashSet<string>();
+        public HashSet<int> OptDisabledThemesInt => OptDisabledThemes.Select(t => Themes.FirstOrDefault(p => p.Name == t)?.Index).Where(p => p != null).Select(p => p.Value).ToHashSet();
+
         [BoolConfig("--help", null)]
         public bool OptHelp = false;
 
@@ -196,7 +215,13 @@ namespace youtube_dl_viewer.Config
             if (key == "width")                   { OptWidthMode                = ParseWidthMode(value);                                                 return; }
             if (key == "thumbnailmode")           { OptThumbnailMode            = ParseThumbnailMode(value);                                             return; }
             if (key == "videomode")               { OptVideoMode                = ParseVideoMode(value);                                                 return; }
-            if (key == "theme")                   { OptThemeMode                = (value.EndsWith(".css") ? value.Substring(0, value.Length-4) : value); return; }
+            if (key == "theme")                   { OptThemeMode                = ParseThemeName(value);                                                 return; }
+            if (key == "disable-display")         { OptDisabledDisplayModes.Add(   ParseDisplayMode(value)   );                                          return; }
+            if (key == "disable-order")           { OptDisabledOrderModes.Add(     ParseOrderMode(value)     );                                          return; }
+            if (key == "disable-width")           { OptDisabledWidthModes.Add(     ParseWidthMode(value)     );                                          return; }
+            if (key == "disable-thumbnailmode")   { OptDisabledThumbnailModes.Add( ParseThumbnailMode(value) );                                          return; }
+            if (key == "disable-videomode")       { OptDisabledVideoModes.Add(     ParseVideoMode(value)     );                                          return; }
+            if (key == "disable-theme")           { OptDisabledThemes.Add(         ParseThemeName(value)     );                                          return; }
             if (key == "port")                    { Port                        = int.Parse(value);                                                      return; }
             if (key == "cache")                   { CacheDir                    = value.Replace("/", Path.DirectorySeparatorChar.ToString());            return; }
             if (key == "max-parallel-convert")    { MaxParallelConvertJobs      = int.Parse(value);                                                      return; }
@@ -236,6 +261,12 @@ namespace youtube_dl_viewer.Config
             }
 
             throw new Exception($"Invalid value '{v}' for [display]");
+        }
+
+        public static string ParseThemeName(string v)
+        {
+            if (v.ToLower().EndsWith(".css")) return v.Substring(0, v.Length - 4);
+            return v;
         }
         
         public static int ParseOrderMode(string v)
@@ -454,7 +485,7 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("  --width=<value>             The intial display list width");
             Console.Out.WriteLine("                                # [small]  Small");
             Console.Out.WriteLine("                                # [medium] Medium");
-            Console.Out.WriteLine("                                # [wide]   Wide");
+            Console.Out.WriteLine("              Disable some                   # [wide]   Wide");
             Console.Out.WriteLine("                                # [full]   Full");
             Console.Out.WriteLine("                                #");
             Console.Out.WriteLine("  --thumbnailmode=<value>     The intial thumbnail loading mode");
@@ -478,6 +509,24 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("                                # [default] The default theme");
             Console.Out.WriteLine("                                # or one of the user-defined themes from the --usertheme arguments");
             Console.Out.WriteLine("                                #");
+            Console.Out.WriteLine("  --disable-display=<v>       Globally disable the specified display mode");
+            Console.Out.WriteLine("                                # Accepts numerical or enum values (see --display)");
+            Console.Out.WriteLine("                                # Disable multiple by specifying the argument more than one time");
+            Console.Out.WriteLine("  --disable-order=<v>         Globally disable the specified display order");
+            Console.Out.WriteLine("                                # Accepts numerical or enum values (see --order)");
+            Console.Out.WriteLine("                                # Disable multiple by specifying the argument more than one time");
+            Console.Out.WriteLine("  --disable-width=<v>         Globally disable the specified list width");
+            Console.Out.WriteLine("                                # Accepts numerical or enum values (see --width)");
+            Console.Out.WriteLine("                                # Disable multiple by specifying the argument more than one time");
+            Console.Out.WriteLine("  --disable-thumbnailmode=<v> Globally disable the specified thumbnail loading mode");
+            Console.Out.WriteLine("                                # Accepts numerical or enum values (see --thumbnail)");
+            Console.Out.WriteLine("                                # Disable multiple by specifying the argument more than one time");
+            Console.Out.WriteLine("  --disable-videomode=<v>     Globally disable the specified video playback mode");
+            Console.Out.WriteLine("                                # Accepts numerical or enum values (see --videomode)");
+            Console.Out.WriteLine("                                # Disable multiple by specifying the argument more than one time");
+            Console.Out.WriteLine("  --disable-theme=<v>         Globally disable the specified theme");
+            Console.Out.WriteLine("                                # Accepts numerical or enum values (see --theme)");
+            Console.Out.WriteLine("                                # Disable multiple by specifying the argument more than one time");
             Console.Out.WriteLine("  --usertheme=<path>          Add additional user-supplied themes");
             Console.Out.WriteLine("                                # <path> must be a path to an css file");
             Console.Out.WriteLine("                                # You can add more than one user theme");

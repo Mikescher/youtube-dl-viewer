@@ -76,6 +76,13 @@
      data-theme="@Program.Args.OptThemeModeInt"
      data-dir="0"
      
+     data-disabled-displaymode="@(new JArray(Program.Args.OptDisabledDisplayModes.Cast<object>().ToArray()).ToString(Formatting.None))"
+     data-disabled-ordermode="@(new JArray(Program.Args.OptDisabledOrderModes.Cast<object>().ToArray()).ToString(Formatting.None))"
+     data-disabled-widthmode="@(new JArray(Program.Args.OptDisabledWidthModes.Cast<object>().ToArray()).ToString(Formatting.None))"
+     data-disabled-thumbnailmode="@(new JArray(Program.Args.OptDisabledThumbnailModes.Cast<object>().ToArray()).ToString(Formatting.None))"
+     data-disabled-videomode="@(new JArray(Program.Args.OptDisabledVideoModes.Cast<object>().ToArray()).ToString(Formatting.None))"
+     data-disabled-theme="@(new JArray(Program.Args.OptDisabledThemes.Cast<object>().ToArray()).ToString(Formatting.None))"
+     
      data-has_ffmpeg="@Program.HasValidFFMPEG" 
      data-has_cache="@(Program.Args.CacheDir != null)"
      data-has-multiple-dirs="@(Program.Args.DataDirs.Count > 1)"

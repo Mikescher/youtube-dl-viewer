@@ -105,7 +105,14 @@ namespace youtube_dl_viewer.Model
                 new JProperty("thumbnail_override", _spec.ThumbnailmodeOverride),
                 new JProperty("order_override",     _spec.OrderOverride),
                 new JProperty("videomode_override", _spec.VideomodeOverride),
-                new JProperty("theme_override",     _spec.ThemeOverride)
+                new JProperty("theme_override",     _spec.ThemeOverride),
+                
+                new JProperty("display_disabled",   new JArray(_spec.DisabledDisplays.Cast<object>().ToArray())),
+                new JProperty("width_disabled",     new JArray(_spec.DisabledWidths.Cast<object>().ToArray())),
+                new JProperty("thumbnail_disabled", new JArray(_spec.DisabledThumbnailmodes.Cast<object>().ToArray())),
+                new JProperty("order_disabled",     new JArray(_spec.DisabledOrders.Cast<object>().ToArray())),
+                new JProperty("videomode_disabled", new JArray(_spec.DisabledVideomodes.Cast<object>().ToArray())),
+                new JProperty("theme_disabled",     new JArray(_spec.DisabledThemes.Cast<object>().ToArray()))
             );
             
             return new DataDirData(_spec, meta, resultVideos.ToDictionary(p => p.UID, p => p));

@@ -103,4 +103,40 @@ namespace youtube_dl_viewer.Config
 
         public override string FormatValue(object value) => value?.ToString();
     }
+    
+    public class MultiIntEnumConfigAttribute: ConfigAttribute
+    {
+        public readonly string ParameterKey;
+        public readonly string[] EnumValues;
+        
+        public override IEnumerable<string> Keys => new[]{ParameterKey};
+        
+        public MultiIntEnumConfigAttribute(string key, string[] values)
+        {
+            ParameterKey = key;
+            EnumValues   = values;
+        }
+
+        private string FormatSingleValue(int v)
+        {
+            if (v >= 0 && v < EnumValues.Length) return EnumValues[v];
+            return v.ToString();
+        }
+
+        public override string FormatValue(object value) => string.Join("; ", ((HashSet<int>)value).Select(FormatSingleValue));
+    }
+    
+    public class MultiStringConfigAttribute: ConfigAttribute
+    {
+        public readonly string ParameterKey;
+
+        public override IEnumerable<string> Keys => new[]{ParameterKey};
+
+        public MultiStringConfigAttribute(string key)
+        {
+            ParameterKey = key;
+        }
+
+        public override string FormatValue(object value) => string.Join("; ", ((IEnumerable<string>) value));
+    }
 }

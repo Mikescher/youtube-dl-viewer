@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
@@ -26,6 +28,13 @@ namespace youtube_dl_viewer.Config
         public readonly int?   VideomodeOverride;
         public readonly int?   ThumbnailmodeOverride;
         public readonly string ThemeOverride;
+        
+        public readonly HashSet<int>    DisabledDisplays;
+        public readonly HashSet<int>    DisabledWidths;
+        public readonly HashSet<int>    DisabledOrders;
+        public readonly HashSet<int>    DisabledVideomodes;
+        public readonly HashSet<int>    DisabledThumbnailmodes;
+        public readonly HashSet<string> DisabledThemes;
 
         public readonly string SelectorID;
 
@@ -40,7 +49,8 @@ namespace youtube_dl_viewer.Config
 
         private DataDirSpec(int index, string spec, string path, string name, 
             bool useFilenameAsTitle, int recursionDepth, string filenameFilter, string orderFilename, bool updateOrderfile, string htmltitle,
-            int? display_override, int? width_override, int? order_override, int? videomode_override, int? thumbnailmode_override, string theme_override)
+            int? display_override, int? width_override, int? order_override, int? videomode_override, int? thumbnailmode_override, string theme_override,
+            IEnumerable<int> disabled_display, IEnumerable<int> disabled_width, IEnumerable<int> disabled_order, IEnumerable<int> disabled_videomode, IEnumerable<int> disabled_thumbnailmode, IEnumerable<string> disabled_theme)
         {
             Index = index;
             
@@ -60,6 +70,13 @@ namespace youtube_dl_viewer.Config
             VideomodeOverride     = videomode_override;
             ThumbnailmodeOverride = thumbnailmode_override;
             ThemeOverride         = theme_override;
+            
+            DisabledDisplays       = disabled_display.ToHashSet();
+            DisabledWidths         = disabled_width.ToHashSet();
+            DisabledOrders         = disabled_order.ToHashSet();
+            DisabledVideomodes     = disabled_videomode.ToHashSet();
+            DisabledThumbnailmodes = disabled_thumbnailmode.ToHashSet();
+            DisabledThemes         = disabled_theme.ToHashSet();
             
             SelectorID = Regex.Replace(Name, @"[^A-Za-z0-9_\-.,;]", "_").ToLower();
             
@@ -108,14 +125,36 @@ namespace youtube_dl_viewer.Config
             
             var ovr_theme = json.GetValue("theme")?.Value<string>();
 
+            var raw_d_display       = json.GetValue("display_disabled"      )?.Values<JValue>()?.Select(p => p.Value?.ToString())?.Where(p => p != null)?.ToList() ?? new List<string>();
+            var raw_d_width         = json.GetValue("width_disabled"        )?.Values<JValue>()?.Select(p => p.Value?.ToString())?.Where(p => p != null)?.ToList() ?? new List<string>();
+            var raw_d_order         = json.GetValue("order_disabled"        )?.Values<JValue>()?.Select(p => p.Value?.ToString())?.Where(p => p != null)?.ToList() ?? new List<string>();
+            var raw_d_thumbnailmode = json.GetValue("thumbnailmode_disabled")?.Values<JValue>()?.Select(p => p.Value?.ToString())?.Where(p => p != null)?.ToList() ?? new List<string>();
+            var raw_d_videomode     = json.GetValue("videomode_disabled"    )?.Values<JValue>()?.Select(p => p.Value?.ToString())?.Where(p => p != null)?.ToList() ?? new List<string>();
+            var raw_d_theme         = json.GetValue("theme_disabled")?.Values<string>()?.ToList() ?? new List<string>();
+
+            var d_display       = raw_d_display.Select(Arguments.ParseDisplayMode);
+            var d_width         = raw_d_width.Select(Arguments.ParseWidthMode);
+            var d_order         = raw_d_order.Select(Arguments.ParseOrderMode);
+            var d_thumbnailmode = raw_d_thumbnailmode.Select(Arguments.ParseThumbnailMode);
+            var d_videomode     = raw_d_videomode.Select(Arguments.ParseVideoMode);
+            var d_theme         = raw_d_theme.Select(Arguments.ParseThemeName);
+            
             var htmltitle = json.GetValue("htmltitle")?.Value<string>()?.Replace("{version}", Program.Version);
 
-            return new DataDirSpec(index, spec, path, name, useFilename, recDepth, filter, order, updateorderfile, htmltitle, ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_thumbnailmode, ovr_theme);
+            return new DataDirSpec(
+                index, spec, path, name, 
+                useFilename, recDepth, filter, order, updateorderfile, htmltitle, 
+                ovr_display, ovr_width, ovr_order, ovr_videomode, ovr_thumbnailmode, ovr_theme,
+                d_display, d_width, d_order, d_videomode, d_thumbnailmode, d_theme);
         }
 
         public static DataDirSpec FromPath(int index, string dir)
         {
-            return new DataDirSpec(index, dir, dir, dir, false, 0, "*", null, false, null, null, null, null, null, null, null);
+            return new DataDirSpec(
+                index, dir, dir, dir, 
+                false, 0, "*", null, false, null, 
+                null, null, null, null, null, null, 
+                Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<string>());
         }
     }
 }

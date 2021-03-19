@@ -108,14 +108,23 @@ namespace youtube_dl_viewer.Controller
                         new JObject(new JProperty("key", "order"),                 new JProperty("value", ddir.OrderOverride),         new JProperty("changed", ddir.OrderOverride         != null), new JProperty("enum_display_value", new JArray("date-desc", "date-asc", "title", "category", "views", "rating", "uploader", "external-desc", "external-asc", "random", "filename-asc", "filename-desc"))),
                         new JObject(new JProperty("key", "thumbnailmode"),         new JProperty("value", ddir.ThumbnailmodeOverride), new JProperty("changed", ddir.ThumbnailmodeOverride != null), new JProperty("enum_display_value", new JArray("off", "intelligent", "sequential", "parallel"))),
                         new JObject(new JProperty("key", "videomode"),             new JProperty("value", ddir.VideomodeOverride),     new JProperty("changed", ddir.VideomodeOverride     != null), new JProperty("enum_display_value", new JArray("disabled", "raw-seekable", "raw", "transcoded", "download", "vlc-stream", "vlc-local", "url"))),
-                        
                         new JObject(new JProperty("key", "theme"),                 new JProperty("value", ddir.ThemeOverride),         new JProperty("changed", ddir.ThemeOverride         != null)),
-                        
+
+                        new JObject(new JProperty("key", "disabled_display"),      new JProperty("value", H2S(ddir.DisabledDisplays)),       new JProperty("changed", ddir.DisabledDisplays.Any())),
+                        new JObject(new JProperty("key", "disabled_width"),        new JProperty("value", H2S(ddir.DisabledWidths)),         new JProperty("changed", ddir.DisabledWidths.Any())),
+                        new JObject(new JProperty("key", "disabled_order"),        new JProperty("value", H2S(ddir.DisabledOrders)),         new JProperty("changed", ddir.DisabledOrders.Any())),
+                        new JObject(new JProperty("key", "disabled_thumbnailmode"),new JProperty("value", H2S(ddir.DisabledThumbnailmodes)), new JProperty("changed", ddir.DisabledThumbnailmodes.Any())),
+                        new JObject(new JProperty("key", "disabled_videomode"),    new JProperty("value", H2S(ddir.DisabledVideomodes)),     new JProperty("changed", ddir.DisabledVideomodes.Any())),
+                        new JObject(new JProperty("key", "disabled_themes"),       new JProperty("value", H2S(ddir.DisabledThemes)),         new JProperty("changed", ddir.DisabledThemes.Any())),
+
                         new JObject(new JProperty("key", "htmltitle"),             new JProperty("value", ddir.HTMLTitle),             new JProperty("changed", ddir.HTMLTitle             != null))
                     ))
                 );
                 idx++;
             }
         }
+            
+        private static string H2S(HashSet<int> v) => string.Join("; ", v.Select(p => p.ToString()));
+        private static string H2S(HashSet<string> v) => string.Join("; ", v.Select(p => p.ToString()));
     }
 }
