@@ -64,9 +64,16 @@ function formatSeconds(sec: number): string
 {
     if (sec <= 60) return sec + 's';
 
+    const ohou = Math.floor(sec/(60*60));
+    sec -= ohou*60*60;
+    
     const omin = Math.floor(sec/60);
-    const osec = Math.floor(sec - (omin*60));
-    return omin + 'min ' + osec + 's';
+    sec -= ohou*60;
+    
+    const osec = Math.floor(sec);
+    
+    if (ohou > 0) return ohou + 'h ' + omin + 'min ' + osec + 's';
+    else          return omin + 'min ' + osec + 's';
 }
 
 function formatDate(date: string): string
