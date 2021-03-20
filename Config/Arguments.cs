@@ -93,7 +93,7 @@ namespace youtube_dl_viewer.Config
         [MultiIntEnumConfig("--disable-videomode", new[]{"disabled", "raw-seekable", "raw", "transcoded", "download", "vlc-stream", "vlc-local", "url"})]
         public HashSet<int> OptDisabledVideoModes = new HashSet<int>();
 
-        [MultiStringConfig("--disable-videomode")]
+        [MultiStringConfig("--disable-theme")]
         public HashSet<string> OptDisabledThemes = new HashSet<string>();
         public HashSet<int> OptDisabledThemesInt => OptDisabledThemes.Select(t => Themes.FirstOrDefault(p => p.Name == t)?.Index).Where(p => p != null).Select(p => p.Value).ToHashSet();
 
