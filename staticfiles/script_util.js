@@ -45,7 +45,7 @@ function formatSeconds(sec) {
     const ohou = Math.floor(sec / (60 * 60));
     sec -= ohou * 60 * 60;
     const omin = Math.floor(sec / 60);
-    sec -= ohou * 60;
+    sec -= omin * 60;
     const osec = Math.floor(sec);
     if (ohou > 0)
         return ohou + 'h ' + omin + 'min ' + osec + 's';

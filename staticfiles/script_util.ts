@@ -68,7 +68,7 @@ function formatSeconds(sec: number): string
     sec -= ohou*60*60;
     
     const omin = Math.floor(sec/60);
-    sec -= ohou*60;
+    sec -= omin*60;
     
     const osec = Math.floor(sec);
     
