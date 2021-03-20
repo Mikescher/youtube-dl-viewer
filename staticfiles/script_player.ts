@@ -23,7 +23,10 @@ class VideoPlayerModel
 
     init() 
     {
-        
+        window.addEventListener('keydown', function (event) 
+        {
+            if (event.key === 'Escape') App.PLAYER.removeVideo();
+        })
     }
 
     removeVideo()
@@ -84,7 +87,7 @@ class VideoPlayerModel
 
         location.hash = 'play=' + App.VIDEOLIST.getCurrentDataDir().keys[0] + '::' + video.meta.uid;
     }
-
+    
     openFile(video: DataJSONVideo) 
     {
         window.open('/data/'+App.VIDEOLIST.getCurrentDataDir().index+'/video/'+escapeHtml(video.meta.uid)+'/file', '_blank')?.focus();
