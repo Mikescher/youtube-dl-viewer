@@ -118,7 +118,7 @@ class UserInterfaceModel {
         let ids = [];
         let html = '';
         for (const elem of options) {
-            if (!elem.enabled)
+            if (!optEnabled(elem))
                 continue;
             const elemid = 'drow_' + (this.dropDownIDCounter++);
             let cls = 'row';

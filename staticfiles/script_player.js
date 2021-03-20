@@ -9,6 +9,10 @@ class VideoPlayerModel {
         this.dom_headerplaybackmode = $('#header_videoplayer .type');
     }
     init() {
+        window.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape')
+                App.PLAYER.removeVideo();
+        });
     }
     removeVideo() {
         if (this.dom_fullsizevideo === null)

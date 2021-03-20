@@ -107,7 +107,7 @@ interface DisplayRenderer
 
 function getModeEnabled<T>(key: string, idx: T): boolean
 {
-    return (JSON.parse($attr('#options', 'data-disabled-'+key)!) as T[]).includes(idx);
+    return !(JSON.parse($attr('#options', 'data-disabled-'+key)!) as T[]).includes(idx);
 }
 
 function optEnabled(v: OptionDef): boolean
