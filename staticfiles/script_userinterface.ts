@@ -165,7 +165,7 @@ class UserInterfaceModel
         let html = '';
         for (const elem of options)
         {
-            if (!elem.enabled) continue;
+            if (!optEnabled(elem)) continue;
             const elemid = 'drow_' + (this.dropDownIDCounter++);
             let cls = 'row';
             if (elem.index === current) cls += ' active';

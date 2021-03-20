@@ -137,7 +137,7 @@ namespace youtube_dl_viewer.Config
             var d_order         = raw_d_order.Select(Arguments.ParseOrderMode);
             var d_thumbnailmode = raw_d_thumbnailmode.Select(Arguments.ParseThumbnailMode);
             var d_videomode     = raw_d_videomode.Select(Arguments.ParseVideoMode);
-            var d_theme         = raw_d_theme.Select(Arguments.ParseThemeName);
+            var d_theme         = raw_d_theme.Select(Arguments.ParseThemeName).Select(p => p.ToLower());
             
             var htmltitle = json.GetValue("htmltitle")?.Value<string>()?.Replace("{version}", Program.Version);
 

@@ -44,17 +44,19 @@
      data-program-version="@Program.Version"
      
      data-themelist="@(new JArray
-                     (
-                         Program.Args.Themes.Select((p,i) => new JObject
                          (
+                         Program.Args.Themes.Select((p,i) => new JObject
+                             (
                              new JProperty("index", i), 
                              new JProperty("text", $"Theme: {p.Name}"), 
                              new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
                              new JProperty("url", p.URI+"?v="+Program.Version),
                              new JProperty("name", p.Name),
-                             new JProperty("enabled", true)
-                         )).ToArray<object>() 
-                     ).ToString(Formatting.None))"
+                             new JProperty("enabledGlobal", Program.Args.OptDisabledThemes.Any(q => string.Equals(q, p.Name, StringComparison.CurrentCultureIgnoreCase))),
+                             new JProperty("enabledPerDir", true),
+                             new JProperty("enabledByLogic", true)
+                             )).ToArray<object>() 
+                         ).ToString(Formatting.None))"
      
      data-dirlist="@(new JArray
                     (
@@ -64,7 +66,9 @@
                             new JProperty("text", p.Name), 
                             new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
                             new JProperty("name", p.Name),
-                            new JProperty("enabled", true)
+                            new JProperty("enabledGlobal", true),
+                            new JProperty("enabledPerDir", true),
+                            new JProperty("enabledByLogic", true)
                         )).ToArray<object>() 
                     ).ToString(Formatting.None))"
      
