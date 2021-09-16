@@ -55,6 +55,7 @@ declare namespace seedrandom {
         state?: boolean | State;
         pass?: seedrandomCallback;
     }
+    
 }
 
 class SeedRandom
@@ -76,36 +77,97 @@ class SeedRandom
     state():  State  { return this.srobj.state();  }
 }
 
-(function (global, pool, math) {
 //
-// The following constants are related to IEEE 754 limits.
+// ARC4
 //
+// An ARC4 implementation.  The constructor takes a key in the form of
+// an array of at most (width) integers that should be 0 <= x < (width).
+//
+// The g(count) method returns a pseudorandom integer that concatenates
+// the next (count) outputs from ARC4.  Its return value is a number x
+// that is in the range 0 <= x < (width ^ count).
+//
+class ARC4
+{
+    i: number;
+    j: number;
+    S: number[];
 
-    var width = 256,        // each RC4 output is 0 <= x < 256
-        chunks = 6,         // at least six RC4 outputs for each double
-        digits = 52,        // there are 52 significant digits in a double
-        rngname = 'random', // rngname: name for Math.random and Math.seedrandom
-        startdenom = math.pow(width, chunks),
-        significance = math.pow(2, digits),
-        overflow = significance * 2,
-        mask = width - 1,
-        nodecrypto;         // node.js crypto module, initialized at the bottom.
+    width: number;
+    mask: number;
+    
+    constructor(key: number[], width: number, mask: number) {
+        let keylen = key.length;
+        let i = 0;
+        let j = 0;
+        this.i = 0;
+        this.j = 0;
+
+        this.S = []
+        
+        this.mask = mask;
+        this.width = width;
+        
+        // The empty key [] is treated as [0].
+        if (!keylen) { key = [keylen++]; }
+
+        // Set up S using the standard key scheduling algorithm.
+        while (i < width) {
+            this.S[i] = i++;
+        }
+        for (i = 0; i < width; i++) {
+            let t = this.S[i]
+            this.S[i] = this.S[j = mask & (j + key[i % keylen] + t)];
+            this.S[j] = t;
+        }
+
+        // The "g" method returns the next (count) outputs as one number.
+        this.g(width);
+    }
+    
+    g(count: number) {
+        // Using instance members instead of closure state nearly doubles speed.
+        let t;
+        let r = 0;
+        let i = this.i;
+        let j = this.j;
+        let s = this.S;
+        while (count--) {
+            t = s[i = this.mask & (i + 1)];
+            r = r * this.width + s[this.mask & ((s[i] = s[j = this.mask & (j + t)]) + (s[j] = t))];
+        }
+        this.i = i;
+        this.j = j;
+        return r;
+        // For robust unpredictability, the function call below automatically
+        // discards an initial batch of values.  This is called RC4-drop[256].
+        // See http://google.com/search?q=rsa+fluhrer+response&btnI
+    }
+}
+
+function seedrandom_init(global: typeof globalThis) {
+    let width = 256;        // each RC4 output is 0 <= x < 256
+    let chunks = 6;         // at least six RC4 outputs for each double
+    let digits = 52;        // there are 52 significant digits in a double
+    let startdenom = Math.pow(width, chunks);
+    let significance = Math.pow(2, digits);
+    let overflow = significance * 2;
+    let mask = width - 1;
+    
+    let pool: number[] = [];
 
 //
 // seedrandom()
 // This is the seedrandom function described above.
 //
-    function seedrandom(seed, options, callback) {
-        var key = [];
-        options = (options == true) ? { entropy: true } : (options || {});
+    function seedrandom(seed: string): prng {
+        var key: number[] = [];
 
         // Flatten the seed string or build one from local entropy if needed.
-        var shortseed = mixkey(flatten(
-            options.entropy ? [seed, tostring(pool)] :
-                (seed == null) ? autoseed() : seed, 3), key);
+        var shortseed = mixkey(flatten((seed == null) ? autoseed() : seed, 3), key);
 
         // Use the seed to initialize an ARC4 generator.
-        var arc4 = new ARC4(key);
+        var arc4 = new ARC4(key, width, mask);
 
         // This function returns a random double in [0, 1) that contains
         // randomness in every bit of the mantissa of the IEEE 754 value.
@@ -134,77 +196,14 @@ class SeedRandom
         mixkey(tostring(arc4.S), pool);
 
         // Calling convention: what to return as a function of prng, seed, is_math.
-        return (options.pass || callback ||
-            function(prng, seed, is_math_call, state) {
-                if (state) {
-                    // Load the arc4 state from the given state if it has an S array.
-                    if (state.S) { copy(state, arc4); }
-                    // Only provide the .state method if requested via options.state.
-                    prng.state = function() { return copy(arc4, {}); }
-                }
-
-                // If called as a method of Math (Math.seedrandom()), mutate
-                // Math.random because that is how seedrandom.js has worked since v1.0.
-                if (is_math_call) { math[rngname] = prng; return seed; }
-
-                    // Otherwise, it is a newer calling convention, so return the
-                // prng directly.
-                else return prng;
-            })(
-            prng,
-            shortseed,
-            'global' in options ? options.global : (this == math),
-            options.state);
-    }
-
-//
-// ARC4
-//
-// An ARC4 implementation.  The constructor takes a key in the form of
-// an array of at most (width) integers that should be 0 <= x < (width).
-//
-// The g(count) method returns a pseudorandom integer that concatenates
-// the next (count) outputs from ARC4.  Its return value is a number x
-// that is in the range 0 <= x < (width ^ count).
-//
-    function ARC4(key) {
-        var t, keylen = key.length,
-            me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
-
-        // The empty key [] is treated as [0].
-        if (!keylen) { key = [keylen++]; }
-
-        // Set up S using the standard key scheduling algorithm.
-        while (i < width) {
-            s[i] = i++;
-        }
-        for (i = 0; i < width; i++) {
-            s[i] = s[j = mask & (j + key[i % keylen] + (t = s[i]))];
-            s[j] = t;
-        }
-
-        // The "g" method returns the next (count) outputs as one number.
-        (me.g = function(count) {
-            // Using instance members instead of closure state nearly doubles speed.
-            var t, r = 0,
-                i = me.i, j = me.j, s = me.S;
-            while (count--) {
-                t = s[i = mask & (i + 1)];
-                r = r * width + s[mask & ((s[i] = s[j = mask & (j + t)]) + (s[j] = t))];
-            }
-            me.i = i; me.j = j;
-            return r;
-            // For robust unpredictability, the function call below automatically
-            // discards an initial batch of values.  This is called RC4-drop[256].
-            // See http://google.com/search?q=rsa+fluhrer+response&btnI
-        })(width);
+        return prng;
     }
 
 //
 // copy()
 // Copies internal state of ARC4 to or from a plain object.
 //
-    function copy(f, t) {
+    function copy(f: ARC4, t: any) {
         t.i = f.i;
         t.j = f.j;
         t.S = f.S.slice();
@@ -215,7 +214,7 @@ class SeedRandom
 // flatten()
 // Converts an object tree to nested arrays of strings.
 //
-    function flatten(obj, depth) {
+    function flatten(obj: any, depth: number): string[] {
         var result = [], typ = (typeof obj), prop;
         if (depth && typ == 'object') {
             for (prop in obj) {
@@ -230,8 +229,10 @@ class SeedRandom
 // Mixes a string seed into a key that is an array of integers, and
 // returns a shortened string seed that is equivalent to the result key.
 //
-    function mixkey(seed, key) {
-        var stringseed = seed + '', smear, j = 0;
+    function mixkey(seed: any, key: number[]): string {
+        let stringseed = seed + '';
+        let smear = 0;
+        let j = 0;
         while (j < stringseed.length) {
             key[mask & j] =
                 mask & ((smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++));
@@ -247,14 +248,9 @@ class SeedRandom
     function autoseed() {
         try {
             var out;
-            if (nodecrypto && (out = nodecrypto.randomBytes)) {
-                // The use of 'out' to remember randomBytes makes tight minified code.
-                out = out(width);
-            } else {
-                out = new Uint8Array(width);
-                (global.crypto || global.msCrypto).getRandomValues(out);
-            }
-            return tostring(out);
+            out = new Uint8Array(width);
+            global.crypto.getRandomValues(out);
+            return tostring(Array.from(out));
         } catch (e) {
             var browser = global.navigator,
                 plugins = browser && browser.plugins;
@@ -266,7 +262,7 @@ class SeedRandom
 // tostring()
 // Converts an array of charcodes to a string
 //
-    function tostring(a) {
+    function tostring(a: number[]): string {
         return String.fromCharCode.apply(0, a);
     }
 
@@ -277,15 +273,14 @@ class SeedRandom
 // seedrandom will not call math.random on its own again after
 // initialization.
 //
-    mixkey(math.random(), pool);
+    mixkey(Math.random(), pool);
 
     SeedRandom.func = seedrandom;
-    
-// End anonymous scope, and pass initial values.
-})(
+
+}
+
+seedrandom_init(
     // global: `self` in browsers (including strict mode and web workers),
     // otherwise `this` in Node and other environments
     (typeof self !== 'undefined') ? self : this,
-    [],     // pool: entropy pool starts empty
-    Math    // math: package containing random, pow, and seedrandom
 );
