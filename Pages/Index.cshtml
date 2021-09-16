@@ -52,7 +52,7 @@
                              new JProperty("keys", new JArray(p.SelectorID, i.ToString())),
                              new JProperty("url", p.URI+"?v="+Program.Version),
                              new JProperty("name", p.Name),
-                             new JProperty("enabledGlobal", Program.Args.OptDisabledThemes.Any(q => string.Equals(q, p.Name, StringComparison.CurrentCultureIgnoreCase))),
+                             new JProperty("enabledGlobal", !Program.Args.OptDisabledThemes.Any(q => string.Equals(q, p.Name, StringComparison.CurrentCultureIgnoreCase))),
                              new JProperty("enabledPerDir", true),
                              new JProperty("enabledByLogic", true)
                              )).ToArray<object>() 
