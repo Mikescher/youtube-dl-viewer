@@ -4,7 +4,7 @@ dotnet clean
 rm releases/youtube-dl-viewer
 rm releases/youtube-dl-viewer.exe
 
-tsc
+REM tsc
 
 dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
 
