@@ -85,7 +85,7 @@ namespace youtube_dl_viewer.Model
             
             if (missingProcessedFiles.Any())
             {
-                Console.Error.WriteLine($"There are some files in the directory '{_spec.Path}' that are not part of any video ({string.Join("; ", idDuplicates.Select(p => p.Key))})");
+                Console.Error.WriteLine($"There are some files in the directory '{_spec.Path}' that are not part of any video ({string.Join("; ", missingProcessedFiles.Select(Path.GetFileName))})");
             }
             
             _orderIndizes?.UpdateFile();
