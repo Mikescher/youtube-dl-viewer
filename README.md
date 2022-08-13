@@ -307,6 +307,8 @@ Here are some common and useful arguments:
 
  - `--port=<value>`:  
    Specify the used port for the webserver (use a random one if not specified)
+ - `--ip=<value>`:  
+   Specify the bound interface (e.g. localhost, 0.0.0.0, ...)
  - `--cache=<value>`:  
    The cache directory for transcoded webm files, generated thumbnails and preview frames
  - `--display=<value>`, `--order=<value>`, `--width=<value>`, `--thumbnailmode=<value>`, `--videomode=<value>`:  

@@ -112,6 +112,9 @@ namespace youtube_dl_viewer.Config
         [IntConfig("--port")]
         public int Port = -1;
 
+        [IntConfig("--ip")]
+        public string IP = "localhost";
+
         [StringConfig("--cache")]
         public string CacheDir = null;
 
@@ -222,6 +225,7 @@ namespace youtube_dl_viewer.Config
             if (key == "disable-thumbnailmode")   { OptDisabledThumbnailModes.Add( ParseThumbnailMode(value) );                                          return; }
             if (key == "disable-videomode")       { OptDisabledVideoModes.Add(     ParseVideoMode(value)     );                                          return; }
             if (key == "disable-theme")           { OptDisabledThemes.Add(         ParseThemeName(value)     );                                          return; }
+            if (key == "ip")                      { IP                          = value;                                                                 return; }
             if (key == "port")                    { Port                        = int.Parse(value);                                                      return; }
             if (key == "cache")                   { CacheDir                    = value.Replace("/", Path.DirectorySeparatorChar.ToString());            return; }
             if (key == "max-parallel-convert")    { MaxParallelConvertJobs      = int.Parse(value);                                                      return; }
@@ -445,6 +449,8 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("Options:");
             Console.Out.WriteLine("  -h --help                   Show this screen.");
             Console.Out.WriteLine("  --version                   Show version.");
+            Console.Out.WriteLine("  --ip=<value>                The server ip-address");
+            Console.Out.WriteLine("                                # (default = localhost)");
             Console.Out.WriteLine("  --port=<value>              The server port");
             Console.Out.WriteLine("  --cache=<value>             Cache directory for transcoded webm files,");
             Console.Out.WriteLine("                                generated thumbnails and preview frames");

@@ -205,7 +205,7 @@ namespace youtube_dl_viewer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls($"http://localhost:{Args.Port}/");
+                    webBuilder.UseUrls($"http://{Args.IP}:{Args.Port}/");
                 });
         }
 
