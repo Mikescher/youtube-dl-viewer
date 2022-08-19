@@ -112,7 +112,7 @@ namespace youtube_dl_viewer.Config
         [IntConfig("--port")]
         public int Port = -1;
 
-        [IntConfig("--ip")]
+        [StringConfig("--ip")]
         public string IP = "localhost";
 
         [StringConfig("--cache")]
