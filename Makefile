@@ -1,4 +1,6 @@
-DOCKER_REPO="registry.blackforestbytes.com"
+DOCKER_REPO_PRIV="registry.blackforestbytes.com"
+DOCKER_IMG_PRIV="mikescher/youtube-dl-viewer"
+DOCKER_IMG_HUB="mikescher/youtube-dl-viewer"
 
 build:
 	dotnet build
@@ -39,14 +41,14 @@ build-docker: publish
 	docker build \
 	  -t youtube-dl-viewer:$(shell git describe --abbrev=0 --tags) \
 	  -t youtube-dl-viewer:latest \
-	  -t mikescher/youtube-dl-viewer:$(shell git describe --abbrev=0 --tags) \
-	  -t mikescher/youtube-dl-viewer:latest \
-	  -t $(DOCKER_REPO)/youtube-dl-viewer:$(shell git describe --abbrev=0 --tags) \
-	  -t $(DOCKER_REPO)/youtube-dl-viewer \
+	  -t $(DOCKER_IMG_HUB):$(shell git describe --abbrev=0 --tags) \
+	  -t $(DOCKER_IMG_HUB):latest \
+	  -t $(DOCKER_REPO_PRIV)/$(DOCKER_IMG_PRIV):$(shell git describe --abbrev=0 --tags) \
+	  -t $(DOCKER_REPO_PRIV)/$(DOCKER_IMG_PRIV) \
 	  .
 
 publish-docker: build-docker
-	docker image push mikescher/youtube-dl-viewer:$(shell git describe --abbrev=0 --tags)
-	docker image push mikescher/youtube-dl-viewer:latest
-	docker image push $(DOCKER_REPO)/youtube-dl-viewer:$(shell git describe --abbrev=0 --tags)
-	docker image push $(DOCKER_REPO)/youtube-dl-viewer
+	docker image push $(DOCKER_IMG_HUB):$(shell git describe --abbrev=0 --tags)
+	docker image push $(DOCKER_IMG_HUB):latest
+	docker image push $(DOCKER_REPO_PRIV)/$(DOCKER_IMG_PRIV):$(shell git describe --abbrev=0 --tags)
+	docker image push $(DOCKER_REPO_PRIV)/$(DOCKER_IMG_PRIV)
