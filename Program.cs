@@ -34,7 +34,7 @@ namespace youtube_dl_viewer
 
         public static Timer CronTimer;
         
-        public static string Version => "0.40";
+        public static string Version => "0.41";
 
         public static readonly Dictionary<int, DataDirData> DataCache = new Dictionary<int, DataDirData>();
 
