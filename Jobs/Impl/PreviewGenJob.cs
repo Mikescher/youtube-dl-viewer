@@ -52,8 +52,9 @@ namespace youtube_dl_viewer.Jobs
             try
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
-                
-                var (ecode1, outputProbe) = FFMPEGUtil.RunCommand(Program.Args.FFPROBEExec, $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"", "prevgen-probe");
+
+                var arg1 = $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"";
+                var (ecode1, outputProbe) = FFMPEGUtil.RunCommand(Program.Args.FFPROBEExec, arg1, "prevgen-probe");
                 
                 _progress = (1, Program.Args.MaxPreviewImageCount+1);
                 
@@ -62,6 +63,8 @@ namespace youtube_dl_viewer.Jobs
                 if (ecode1 != 0)
                 {
                     Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffprobe)");
+                    Console.Error.WriteLine($"Command: {Program.Args.FFPROBEExec} {arg1}");
+                    Console.Error.WriteLine($"Output:\n{outputProbe}");
                     ChangeState(JobState.Failed);
                     return;
                 }
@@ -74,30 +77,36 @@ namespace youtube_dl_viewer.Jobs
 
                 if (framedistance > videolen / 8) framedistance = videolen / Program.Args.MinPreviewImageCount; // at least __ frames
                 
-                var taskList = new List<Task<(int, string)>>();
+                var taskList = new List<(string, Task<(int, string)>)>();
 
                 if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.Parallel)
                 {
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        taskList.Add(FFMPEGUtil.RunCommandAsync(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}"));
+                        var arg = $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i + ".jpg")}\"";
+                        taskList.Add((Program.Args.FFMPEGExec + " " + arg, FFMPEGUtil.RunCommandAsync(Program.Args.FFMPEGExec, arg, $"prevgen-run-{i}")));
 
                         currpos += framedistance;
                         if (framedistance < 0.1) break;
                     }
 
-                    Task.WaitAll(taskList.Cast<Task>().ToArray());
+                    Task.WaitAll(taskList.Select(p => p.Item2).Cast<Task>().ToArray());
 
                     _progress = (2, 3);
 
                     if (AbortRequest) { ChangeState(JobState.Aborted); return; }
 
-                    if (taskList.Any(t => t.Result.Item1 != 0))
+                    foreach (var tsk in taskList)
                     {
-                        Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
-                        ChangeState(JobState.Failed);
-                        return;
+                        if (tsk.Item2.Result.Item1 != 0)
+                        {
+                            Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                            Console.Error.WriteLine($"Command: {tsk.Item1}");
+                            Console.Error.WriteLine($"Output:\n{tsk.Item2.Result.Item2}");
+                            ChangeState(JobState.Failed);
+                            return;
+                        }
                     }
                 }
                 else if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.Sequential)
@@ -105,7 +114,8 @@ namespace youtube_dl_viewer.Jobs
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        var (ecode2, _) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i+".jpg")}\"", $"prevgen-run-{i}");
+                        var arg = $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i + ".jpg")}\"";
+                        var (ecode2, ffmpegout2) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, arg, $"prevgen-run-{i}");
                         
                         _progress = (i+1, (int)Math.Floor(videolen / framedistance) + 2);
                         
@@ -114,6 +124,8 @@ namespace youtube_dl_viewer.Jobs
                         if (ecode2 != 0)
                         {
                             Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                            Console.Error.WriteLine($"Command: {Program.Args.FFMPEGExec} {arg}");
+                            Console.Error.WriteLine($"Output:\n{ffmpegout2}");
                             ChangeState(JobState.Failed);
                             return;
                         }
@@ -123,7 +135,8 @@ namespace youtube_dl_viewer.Jobs
                 }
                 else if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.SingleCommand)
                 {
-                    var (ecode2, _) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"", $"prevgen-run");
+                    var arg = $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"";
+                    var (ecode2, ffmpegout2) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, arg, $"prevgen-run");
 
                     _progress = (2, 3);
 
@@ -132,6 +145,8 @@ namespace youtube_dl_viewer.Jobs
                     if (ecode2 != 0)
                     {
                         Console.Error.WriteLine($"Job [{Name}] failed (non-zero exit code in ffmpeg)");
+                        Console.Error.WriteLine($"Command: {Program.Args.FFMPEGExec} {arg}");
+                        Console.Error.WriteLine($"Output:\n{ffmpegout2}");
                         ChangeState(JobState.Failed);
                         return;
                     }
