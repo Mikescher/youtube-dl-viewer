@@ -84,7 +84,7 @@ namespace youtube_dl_viewer.Jobs
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        var arg = $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i + ".jpg")}\"";
+                        var arg = $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\"  -strict unofficial -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i + ".jpg")}\"";
                         taskList.Add((Program.Args.FFMPEGExec + " " + arg, FFMPEGUtil.RunCommandAsync(Program.Args.FFMPEGExec, arg, $"prevgen-run-{i}")));
 
                         currpos += framedistance;
@@ -114,7 +114,7 @@ namespace youtube_dl_viewer.Jobs
                     var currpos = 0.0;
                     for (var i = 1; currpos < videolen; i++)
                     {
-                        var arg = $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\" -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i + ".jpg")}\"";
+                        var arg = $" -ss {currpos.ToString(CultureInfo.InvariantCulture)} -i \"{Source}\"  -strict unofficial -vframes 1 -vf \"scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, i + ".jpg")}\"";
                         var (ecode2, ffmpegout2) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, arg, $"prevgen-run-{i}");
                         
                         _progress = (i+1, (int)Math.Floor(videolen / framedistance) + 2);
@@ -135,7 +135,7 @@ namespace youtube_dl_viewer.Jobs
                 }
                 else if (Program.Args.ThumbnailExtraction == ThumbnailExtractionMode.SingleCommand)
                 {
-                    var arg = $" -i \"{Source}\" -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"";
+                    var arg = $" -i \"{Source}\"  -strict unofficial -vf \"fps=1/{Math.Ceiling(framedistance)}, scale={Program.Args.PreviewImageWidth}:-1\" \"{Path.Combine(TempDir, "%1d.jpg")}\"";
                     var (ecode2, ffmpegout2) = FFMPEGUtil.RunCommand(Program.Args.FFMPEGExec, arg, $"prevgen-run");
 
                     _progress = (2, 3);
