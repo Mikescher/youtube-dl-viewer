@@ -18,7 +18,7 @@ clean:
 	rm releases/youtube-dl-viewer.exe || true
 
 publish: clean
-	dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+	dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true
 
 	rm bin/Release/net8.0/linux-x64/publish/appsettings.json
 	rm bin/Release/net8.0/linux-x64/publish/appsettings.Development.json
@@ -27,7 +27,7 @@ publish: clean
 	cp -v bin/Release/net8.0/linux-x64/publish/youtube-dl-viewer releases
 
 
-	dotnet publish -c Release -r win-x64 /p:PublishSingleFile=true /p:PublishTrimmed=true
+	dotnet publish -c Release -r win-x64 /p:PublishSingleFile=true
 
 	rm bin/Release/net8.0/win-x64/publish/appsettings.json
 	rm bin/Release/net8.0/win-x64/publish/appsettings.Development.json

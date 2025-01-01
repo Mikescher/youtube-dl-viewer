@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using ImageMagick;
 using Newtonsoft.Json.Linq;
+using youtube_dl_viewer.Controller;
 using youtube_dl_viewer.Model;
 
 namespace youtube_dl_viewer.Jobs
@@ -85,7 +86,7 @@ namespace youtube_dl_viewer.Jobs
                             p4d = (int)ms.Position;
                             bw.Write(0);                // placeholder: offset
                             bw.Write(0);                // placeholder: size
-                            bw.Write((ushort)image.Format);
+                            bw.Write(ThumbnailController.MagickFormatToUint16(image.Format));
                         }
 
                         _progress = (1, 6);

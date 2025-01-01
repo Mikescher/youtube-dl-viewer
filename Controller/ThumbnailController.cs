@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -6,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using ImageMagick;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -16,6 +18,32 @@ namespace youtube_dl_viewer.Controller
 {
     public static class ThumbnailController
     {
+        public static readonly Dictionary<ushort, MagickFormat> MAGICK_CONVERSION_TABLE = new() // values from Magick.NET-Q8-AnyCPU 7.23.2
+        {
+            {7, MagickFormat.APng},
+            {18, MagickFormat.Bmp},
+            {87, MagickFormat.Heif},
+            {95, MagickFormat.Ico},
+            {110, MagickFormat.Jpeg},
+            {111, MagickFormat.Jpg},
+            {179, MagickFormat.Png},
+            {180, MagickFormat.Png00},
+            {181, MagickFormat.Png24},
+            {182, MagickFormat.Png32},
+            {183, MagickFormat.Png48},
+            {184, MagickFormat.Png64},
+            {185, MagickFormat.Png8},
+            {201, MagickFormat.Rgb},
+            {202, MagickFormat.Rgb565},
+            {203, MagickFormat.Rgba},
+            {217, MagickFormat.Sixel},
+            {226, MagickFormat.Tga},
+            {228, MagickFormat.Tif},
+            {229, MagickFormat.Tiff},
+            {230, MagickFormat.Tiff64},
+            {248, MagickFormat.WebP},
+        };
+        
         public static string GetThumbnailCachePath(string pathVideo)
         {
             if (pathVideo == null) return null;
@@ -172,7 +200,7 @@ namespace youtube_dl_viewer.Controller
                     
                 dataOffset = br.ReadInt32();
                 dataSize   = br.ReadInt32();
-                dataFormat = (MagickFormat)br.ReadInt16();
+                dataFormat = MAGICK_CONVERSION_TABLE[br.ReadUInt16()];
                 
                 resp.Headers.Add(HeaderNames.ContentType, MagickToContentType(dataFormat));
             }
@@ -212,6 +240,15 @@ namespace youtube_dl_viewer.Controller
             if (Path.GetExtension(pathThumbnail).EqualsIgnoreCase(".webp")) context.Response.Headers.Add(HeaderNames.ContentType, "image/webp");
             
             await context.Response.BodyWriter.WriteAsync(data);
+        }
+
+        public static ushort MagickFormatToUint16(MagickFormat v)
+        {
+            foreach (var t in MAGICK_CONVERSION_TABLE)
+            {
+                if (t.Value == v) return t.Key;
+            }
+            throw new Exception("Unsupported magick format: " + v);
         }
     }
 }
