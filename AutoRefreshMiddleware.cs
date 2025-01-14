@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +9,7 @@ namespace youtube_dl_viewer
 {
     public class AutoRefreshMiddleware
     {
-        public static readonly Dictionary<int, DateTime?> LastAutoRefreshData = new Dictionary<int, DateTime?>();
+        public static readonly ConcurrentDictionary<int, DateTime?> LastAutoRefreshData = new();
         
         private readonly RequestDelegate _next;
 
