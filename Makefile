@@ -18,22 +18,22 @@ clean:
 	rm releases/youtube-dl-viewer.exe || true
 
 publish: clean
-	dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true
+	dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
-	rm bin/Release/net8.0/linux-x64/publish/appsettings.json
-	rm bin/Release/net8.0/linux-x64/publish/appsettings.Development.json
-	rm bin/Release/net8.0/linux-x64/publish/youtube-dl-viewer.pdb
+	rm bin/Release/net9.0/linux-x64/publish/appsettings.json
+	rm bin/Release/net9.0/linux-x64/publish/appsettings.Development.json
+	rm bin/Release/net9.0/linux-x64/publish/youtube-dl-viewer.pdb
 
-	cp -v bin/Release/net8.0/linux-x64/publish/youtube-dl-viewer releases
+	cp -v bin/Release/net9.0/linux-x64/publish/youtube-dl-viewer releases
 
 
 	dotnet publish -c Release -r win-x64 /p:PublishSingleFile=true
 
-	rm bin/Release/net8.0/win-x64/publish/appsettings.json
-	rm bin/Release/net8.0/win-x64/publish/appsettings.Development.json
-	rm bin/Release/net8.0/win-x64/publish/youtube-dl-viewer.pdb
+	rm bin/Release/net9.0/win-x64/publish/appsettings.json
+	rm bin/Release/net9.0/win-x64/publish/appsettings.Development.json
+	rm bin/Release/net9.0/win-x64/publish/youtube-dl-viewer.pdb
 
-	cp -v bin/Release/net8.0/win-x64/publish/youtube-dl-viewer.exe releases
+	cp -v bin/Release/net9.0/win-x64/publish/youtube-dl-viewer.exe releases
 
 build-docker: publish
 	docker build \

@@ -34,7 +34,7 @@ namespace youtube_dl_viewer
 
         public static Timer CronTimer;
         
-        public static string Version => "0.43";
+        public static string Version => "0.44";
 
         public static readonly Dictionary<int, DataDirData> DataCache = new Dictionary<int, DataDirData>();
 
@@ -81,7 +81,7 @@ namespace youtube_dl_viewer
 
                 Task.Run(async () =>
                 {
-                    await Task.Delay(1 * 1000); // Wait until local webserver ist started
+                    await Task.Delay(3 * 1000); // Wait until local webserver ist started
                     
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         Process.Start(new ProcessStartInfo($"http://localhost:{Args.Port}/") { UseShellExecute = true });

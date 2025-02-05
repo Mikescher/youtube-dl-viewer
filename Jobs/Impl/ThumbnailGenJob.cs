@@ -68,19 +68,19 @@ namespace youtube_dl_viewer.Jobs
                             p1d = (int)ms.Position;
                             bw.Write(0);                // placeholder: offset
                             bw.Write(0);                // placeholder: size
-                            bw.Write((ushort)Format);
+                            bw.Write(ThumbnailController.MagickFormatToUint16(image.Format));
                             
                             bw.Flush();
                             p2d = (int)ms.Position;
                             bw.Write(0);                // placeholder: offset
                             bw.Write(0);                // placeholder: size
-                            bw.Write((ushort)Format);
+                            bw.Write(ThumbnailController.MagickFormatToUint16(image.Format));
                             
                             bw.Flush();
                             p3d = (int)ms.Position;
                             bw.Write(0);                // placeholder: offset
                             bw.Write(0);                // placeholder: size
-                            bw.Write((ushort)Format);
+                            bw.Write(ThumbnailController.MagickFormatToUint16(image.Format));
                             
                             bw.Flush();
                             p4d = (int)ms.Position;
