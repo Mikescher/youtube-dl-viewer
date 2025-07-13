@@ -491,7 +491,7 @@ namespace youtube_dl_viewer.Config
             Console.Out.WriteLine("  --width=<value>             The intial display list width");
             Console.Out.WriteLine("                                # [small]  Small");
             Console.Out.WriteLine("                                # [medium] Medium");
-            Console.Out.WriteLine("              Disable some                   # [wide]   Wide");
+            Console.Out.WriteLine("                                # [wide]   Wide");
             Console.Out.WriteLine("                                # [full]   Full");
             Console.Out.WriteLine("                                #");
             Console.Out.WriteLine("  --thumbnailmode=<value>     The intial thumbnail loading mode");
