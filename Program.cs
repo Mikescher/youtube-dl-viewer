@@ -32,9 +32,7 @@ namespace youtube_dl_viewer
 
         public static readonly Dictionary<int, DateTime> DataRefreshTimestamps = new Dictionary<int, DateTime>();
 
-        public static Timer CronTimer;
-        
-        public static string Version => "0.44";
+        public static string Version => "0.45";
 
         public static readonly Dictionary<int, DataDirData> DataCache = new Dictionary<int, DataDirData>();
 

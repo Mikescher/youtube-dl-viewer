@@ -53,7 +53,7 @@ namespace youtube_dl_viewer.Jobs
             {
                 if (!Program.HasValidFFMPEG) throw new Exception("no ffmpeg");
 
-                var arg1 = $" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"";
+                var arg1 = $" -v fatal -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"{Source}\"";
                 var (ecode1, outputProbe) = FFMPEGUtil.RunCommand(Program.Args.FFPROBEExec, arg1, "prevgen-probe");
                 
                 _progress = (1, Program.Args.MaxPreviewImageCount+1);
