@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -75,18 +76,39 @@ namespace youtube_dl_viewer
 
             if (Args.AutoOpenBrowser)
             {
-                Console.Out.WriteLine("[#] Launching Webbrowser");
-
                 Task.Run(async () =>
                 {
-                    await Task.Delay(3 * 1000); // Wait until local webserver ist started
+                    Console.Out.WriteLine("");
+                    Console.Out.WriteLine("[#] Waiting for Server");
+                    Console.Out.WriteLine("");
+
+                    var url = $"http://localhost:{Args.Port}/";
+                    using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+
+                    var sleepCounter = 0;
+                    for (var i = 30; i >= 0; i--) // 30 * 500ms = 15sec max
+                    {
+                        try
+                        {
+                            var resp = await client.GetAsync(url);
+                            if (resp.IsSuccessStatusCode) break;
+                        }
+                        catch { /* server not ready yet */ }
+
+                        sleepCounter++;
+                        await Task.Delay(500);
+                    }
                     
+                    Console.Out.WriteLine("");
+                    Console.Out.WriteLine($"[#] Launching Webbrowser (waited {sleepCounter} cycles)");
+                    Console.Out.WriteLine("");
+
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        Process.Start(new ProcessStartInfo($"http://localhost:{Args.Port}/") { UseShellExecute = true });
+                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                        Process.Start("xdg-open", $"http://localhost:{Args.Port}/");
+                        Process.Start("xdg-open", url);
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                        Process.Start("open", $"http://localhost:{Args.Port}/");
+                        Process.Start("open", url);
                 });
                 
                 Console.Out.WriteLine();

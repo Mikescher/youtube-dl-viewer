@@ -35,7 +35,7 @@ publish: clean
 
 	cp -v bin/Release/net9.0/win-x64/publish/youtube-dl-viewer.exe releases
 
-build-docker: publish
+docker: publish
 	docker build \
 	  -t youtube-dl-viewer:$(shell git describe --abbrev=0 --tags) \
 	  -t youtube-dl-viewer:latest \
@@ -45,7 +45,7 @@ build-docker: publish
 	  -t $(DOCKER_REPO_PRIV)/$(DOCKER_IMG_PRIV) \
 	  .
 
-publish-docker: build-docker
+publish-docker: docker
 	docker image push $(DOCKER_IMG_HUB):$(shell git describe --abbrev=0 --tags)
 	docker image push $(DOCKER_IMG_HUB):latest
 	docker image push $(DOCKER_REPO_PRIV)/$(DOCKER_IMG_PRIV):$(shell git describe --abbrev=0 --tags)
