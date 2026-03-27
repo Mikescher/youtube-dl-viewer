@@ -232,6 +232,15 @@ namespace youtube_dl_viewer.Controller
             }
         }
 
+        public static async Task ManuallyForcePersistThumbnails(HttpContext context)
+        {
+            context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");
+
+            JobRegistry.PersistThumbJobs.StartOrQueue((man) => new PersistThumbnailsJob(man), false);
+
+            await context.Response.WriteAsync("Started persist-missing-thumbnails job");
+        }
+
         public static async Task AbortJob(HttpContext context)
         {
             context.Response.Headers.Add(HeaderNames.ContentType, "text/plain");

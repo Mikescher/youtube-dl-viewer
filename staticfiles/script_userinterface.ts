@@ -66,13 +66,14 @@ class UserInterfaceModel
     {
         $('.btn-adminlinks')!.addEventListener('click', () =>
         {
-            this.toggleActionDropDown($('.btn-adminlinks')!, 'AdminLinks', ["Jobs", "Config", "Datadump", "System Status", "Cache Status"], (idx, _, mid) => 
+            this.toggleActionDropDown($('.btn-adminlinks')!, 'AdminLinks', ["Jobs", "Config", "Datadump", "System Status", "Cache Status", "Persist Missing Thumbnails"], (idx, _, mid) =>
             {
                 if (idx == 0) window.open('/Jobs',   mid ? '_blank' : '_self')
                 if (idx == 1) window.open('/Config', mid ? '_blank' : '_self')
                 if (idx == 2) window.open('/Data',   mid ? '_blank' : '_self')
                 if (idx == 3) window.open('/Status', mid ? '_blank' : '_self')
                 if (idx == 4) window.open('/Cache',  mid ? '_blank' : '_self')
+                if (idx == 5) fetch('/jobmanager/start/persistThumbnails').then(() => window.open('/Jobs', mid ? '_blank' : '_self'))
             });
         });
         $('.btn-display')!.addEventListener('click', () =>

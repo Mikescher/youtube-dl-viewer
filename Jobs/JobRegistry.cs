@@ -11,6 +11,7 @@ namespace youtube_dl_viewer.Jobs
         public static readonly JobManager<PreviewGenJob>   PreviewGenJobs  = new JobManager<PreviewGenJob>(  "PreviewGen",  Program.Args.MaxParallelGenPreviewJobs);
         public static readonly JobManager<DataCollectJob>  DataCollectJobs = new JobManager<DataCollectJob>( "DataCollect", int.MaxValue);
         public static readonly JobManager<ThumbnailGenJob> ThumbGenJobs    = new JobManager<ThumbnailGenJob>("ThumbGen",    Program.Args.MaxParallelGenThumbnailJobs);
+        public static readonly JobManager<PersistThumbnailsJob> PersistThumbJobs = new JobManager<PersistThumbnailsJob>("PersistThumb", 1);
 
         public static IEnumerable<AbsJobManager> Managers => new AbsJobManager[]
         {
@@ -18,6 +19,7 @@ namespace youtube_dl_viewer.Jobs
             PreviewGenJobs,
             DataCollectJobs,
             ThumbGenJobs,
+            PersistThumbJobs,
         };
     }
 }
